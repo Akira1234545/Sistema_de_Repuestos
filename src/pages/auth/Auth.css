@@ -1,0 +1,16 @@
+.auth-page { min-height: 100vh; display: grid; grid-template-columns: 1fr minmax(380px, 500px); gap: 8vw; align-items: center; padding: 50px max(40px, calc((100vw - 1060px) / 2)); box-sizing: border-box; }
+.auth-page .brand, .register-type-page .brand { color: #182521; display: inline-flex; align-items: center; gap: 7px; text-decoration: none; font-size: 19px; font-weight: 700; letter-spacing: -.6px; }
+.auth-page .brand span, .register-type-page .brand span { width: 31px; height: 31px; display: grid; place-items: center; color: #fff; background: #e86649; border-radius: 50% 50% 50% 4px; font: 19px Georgia, serif; }
+.auth-page .brand strong, .register-type-page .brand strong { color: #e86649; }
+.auth-intro { align-self: start; padding-top: 8px; }
+.auth-intro p { max-width: 290px; color: #63706a; font: 400 34px/1.08 Georgia, serif; margin-top: 100px; }
+.auth-card { padding: 42px; background: #fff; border: 1px solid #d7d8ce; box-shadow: 12px 12px 0 #ebe7db; }
+.auth-card h1 { margin: 0; color: #182521; font: 400 42px/1 Georgia, serif; letter-spacing: -1.5px; }
+.auth-description { color: #63706a; font-size: 13px; margin: 15px 0 30px; }
+.auth-card label { display: block; color: #182521; font-size: 11px; font-weight: 800; margin-top: 17px; }
+.auth-card input, .auth-card select { width: 100%; box-sizing: border-box; display: block; margin-top: 7px; padding: 12px 0; border: 0; border-bottom: 1px solid #d7d8ce; outline: 0; color: #182521; background: transparent; font: inherit; font-size: 13px; }
+.auth-card input:focus, .auth-card select:focus { border-bottom-color: #e86649; }
+.auth-card .button { width: 100%; margin-top: 29px; }
+.auth-switch { color: #63706a; text-align: center; font-size: 12px; margin-top: 24px; }
+.auth-switch a { color: #e86649; font-weight: 800; }
+@media (max-width: 720px) { .auth-page { display: block; padding: 30px 20px 60px; } .auth-intro p { margin: 58px 0 35px; font-size: 28px; } .auth-card { padding: 28px 22px; } .auth-card h1 { font-size: 35px; } }
