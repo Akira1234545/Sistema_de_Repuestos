@@ -2,7 +2,6 @@ import { supabase } from './supabase.js'
 
 const requestColumns = `
 	id,
-	usuario_id,
 	vehiculo_id,
 	categoria_id,
 	titulo,
@@ -46,7 +45,7 @@ async function enrichVehicles(vehicles) {
 export async function obtenerVehiculosUsuario(userId) {
 	const { data, error } = await supabase
 		.from('vehiculos')
-		.select('id, usuario_id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion')
+		.select('id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion')
 		.eq('usuario_id', userId)
 		.order('fecha_creacion', { ascending: false })
 
@@ -94,7 +93,7 @@ async function enrichAvailableRequests(requests) {
 async function obtenerVehiclesByIds(ids) {
 	const { data, error } = await supabase
 		.from('vehiculos')
-		.select('id, usuario_id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion')
+		.select('id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion')
 		.in('id', ids)
 
 	if (error) throw error
@@ -119,19 +118,8 @@ export async function obtenerSolicitudesDisponibles() {
 		.in('estado', ['publicada', 'recibiendo_propuestas'])
 		.order('fecha_creacion', { ascending: false })
 
-	console.log('=== DEBUG SOLICITUDES TIENDA ===')
-	console.log('SOLICITUDES RECIBIDAS:', data)
-	console.log('CANTIDAD DE SOLICITUDES:', data?.length)
-	console.log('ERROR SOLICITUDES:', error)
-	if (data?.length) {
-		console.log('DETALLE DE SOLICITUDES:', JSON.stringify(data, null, 2))
-	}
-
 	if (error) throw error
-	const resultado = await enrichAvailableRequests(data)
-	console.log('SOLICITUDES QUE SE RETORNAN:', resultado)
-	console.log('CANTIDAD QUE SE RETORNA:', resultado?.length)
-	return resultado
+	return enrichAvailableRequests(data)
 }
 
 export async function obtenerSolicitudDisponiblePorId(id) {
@@ -160,6 +148,16 @@ export async function obtenerSolicitudPorId(id, userId) {
 	if (!data) return null
 	const [request] = await enrichRequests([data])
 	return request
+}
+
+export async function obtenerHistorialSolicitud(id) {
+	const { data, error } = await supabase
+		.from('historial_solicitudes')
+		.select('id, estado_anterior, estado_nuevo, fecha')
+		.eq('solicitud_id', id)
+		.order('fecha', { ascending: true })
+	if (error) throw error
+	return data
 }
 
 export async function crearSolicitud(datos) {
@@ -199,5 +197,18 @@ export async function actualizarSolicitud(id, userId, datos) {
 
 	if (error) throw error
 	if (!data) throw new Error('La solicitud no existe o no pertenece al usuario autenticado.')
+	return data
+}
+
+export async function cerrarSolicitud(id, userId) {
+	const { data, error } = await supabase
+		.from('solicitudes')
+		.update({ estado: 'cerrada' })
+	.eq('id', id)
+		.eq('usuario_id', userId)
+		.select(requestColumns)
+		.maybeSingle()
+	if (error) throw error
+	if (!data) throw new Error('La solicitud ya no está abierta o no pertenece a tu cuenta.')
 	return data
 }

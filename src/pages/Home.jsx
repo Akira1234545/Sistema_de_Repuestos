@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/authState.js'
 import './Home.css'
 
 const categories = ['Motor', 'Frenos', 'Suspensión', 'Electricidad', 'Carrocería']

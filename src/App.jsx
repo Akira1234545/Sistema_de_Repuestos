@@ -22,7 +22,7 @@ import SolicitudesDisponibles from './pages/tienda/SolicitudesDisponibles.jsx'
 import DetalleSolicitud from './pages/tienda/DetalleSolicitud.jsx'
 
 function Unauthorized() {
-  return <h1>Acceso no autorizado</h1>
+	return <main className="route-message"><h1>Área administrativa</h1><p>El Sprint 1 disponible en el proyecto no especifica pantallas ni procesos administrativos. El acceso administrativo no se concede desde el registro público.</p></main>
 }
 
 function RegisterRoute() {

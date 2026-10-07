@@ -1,23 +1,15 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../services/supabase.js'
-
-const AuthStateContext = createContext({
-	user: null,
-	role: null,
-	loading: true,
-	signOut: () => {},
-})
-
-export function useAuth() {
-	return useContext(AuthStateContext)
-}
+import { useEffect, useState } from 'react'
+import { supabase, supabaseConfigError } from '../services/supabase.js'
+import { AuthStateContext } from './authState.js'
 
 function AuthContext({ children }) {
 	const [user, setUser] = useState(null)
 	const [role, setRole] = useState(null)
-	const [loading, setLoading] = useState(true)
+	const [loading, setLoading] = useState(Boolean(supabase))
+	const [profileError, setProfileError] = useState(supabase ? '' : supabaseConfigError)
 
 	useEffect(() => {
+		if (!supabase) return
 		let mounted = true
 		let requestId = 0
 
@@ -36,6 +28,7 @@ function AuthContext({ children }) {
 
 			setUser(sessionUser)
 			setRole(null)
+			setProfileError('')
 			setLoading(true)
 
 			const { data, error } = await supabase
@@ -46,6 +39,7 @@ function AuthContext({ children }) {
 
 			if (mounted && currentRequestId === requestId) {
 				setRole(error ? null : data?.rol ?? null)
+				setProfileError(error ? `No se pudo leer el perfil: ${error.message}` : !data?.rol ? 'Tu cuenta no tiene un perfil o rol asignado en public.usuarios.' : '')
 				setLoading(false)
 			}
 		}
@@ -67,13 +61,13 @@ function AuthContext({ children }) {
 	}, [])
 
 	async function signOut() {
-		await supabase.auth.signOut()
+		if (supabase) await supabase.auth.signOut()
 		setUser(null)
 		setRole(null)
 	}
 
 	return (
-		<AuthStateContext.Provider value={{ user, role, loading, signOut }}>
+		<AuthStateContext.Provider value={{ user, role, loading, profileError, signOut }}>
 			{children}
 		</AuthStateContext.Provider>
 	)

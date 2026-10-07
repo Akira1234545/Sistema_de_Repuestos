@@ -11,6 +11,7 @@ function Login() {
 	async function handleSubmit(event) {
 		event.preventDefault()
 		setError('')
+		if (!supabase) { setError('Supabase no está configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'); return }
 		setLoading(true)
 		const formData = new FormData(event.currentTarget)
 		const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -30,14 +31,14 @@ function Login() {
 			.eq('id', data.user.id)
 			.maybeSingle()
 
-		if (profileError || !profile || !['cliente', 'tienda'].includes(profile.rol)) {
+		if (profileError || !profile || !['cliente', 'tienda', 'administrador', 'superAdministrador'].includes(profile.rol)) {
 			await supabase.auth.signOut()
-			setError('No se encontró un perfil válido. Contacta al administrador del sistema.')
+			setError(profileError ? `No se pudo leer el perfil: ${profileError.message}` : 'No se encontró un perfil o rol válido. Contacta al administrador del sistema.')
 			setLoading(false)
 			return
 		}
 
-		navigate(profile.rol === 'tienda' ? '/tienda' : '/cliente')
+		navigate(profile.rol === 'tienda' ? '/tienda' : profile.rol === 'cliente' ? '/cliente' : '/unauthorized')
 		setLoading(false)
 	}
 

@@ -6,13 +6,16 @@ import './Auth.css'
 function Register() {
 	const [searchParams] = useSearchParams()
 	const navigate = useNavigate()
-	const role = searchParams.get('role') === 'tienda' ? 'tienda' : 'cliente'
+	const requestedRole = searchParams.get('role')
+	const role = ['cliente', 'tienda'].includes(requestedRole) ? requestedRole : null
 	const [error, setError] = useState('')
 	const [message, setMessage] = useState('')
 	const [loading, setLoading] = useState(false)
 
 	async function handleSubmit(event) {
 		event.preventDefault()
+		if (!role) { setError('Elige si deseas registrarte como Cliente o Tienda.'); return }
+		if (!supabase) { setError('Supabase no está configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'); return }
 		setError('')
 		setMessage('')
 		setLoading(true)
@@ -48,8 +51,9 @@ function Register() {
 		<main className="auth-page">
 			<div className="auth-intro"><Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link><p>Un buen viaje empieza con la pieza correcta.</p></div>
 			<form className="auth-card" onSubmit={handleSubmit}>
-				<p className="eyebrow">Crear cuenta / {role}</p>
+				<p className="eyebrow">Crear cuenta / {role || 'tipo de cuenta'}</p>
 				<h1>Únete a RepuestosPro</h1>
+				{!role && <p className="auth-error" role="alert">Selecciona primero el tipo de cuenta en <Link to="/register">Registro</Link>.</p>}
 				<p className="auth-description">Crea tu cuenta para {role === 'tienda' ? 'ofrecer tus repuestos y hacer crecer tu tienda.' : 'encontrar repuestos para tu vehículo.'}</p>
 				<label>Nombre<input name="name" type="text" required placeholder="Tu nombre" /></label>
 				<label>Apellido<input name="apellido" type="text" required placeholder="Tu apellido" /></label>
@@ -58,7 +62,7 @@ function Register() {
 				<label>Contraseña<input name="password" type="password" required minLength="6" placeholder="Mínimo 6 caracteres" /></label>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				{message && <p className="auth-message" role="status">{message}</p>}
-				<button className="button button-primary" type="submit" disabled={loading}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</button>
+				<button className="button button-primary" type="submit" disabled={loading || !role}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</button>
 				<p className="auth-switch">¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
 			</form>
 		</main>

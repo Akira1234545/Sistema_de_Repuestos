@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../../context/authState.js'
 import { obtenerSolicitudPorId, actualizarSolicitud } from '../../services/solicitudService.js'
 import { SolicitudForm } from './CrearSolicitud.jsx'
 import './Solicitudes.css'
@@ -52,6 +52,7 @@ function EditarSolicitud() {
 
 	if (loading) return <section className="requests-page"><p className="request-loading">Cargando solicitud...</p></section>
 	if (!request) return <section className="requests-page"><p className="request-error" role="alert">{error}</p></section>
+	if (!['publicada', 'recibiendo_propuestas'].includes(request.estado)) return <section className="requests-page"><div className="request-empty"><h2>Esta solicitud ya no se puede editar</h2><p>Estado actual: {request.estado.replaceAll('_', ' ')}.</p><Link className="button requests-button" to="/cliente/solicitudes">Volver a mis solicitudes</Link></div></section>
 
 	return <section className="requests-page"><div className="request-form"><div className="request-form-header"><p className="requests-eyebrow">Panel de cliente / Editar solicitud</p><h1>Actualiza tu solicitud</h1><p className="request-form-lead">Puedes ajustar los detalles mientras la solicitud siga en tu espacio.</p></div><SolicitudForm editingId={id} initialValues={{ userId: user.id, vehiculo_id: request.vehiculo_id, categoria_id: request.categoria_id, titulo: request.titulo, descripcion: request.descripcion, caracteristicas: request.caracteristicas || '', cantidad: String(request.cantidad) }} onSubmit={handleSubmit} saving={saving} error={error} /></div></section>
 }
