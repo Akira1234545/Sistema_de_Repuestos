@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/authState.js'
 
 function ProtectedRoute({ allowedRoles }) {
-  const { user, role, loading } = useAuth()
+	const { user, role, loading, profileError } = useAuth()
 
   if (loading) {
     return <p>Comprobando sesión...</p>
@@ -13,7 +13,7 @@ function ProtectedRoute({ allowedRoles }) {
   }
 
   if (!allowedRoles.includes(role)) {
-    return <Navigate to="/unauthorized" replace />
+		return <main className="route-message"><h1>Acceso no disponible</h1><p role="alert">{profileError || 'Tu cuenta no tiene permiso para abrir esta sección.'}</p></main>
   }
 
   return <Outlet />

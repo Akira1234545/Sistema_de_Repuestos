@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js'
 
-const vehicleColumns = 'id, usuario_id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion'
+const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion'
 
 export async function obtenerTiposVehiculo() {
 	const { data, error } = await supabase

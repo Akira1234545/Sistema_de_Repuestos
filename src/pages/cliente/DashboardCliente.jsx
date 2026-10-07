@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { useAuth } from '../../context/authState.js'
 import './DashboardCliente.css'
 
 const quickActions = [

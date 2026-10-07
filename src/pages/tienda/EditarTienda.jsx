@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { useAuth } from '../../context/authState.js'
 import {
 	actualizarFotografiasTienda,
 	actualizarTienda,
@@ -90,8 +90,8 @@ function EditarTienda() {
 		setError('')
 		setSuccess('')
 		if (!form.nombre.trim()) { setError('El nombre de la tienda es obligatorio.'); return }
-		if (form.latitud !== '' && !Number.isFinite(Number(form.latitud))) { setError('La latitud debe ser un número válido.'); return }
-		if (form.longitud !== '' && !Number.isFinite(Number(form.longitud))) { setError('La longitud debe ser un número válido.'); return }
+		if (form.latitud !== '' && (!Number.isFinite(Number(form.latitud)) || Number(form.latitud) < -90 || Number(form.latitud) > 90)) { setError('La latitud debe ser un número entre -90 y 90.'); return }
+		if (form.longitud !== '' && (!Number.isFinite(Number(form.longitud)) || Number(form.longitud) < -180 || Number(form.longitud) > 180)) { setError('La longitud debe ser un número entre -180 y 180.'); return }
 		setSaving(true)
 		try {
 			const datos = { ...form }

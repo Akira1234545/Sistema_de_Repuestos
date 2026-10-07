@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext.jsx'
+import { useAuth } from '../../context/authState.js'
 import { obtenerVehiculosUsuario } from '../../services/vehiculoService.js'
 import './Vehiculos.css'
 
