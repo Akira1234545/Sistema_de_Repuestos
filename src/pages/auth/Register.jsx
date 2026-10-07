@@ -21,8 +21,15 @@ function Register() {
 		setMessage('')
 		setLoading(true)
 		const formData = new FormData(event.currentTarget)
+		const password = formData.get('password')
+		const confirmPassword = formData.get('confirmPassword')
+		if (password !== confirmPassword) {
+			setError('Las contraseñas no coinciden.')
+			setLoading(false)
+			return
+		}
 		const { data, error: signUpError } = await registrarCuenta({
-			email: formData.get('email'), password: formData.get('password'),
+			email: formData.get('email'), password,
 			nombre: formData.get('name'), apellido: formData.get('apellido'),
 			telefono: formData.get('telefono'), role,
 		})
@@ -53,7 +60,8 @@ function Register() {
 				<label>Apellido<input name="apellido" type="text" required placeholder="Tu apellido" /></label>
 				<label>Teléfono<input name="telefono" type="tel" placeholder="Tu teléfono" /></label>
 				<label>Correo electrónico<input name="email" type="email" required placeholder="tu@correo.com" /></label>
-				<label>Contraseña<input name="password" type="password" required minLength="6" placeholder="Mínimo 6 caracteres" /></label>
+				<label>Contraseña<input name="password" type="password" required minLength="6" autoComplete="new-password" placeholder="Mínimo 6 caracteres" /></label>
+				<label>Confirmar contraseña<input name="confirmPassword" type="password" required minLength="6" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				{message && <p className="auth-message" role="status">{message}</p>}
 				<button className="button button-primary" type="submit" disabled={loading || !role}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</button>
