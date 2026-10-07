@@ -3,7 +3,10 @@ import { Link, NavLink } from 'react-router-dom'
 const storeNavigation = [
 	{ label: 'Resumen', icon: '⌂', to: '/tienda', end: true },
 	{ label: 'Mi tienda', icon: '▣', to: '/tienda/perfil' },
+	{ label: 'Categorías que atiendo', icon: '◈', to: '/tienda/categorias' },
 	{ label: 'Solicitudes disponibles', icon: '▤', to: '/tienda/solicitudes' },
+	{ label: 'Promociones', icon: '％', to: '/tienda/promociones' },
+	{ label: 'Favoritos', icon: '♡', to: '/tienda/favoritos' },
 	{ label: 'Editar información', icon: '✎', to: '/tienda/editar' },
 ]
 

@@ -27,18 +27,18 @@ function Login() {
 
 		const { data: profile, error: profileError } = await supabase
 			.from('usuarios')
-			.select('rol')
+			.select('rol, activo')
 			.eq('id', data.user.id)
 			.maybeSingle()
 
-		if (profileError || !profile || !['cliente', 'tienda', 'administrador', 'superAdministrador'].includes(profile.rol)) {
+		if (profileError || !profile || !profile.activo || !['cliente', 'tienda', 'administrador', 'superAdministrador'].includes(profile.rol)) {
 			await supabase.auth.signOut()
-			setError(profileError ? `No se pudo leer el perfil: ${profileError.message}` : 'No se encontró un perfil o rol válido. Contacta al administrador del sistema.')
+			setError(profileError ? `No se pudo leer el perfil: ${profileError.message}` : profile && !profile.activo ? 'Tu cuenta está desactivada. Contacta al administrador del sistema.' : 'No se encontró un perfil o rol válido. Contacta al administrador del sistema.')
 			setLoading(false)
 			return
 		}
 
-		navigate(profile.rol === 'tienda' ? '/tienda' : profile.rol === 'cliente' ? '/cliente' : '/unauthorized')
+		navigate(profile.rol === 'tienda' ? '/tienda' : profile.rol === 'cliente' ? '/cliente' : '/admin')
 		setLoading(false)
 	}
 

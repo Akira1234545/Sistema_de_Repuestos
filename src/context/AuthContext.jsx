@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase, supabaseConfigError } from '../services/supabase.js'
+import { obtenerPerfilAutenticado } from '../services/authService.js'
 import { AuthStateContext } from './authState.js'
 
 function AuthContext({ children }) {
 	const [user, setUser] = useState(null)
+	const [profile, setProfile] = useState(null)
 	const [role, setRole] = useState(null)
 	const [loading, setLoading] = useState(Boolean(supabase))
 	const [profileError, setProfileError] = useState(supabase ? '' : supabaseConfigError)
@@ -20,6 +22,7 @@ function AuthContext({ children }) {
 			if (!sessionUser) {
 				if (mounted) {
 					setUser(null)
+					setProfile(null)
 					setRole(null)
 					setLoading(false)
 				}
@@ -27,19 +30,20 @@ function AuthContext({ children }) {
 			}
 
 			setUser(sessionUser)
+			setProfile(null)
 			setRole(null)
 			setProfileError('')
 			setLoading(true)
 
-			const { data, error } = await supabase
-				.from('usuarios')
-				.select('rol')
-				.eq('id', sessionUser.id)
-				.maybeSingle()
+			let loadedProfile = null
+			let error = null
+			try { loadedProfile = await obtenerPerfilAutenticado(sessionUser.id) }
+			catch (profileLoadError) { error = profileLoadError }
 
 			if (mounted && currentRequestId === requestId) {
-				setRole(error ? null : data?.rol ?? null)
-				setProfileError(error ? `No se pudo leer el perfil: ${error.message}` : !data?.rol ? 'Tu cuenta no tiene un perfil o rol asignado en public.usuarios.' : '')
+				setProfile(loadedProfile)
+				setRole(loadedProfile?.rol ?? null)
+				setProfileError(error ? `No se pudo validar tu perfil: ${error.message}` : '')
 				setLoading(false)
 			}
 		}
@@ -63,11 +67,13 @@ function AuthContext({ children }) {
 	async function signOut() {
 		if (supabase) await supabase.auth.signOut()
 		setUser(null)
+		setProfile(null)
 		setRole(null)
+		setProfileError('')
 	}
 
 	return (
-		<AuthStateContext.Provider value={{ user, role, loading, profileError, signOut }}>
+		<AuthStateContext.Provider value={{ user, profile, role, loading, profileError, signOut }}>
 			{children}
 		</AuthStateContext.Provider>
 	)

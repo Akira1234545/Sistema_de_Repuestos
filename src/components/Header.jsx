@@ -29,7 +29,8 @@ function Header({ privateArea = false }) {
 			<Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link>
 			<nav className="site-nav" aria-label="Navegación principal">
 				<a href="#categorias">Categorías</a>
-				<a href="#tiendas">Tiendas</a>
+				<Link to="/tiendas">Tiendas</Link>
+				<Link to="/promociones">Promociones</Link>
 				<Link to="/login">Iniciar sesión</Link>
 				<Link className="nav-register" to="/register">Registrarse <span>↗</span></Link>
 			</nav>

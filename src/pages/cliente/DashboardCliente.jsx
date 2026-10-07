@@ -5,13 +5,13 @@ import './DashboardCliente.css'
 const quickActions = [
 	{ icon: '▱', title: 'Mis vehículos', text: 'Administra los vehículos que tienes registrados.', to: '/cliente/vehiculos' },
 	{ icon: '▤', title: 'Mis solicitudes', text: 'Revisa el estado de tus solicitudes de repuestos.', to: '/cliente/solicitudes' },
-	{ icon: '⌕', title: 'Explorar repuestos', text: 'Explora opciones para encontrar la pieza correcta.', to: null },
-	{ icon: '♡', title: 'Favoritos', text: 'Guarda tus tiendas y repuestos preferidos.', to: null },
+	{ icon: '％', title: 'Explorar promociones', text: 'Consulta descuentos activos de las tiendas.', to: '/promociones' },
+	{ icon: '♡', title: 'Favoritos', text: 'Consulta tus tiendas, solicitudes y promociones guardadas.', to: '/cliente/favoritos' },
 ]
 
 function DashboardCliente() {
-	const { user } = useAuth()
-	const userName = user?.name || user?.email || 'Cliente'
+	const { user, profile } = useAuth()
+	const userName = profile?.nombre || user?.user_metadata?.nombre || user?.email || 'Cliente'
 
 	return (
 		<section className="client-dashboard">

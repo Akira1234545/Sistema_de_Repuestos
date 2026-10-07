@@ -1,6 +1,7 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
+import { registrarCuenta } from '../../services/authService.js'
 import './Auth.css'
 
 function Register() {
@@ -20,17 +21,10 @@ function Register() {
 		setMessage('')
 		setLoading(true)
 		const formData = new FormData(event.currentTarget)
-		const { data, error: signUpError } = await supabase.auth.signUp({
-			email: formData.get('email'),
-			password: formData.get('password'),
-			options: {
-				data: {
-					nombre: formData.get('name'),
-					apellido: formData.get('apellido'),
-					telefono: formData.get('telefono'),
-					role,
-				},
-			},
+		const { data, error: signUpError } = await registrarCuenta({
+			email: formData.get('email'), password: formData.get('password'),
+			nombre: formData.get('name'), apellido: formData.get('apellido'),
+			telefono: formData.get('telefono'), role,
 		})
 
 		if (signUpError) {

@@ -20,10 +20,15 @@ import PerfilTienda from './pages/tienda/PerfilTienda.jsx'
 import EditarTienda from './pages/tienda/EditarTienda.jsx'
 import SolicitudesDisponibles from './pages/tienda/SolicitudesDisponibles.jsx'
 import DetalleSolicitud from './pages/tienda/DetalleSolicitud.jsx'
-
-function Unauthorized() {
-	return <main className="route-message"><h1>Área administrativa</h1><p>El Sprint 1 disponible en el proyecto no especifica pantallas ni procesos administrativos. El acceso administrativo no se concede desde el registro público.</p></main>
-}
+import PropuestasSolicitud from './pages/cliente/PropuestasSolicitud.jsx'
+import Promociones from './pages/Promociones.jsx'
+import DetallePromocion from './pages/DetallePromocion.jsx'
+import Favoritos from './pages/Favoritos.jsx'
+import TiendaPromociones from './pages/tienda/TiendaPromociones.jsx'
+import CategoriasTienda from './pages/tienda/CategoriasTienda.jsx'
+import GestionPromocion from './pages/tienda/GestionPromocion.jsx'
+import AdminAccess from './pages/AdminAccess.jsx'
+import TiendasPublicas from './pages/TiendasPublicas.jsx'
 
 function RegisterRoute() {
   const [searchParams] = useSearchParams()
@@ -36,9 +41,16 @@ function App() {
       <AuthContext>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/tiendas" element={<TiendasPublicas />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegisterRoute />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route element={<ProtectedRoute allowedRoles={['administrador', 'superAdministrador']} />}>
+            <Route path="/admin" element={<AdminAccess />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={['cliente', 'tienda']} />}>
+            <Route path="/promociones" element={<Promociones />} />
+            <Route path="/promociones/:id" element={<DetallePromocion />} />
+          </Route>
           <Route element={<ProtectedRoute allowedRoles={['cliente']} />}>
             <Route path="/cliente" element={<ClienteLayout />}>
               <Route index element={<DashboardCliente />} />
@@ -48,6 +60,8 @@ function App() {
               <Route path="solicitudes" element={<Solicitudes />} />
               <Route path="solicitudes/crear" element={<CrearSolicitud />} />
               <Route path="solicitudes/editar/:id" element={<EditarSolicitud />} />
+              <Route path="solicitudes/:id/propuestas" element={<PropuestasSolicitud />} />
+              <Route path="favoritos" element={<Favoritos />} />
             </Route>
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['tienda']} />}>
@@ -55,8 +69,13 @@ function App() {
               <Route index element={<DashboardTienda />} />
               <Route path="perfil" element={<PerfilTienda />} />
               <Route path="editar" element={<EditarTienda />} />
+              <Route path="categorias" element={<CategoriasTienda />} />
               <Route path="solicitudes" element={<SolicitudesDisponibles />} />
               <Route path="solicitudes/:id" element={<DetalleSolicitud />} />
+              <Route path="promociones" element={<TiendaPromociones />} />
+              <Route path="promociones/crear" element={<GestionPromocion />} />
+              <Route path="promociones/:id/editar" element={<GestionPromocion />} />
+              <Route path="favoritos" element={<Favoritos />} />
             </Route>
           </Route>
         </Routes>

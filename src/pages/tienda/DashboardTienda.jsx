@@ -14,6 +14,8 @@ function DashboardTienda() {
 				<Link className="store-action-card" to="/tienda/perfil"><span>01</span><strong>Mi tienda</strong><p>Consulta y administra la información de tu tienda.</p><b>↗</b></Link>
 				<Link className="store-action-card store-action-dark" to="/tienda/editar"><span>02</span><strong>Editar tienda</strong><p>Actualiza los datos de tu tienda y mantén tu información al día.</p><b>↗</b></Link>
 				<Link className="store-action-card" to="/tienda/solicitudes"><span>03</span><strong>Solicitudes disponibles</strong><p>Revisa las solicitudes de repuestos disponibles.</p><b>↗</b></Link>
+				<Link className="store-action-card" to="/tienda/promociones"><span>04</span><strong>Promociones</strong><p>Publica y administra descuentos de tu tienda.</p><b>↗</b></Link>
+				<Link className="store-action-card" to="/tienda/categorias"><span>05</span><strong>Categorías que atiendo</strong><p>Define qué solicitudes puedes consultar y responder.</p><b>↗</b></Link>
 			</div>
 		</section>
 	)

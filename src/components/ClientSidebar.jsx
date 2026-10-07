@@ -3,12 +3,10 @@ import { useAuth } from '../context/authState.js'
 
 const clientNavigation = [
 	{ label: 'Inicio', icon: '⌂', to: '/cliente', end: true },
-	{ label: 'Explorar', icon: '⌕', to: null },
 	{ label: 'Solicitudes', icon: '▤', to: '/cliente/solicitudes' },
 	{ label: 'Vehículos', icon: '▱', to: '/cliente/vehiculos' },
-	{ label: 'Favoritos', icon: '♡', to: null },
-	{ label: 'Notificaciones', icon: '♢', to: null },
-	{ label: 'Mensajes', icon: '◌', to: null },
+	{ label: 'Promociones', icon: '％', to: '/promociones' },
+	{ label: 'Favoritos', icon: '♡', to: '/cliente/favoritos' },
 ]
 
 function ClientSidebar() {

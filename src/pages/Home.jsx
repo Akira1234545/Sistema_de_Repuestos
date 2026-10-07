@@ -11,18 +11,12 @@ const featuredParts = [
 	{ name: 'Filtro de aceite', detail: 'Mantenimiento que protege tu motor', price: 'Desde $12' },
 ]
 
-const featuredStores = [
-	{ name: 'Autopartes Central', location: 'Repuestos y asesoría en el centro' },
-	{ name: 'Motor House', location: 'Especialistas en rendimiento' },
-	{ name: 'La Ruta Repuestos', location: 'Todo para tu próximo viaje' },
-]
-
 function Home() {
 	const navigate = useNavigate()
-	const { user } = useAuth()
+	const { role } = useAuth()
 
 	function handleStoreCta() {
-		if (user?.role === 'tienda') {
+		if (role === 'tienda') {
 			navigate('/tienda')
 			return
 		}
@@ -75,8 +69,8 @@ function Home() {
 				</section>
 
 				<section id="tiendas" className="home-section stores-section">
-					<div className="section-heading inline-heading"><div><p className="eyebrow">Cerca de ti</p><h2>Tiendas destacadas</h2></div><button type="button" className="text-button">Explorar tiendas ↗</button></div>
-					<div className="store-list">{featuredStores.map((store, index) => <article className="store-row" key={store.name}><span className="store-index">0{index + 1}</span><div><h3>{store.name}</h3><p>{store.location}</p></div><span className="store-arrow">↗</span></article>)}</div>
+					<div className="section-heading inline-heading"><div><p className="eyebrow">Perfiles aprobados</p><h2>Explora tiendas de repuestos</h2></div><Link className="text-button" to="/tiendas">Ver catálogo ↗</Link></div>
+					<p>Consulta la presentación de las tiendas activas. Los datos de contacto aparecen cuando selecciones una de sus propuestas.</p>
 				</section>
 
 				<section className="platform-section"><div><p className="eyebrow">Una plataforma para avanzar</p><h2>Todo lo que necesitas para cuidar tu vehículo, en un solo lugar.</h2></div><div className="platform-facts"><div><strong>+500</strong><span>repuestos listos para encontrar</span></div><div><strong>+80</strong><span>tiendas especializadas</span></div><div><strong>24/7</strong><span>tu búsqueda siempre disponible</span></div></div></section>
