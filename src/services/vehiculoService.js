@@ -2,6 +2,22 @@ import { supabase } from './supabase.js'
 
 const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion'
 
+async function getNamesByIds(table, ids) {
+	if (!ids.length) return new Map()
+	const { data, error } = await supabase.from(table).select('id, nombre').in('id', ids)
+	if (error) throw error
+	return new Map(data.map((item) => [item.id, item.nombre]))
+}
+
+async function enrichVehicles(vehicles) {
+	const [types, brands, models] = await Promise.all([
+		getNamesByIds('tipos_vehiculo', vehicles.map((item) => item.tipo_vehiculo_id)),
+		getNamesByIds('marcas', vehicles.map((item) => item.marca_id)),
+		getNamesByIds('modelos', vehicles.map((item) => item.modelo_id)),
+	])
+	return vehicles.map((item) => ({ ...item, tipoNombre: types.get(item.tipo_vehiculo_id), marcaNombre: brands.get(item.marca_id), modeloNombre: models.get(item.modelo_id) }))
+}
+
 export async function obtenerTiposVehiculo() {
 	const { data, error } = await supabase
 		.from('tipos_vehiculo')
@@ -44,7 +60,7 @@ export async function obtenerVehiculosUsuario(userId) {
 		.eq('usuario_id', userId)
 		.order('fecha_creacion', { ascending: false })
 	if (error) throw error
-	return data
+	return enrichVehicles(data)
 }
 
 export async function obtenerVehiculoPorId(id, userId) {
@@ -55,7 +71,7 @@ export async function obtenerVehiculoPorId(id, userId) {
 		.eq('usuario_id', userId)
 		.maybeSingle()
 	if (error) throw error
-	return data
+	return data ? (await enrichVehicles([data]))[0] : null
 }
 
 export async function crearVehiculo(datos) {

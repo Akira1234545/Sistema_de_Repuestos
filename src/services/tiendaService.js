@@ -28,6 +28,44 @@ export async function obtenerTiendaUsuario(userId) {
 	return data
 }
 
+export async function obtenerTiendasPublicas() {
+	const { data, error } = await supabase.from('sprint2_tiendas_publicas')
+		.select('id, nombre, descripcion, horario, fotografias').order('nombre')
+	if (error) throw error
+	return data
+}
+
+export async function obtenerCategoriasGestionTienda(userId) {
+	const { data: store, error: storeError } = await supabase.from('tiendas')
+		.select('id, nombre, estado, activa').eq('usuario_id', userId).maybeSingle()
+	if (storeError) throw storeError
+	if (!store) return { store: null, categories: [], selectedIds: [], unavailableCount: 0 }
+
+	const [categoriesResult, assignmentsResult] = await Promise.all([
+		supabase.from('categorias_repuesto').select('id, nombre, descripcion, categoria_padre_id')
+			.eq('activo', true).order('nombre'),
+		supabase.from('tienda_categorias').select('categoria_id').eq('tienda_id', store.id),
+	])
+	if (categoriesResult.error) throw categoriesResult.error
+	if (assignmentsResult.error) throw assignmentsResult.error
+
+	const activeIds = new Set(categoriesResult.data.map((category) => category.id))
+	const assignedIds = assignmentsResult.data.map((item) => item.categoria_id)
+	return {
+		store,
+		categories: categoriesResult.data,
+		selectedIds: assignedIds.filter((id) => activeIds.has(id)),
+		unavailableCount: assignedIds.filter((id) => !activeIds.has(id)).length,
+	}
+}
+
+export async function guardarCategoriasTienda(categoryIds) {
+	const { error } = await supabase.rpc('sprint1_update_store_categories', {
+		p_category_ids: [...new Set(categoryIds)],
+	})
+	if (error) throw error
+}
+
 export async function crearTienda(userId, datos) {
 	const { data, error } = await supabase
 		.from('tiendas')

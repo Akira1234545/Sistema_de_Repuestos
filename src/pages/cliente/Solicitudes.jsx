@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
+import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import { cerrarSolicitud, obtenerHistorialSolicitud, obtenerSolicitudesUsuario } from '../../services/solicitudService.js'
 import './Solicitudes.css'
 
@@ -30,7 +31,7 @@ function Solicitudes() {
 				if (!active) return
 				const next = {}
 				for (const { id, result } of results) {
-					if (result.cause) setHistoryNotice('Aplica database/migrations/20261006_solicitud_historial.sql para activar el historial. Las solicitudes existentes no tienen eventos retroactivos.')
+					if (result.cause) setHistoryNotice(`El historial no está disponible para todas las solicitudes. Revisa la tabla y sus permisos en Supabase. ${result.cause.message}`)
 					else next[id] = result.value
 				}
 				setHistory(next)
@@ -60,7 +61,7 @@ function Solicitudes() {
 				const events = await obtenerHistorialSolicitud(requestId)
 				setHistory((current) => ({ ...current, [requestId]: events }))
 			} catch {
-				setHistoryNotice('La solicitud se cerró, pero no se pudo actualizar el timeline. Verifica que ambas migraciones Sprint 1 estén aplicadas.')
+				setHistoryNotice('La solicitud se cerró, pero no se pudo actualizar el historial. Revisa sus permisos de lectura en Supabase.')
 			}
 		} catch (closeError) { setError(`No se pudo cerrar la solicitud: ${closeError.message}`) }
 		finally { setClosingId('') }
@@ -85,7 +86,7 @@ function Solicitudes() {
 			<div className="request-meta"><span><strong>Vehículo:</strong> {vehicleLabel(request.vehiculo)}</span><span><strong>Categoría:</strong> {request.categoriaNombre || 'Sin categoría'}</span><span><strong>Cantidad:</strong> {request.cantidad}</span><span><strong>Creada:</strong> {formatDate(request.fecha_creacion)}</span></div>
 			{request.descripcion && <p className="request-description">{request.descripcion}</p>}
 			<section className="request-timeline" aria-label={`Historial de ${request.titulo}`}><h3>Historial de estado</h3>{history[request.id]?.length ? <ol>{history[request.id].map((event) => <li key={event.id}><span>{event.estado_anterior ? `${event.estado_anterior.replaceAll('_', ' ')} → ` : ''}{event.estado_nuevo.replaceAll('_', ' ')}</span><time dateTime={event.fecha}>{formatDate(event.fecha)}</time></li>)}</ol> : <p>Sin cambios de estado registrados.</p>}</section>
-			<div className="request-card-footer">{['publicada', 'recibiendo_propuestas'].includes(request.estado) && <><Link className="request-edit" to={`/cliente/solicitudes/editar/${request.id}`}>Editar solicitud ↗</Link><button className="request-close" type="button" onClick={() => handleClose(request.id)} disabled={closingId === request.id}>{closingId === request.id ? 'Cerrando…' : 'Cerrar solicitud'}</button></>}</div>
+			<div className="request-card-footer"><FavoriteToggle type="solicitud" itemId={request.id} label="solicitud" /><Link className="request-proposals-link" to={`/cliente/solicitudes/${request.id}/propuestas`}>Ver propuestas</Link>{['publicada', 'recibiendo_propuestas'].includes(request.estado) && <><Link className="request-edit" to={`/cliente/solicitudes/editar/${request.id}`}>Editar solicitud ↗</Link><button className="request-close" type="button" onClick={() => handleClose(request.id)} disabled={closingId === request.id}>{closingId === request.id ? 'Cerrando…' : 'Cerrar solicitud'}</button></>}</div>
 		</article>)}</div>}
 	</section>
 }

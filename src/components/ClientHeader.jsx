@@ -3,8 +3,8 @@ import { useAuth } from '../context/authState.js'
 
 function ClientHeader() {
 	const navigate = useNavigate()
-	const { user, signOut } = useAuth()
-	const userLabel = user?.user_metadata?.nombre || user?.email || 'Cliente'
+	const { user, profile, signOut } = useAuth()
+	const userLabel = profile?.nombre || user?.user_metadata?.nombre || user?.email || 'Cliente'
 
 	async function handleSignOut() {
 		await signOut()

@@ -44,6 +44,7 @@ a { color: inherit; }
 .request-history-notice { margin: 12px 0; padding: 12px; border: 1px solid #ead3a1; border-radius: 7px; color: #73521c; background: #fff8e7; }
 .request-close { min-height: 40px; padding: 0 14px; border: 1px solid #c8d1da; border-radius: 6px; color: var(--navy); background: white; font-size: 12px; font-weight: 700; cursor: pointer; }
 .request-edit { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 6px; color: white; background: var(--accent); font-size: 12px; font-weight: 700; text-decoration: none; }
+.request-proposals-link { min-height: 40px; display: inline-flex; align-items: center; margin-right: auto; color: var(--navy); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .request-close:hover { background: #edf1f5; }
 .request-close:disabled { opacity: .6; cursor: progress; }
 .request-card, .store-request-card, .store-request-detail-card, .request-form-card, .auth-card { border-color: var(--line) !important; border-radius: 10px; background: var(--paper) !important; box-shadow: var(--shadow); }

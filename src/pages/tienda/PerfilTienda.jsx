@@ -30,8 +30,12 @@ function PerfilTienda() {
 	if (error) return <section className="store-profile-page"><p className="profile-state profile-state-error" role="alert">{error}</p></section>
 	if (!store) return <section className="store-profile-page"><div className="profile-empty"><span className="profile-eyebrow">Mi tienda</span><h1>Tu tienda todavía no está registrada.</h1><p>Completa la información para comenzar a mostrar tu negocio.</p><Link className="profile-primary-button" to="/tienda/editar">Crear mi tienda <span>↗</span></Link></div></section>
 
-	const hasLocation = store.latitud !== null && store.latitud !== undefined && store.longitud !== null && store.longitud !== undefined
-	const mapUrl = hasLocation ? `https://www.google.com/maps/search/?api=1&query=${store.latitud},${store.longitud}` : null
+	const latitude = Number(store.latitud)
+	const longitude = Number(store.longitud)
+	const hasLocation = store.latitud !== null && store.latitud !== '' && store.longitud !== null && store.longitud !== ''
+		&& Number.isFinite(latitude) && Number.isFinite(longitude) && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180
+	const mapParams = new URLSearchParams({ bbox: `${longitude - 0.015},${latitude - 0.015},${longitude + 0.015},${latitude + 0.015}`, layer: 'mapnik', marker: `${latitude},${longitude}` })
+	const mapUrl = hasLocation ? `https://www.openstreetmap.org/export/embed.html?${mapParams.toString()}` : null
 
 	return (
 		<section className="store-profile-page">
@@ -64,8 +68,9 @@ function PerfilTienda() {
 			</section>
 
 			<section className="profile-location-card">
-				<div><span className="profile-eyebrow">Ubicación</span><h2>{hasLocation ? 'Ubicación registrada' : 'Ubicación no registrada'}</h2><p>{hasLocation ? `Coordenadas: ${store.latitud}, ${store.longitud}` : 'Agrega las coordenadas desde Editar tienda para ubicar tu negocio.'}</p></div>
-				{hasLocation && <a className="profile-secondary-button" href={mapUrl} target="_blank" rel="noreferrer">Ver ubicación ↗</a>}
+				<div><span className="profile-eyebrow">Ubicación</span><h2>{hasLocation ? 'Ubicación registrada' : 'Ubicación no registrada'}</h2><p>{store.direccion || 'No hay una dirección registrada.'}</p></div>
+				{hasLocation && <div className="profile-map-wrap"><iframe title={`Mapa de ${store.nombre}`} src={mapUrl} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><p><a href={`https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=16/${latitude}/${longitude}`} target="_blank" rel="noreferrer">Abrir en OpenStreetMap ↗</a> · © OpenStreetMap contributors</p></div>}
+				{!hasLocation && <p className="profile-location-missing">No se muestran coordenadas porque el perfil no contiene una ubicación válida.</p>}
 			</section>
 		</section>
 	)

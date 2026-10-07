@@ -10,6 +10,7 @@ import {
 	subirFotografiaTienda,
 } from '../../services/tiendaService.js'
 import './TiendaPages.css'
+import './StoreLocation.css'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 const emptyForm = { nombre: '', descripcion: '', telefono: '', direccion: '', latitud: '', longitud: '', horario: '' }
@@ -27,6 +28,7 @@ function EditarTienda() {
 	const [removingPhoto, setRemovingPhoto] = useState('')
 	const [error, setError] = useState('')
 	const [success, setSuccess] = useState('')
+	const [locationMessage, setLocationMessage] = useState('')
 
 	useEffect(() => {
 		let active = true
@@ -54,6 +56,20 @@ function EditarTienda() {
 	function updateField(event) {
 		setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
 	}
+
+	function useCurrentLocation() {
+		setLocationMessage('')
+		if (!navigator.geolocation) { setLocationMessage('Este navegador no ofrece geolocalización. Ingresa las coordenadas manualmente.'); return }
+		setLocationMessage('Solicitando ubicación…')
+		navigator.geolocation.getCurrentPosition(
+			({ coords }) => { setForm((current) => ({ ...current, latitud: coords.latitude.toFixed(7), longitud: coords.longitude.toFixed(7) })); setLocationMessage('Coordenadas recibidas. Revisa el marcador antes de guardar.') },
+			(error) => setLocationMessage(error.code === error.PERMISSION_DENIED ? 'Permiso denegado. Puedes ingresar las coordenadas manualmente.' : 'No se pudo obtener la ubicación. Puedes ingresarla manualmente.'),
+			{ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
+		)
+	}
+
+	const coordinatesReady = form.latitud !== '' && form.longitud !== '' && Number.isFinite(Number(form.latitud)) && Number.isFinite(Number(form.longitud)) && Number(form.latitud) >= -90 && Number(form.latitud) <= 90 && Number(form.longitud) >= -180 && Number(form.longitud) <= 180
+	const mapUrl = coordinatesReady ? `https://www.openstreetmap.org/export/embed.html?bbox=${Number(form.longitud) - 0.015}%2C${Number(form.latitud) - 0.015}%2C${Number(form.longitud) + 0.015}%2C${Number(form.latitud) + 0.015}&layer=mapnik&marker=${form.latitud}%2C${form.longitud}` : ''
 
 	function handleFileChange(event) {
 		setError('')
@@ -133,6 +149,7 @@ function EditarTienda() {
 						<label className="store-field-full">Dirección<input name="direccion" value={form.direccion} onChange={updateField} /></label>
 						<label>Latitud<input name="latitud" type="number" step="any" value={form.latitud} onChange={updateField} /></label>
 						<label>Longitud<input name="longitud" type="number" step="any" value={form.longitud} onChange={updateField} /></label>
+						<div className="store-field-full"><button type="button" className="store-button" onClick={useCurrentLocation}>Usar mi ubicación actual</button><p role="status">{locationMessage || 'La ubicación es opcional. También puedes ajustar las coordenadas manualmente.'}</p>{coordinatesReady ? <div className="store-location-map"><iframe title="Vista previa de la ubicación de la tienda en OpenStreetMap" src={mapUrl} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><small>© OpenStreetMap contributors · <a href={`https://www.openstreetmap.org/?mlat=${form.latitud}&mlon=${form.longitud}#map=16/${form.latitud}/${form.longitud}`} target="_blank" rel="noreferrer">Abrir mapa</a></small></div> : <p role="status">Ingresa una latitud y longitud válidas para previsualizar el marcador.</p>}</div>
 						<label className="store-field-full">Horario<input name="horario" value={form.horario} onChange={updateField} /></label>
 					</div>
 					<div className="store-photo-section">

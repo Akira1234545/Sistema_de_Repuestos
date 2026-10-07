@@ -18,6 +18,7 @@
 .store-request-meta { display: grid; gap: 9px; padding: 15px 0; border-top: 1px solid #d7d8ce; border-bottom: 1px solid #d7d8ce; color: #63706a; font-size: 11px; }
 .store-request-meta strong { color: #182521; font-weight: 800; }
 .store-request-footer { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 18px; }
+.store-request-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .store-request-date { color: #63706a; font-size: 10px; }
 .store-request-link { color: #1f766d; font-size: 11px; font-weight: 800; text-decoration: none; }
 .store-request-empty, .store-request-message { padding: 45px 24px; border: 1px solid #d7d8ce; color: #63706a; text-align: center; font-size: 13px; }
