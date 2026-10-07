@@ -29,6 +29,7 @@ import CategoriasTienda from './pages/tienda/CategoriasTienda.jsx'
 import GestionPromocion from './pages/tienda/GestionPromocion.jsx'
 import AdminAccess from './pages/AdminAccess.jsx'
 import TiendasPublicas from './pages/TiendasPublicas.jsx'
+import FormDraftPersistence from './components/FormDraftPersistence.jsx'
 
 function RegisterRoute() {
   const [searchParams] = useSearchParams()
@@ -39,6 +40,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthContext>
+        <FormDraftPersistence />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tiendas" element={<TiendasPublicas />} />
