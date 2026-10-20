@@ -1,0 +1,39 @@
+.admin-promotion-filters { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)); gap: .8rem; padding: 1rem; margin: 1.25rem 0; border: 1px solid #49443a; border-radius: 14px; background: #202123; }
+.admin-promotion-filters label { display: grid; gap: .4rem; font-weight: 650; }
+.admin-promotion-filters input, .admin-promotion-filters select { box-sizing: border-box; width: 100%; min-width: 0; padding: .7rem .8rem; border: 1px solid #625b4d; border-radius: 8px; font: inherit; }
+.admin-promotion-search { grid-column: span 2; }
+.admin-promotion-list { display: grid; gap: .75rem; }
+.admin-promotion-card { border: 1px solid #49443a; border-radius: 14px; background: #202123; }
+.admin-promotion-card[open] { border-color: #7c673e; }
+.admin-promotion-card > summary { padding: 1rem; cursor: pointer; list-style-position: inside; color: #c2b9a9; }
+.admin-promotion-card > summary:hover { background: #24211a; border-radius: 14px; }
+.admin-promotion-summary { display: inline-flex; width: calc(100% - 1.5rem); align-items: flex-start; justify-content: space-between; gap: 1rem; vertical-align: top; }
+.admin-promotion-summary h3 { margin: .45rem 0 .3rem; color: #f4efe4; }
+.admin-promotion-summary p { margin: 0; color: #c2b9a9; font-size: .88rem; }
+.admin-promotion-price { display: grid; flex: 0 0 auto; gap: .2rem; text-align: right; }
+.admin-promotion-price del { color: #a59c8c; font-size: .85rem; }
+.admin-promotion-price strong { color: #f4efe4; font-size: 1.1rem; }
+.admin-promotion-price span { color: #e3b64e; font-size: .8rem; font-weight: 750; }
+.admin-user-state.admin-promotion-state-activa { border-color: #43684b; color: #b8e0bd; background: #1d3023; }
+.admin-user-state.admin-promotion-state-pausada { border-color: #7f6532; color: #f2d58e; background: #332a1b; }
+.admin-user-state.admin-promotion-state-finalizada { border-color: #55524b; color: #cfc8bb; background: #2a2a2a; }
+.admin-promotion-dates { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin: .75rem 0 0 1.5rem; color: #c2b9a9; font-size: .82rem; }
+.admin-promotion-detail { padding: 0 1rem 1rem; }
+.admin-promotion-detail dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin: 0; }
+.admin-promotion-detail dl div { padding: .7rem; border-radius: 9px; background: #292a2b; }
+.admin-promotion-detail dt { color: #a59c8c; font-size: .78rem; font-weight: 650; }
+.admin-promotion-detail dd { margin: .3rem 0 0; color: #e7e0d2; font-size: .9rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.admin-promotion-detail .admin-promotion-description { grid-column: 1 / -1; }
+.admin-promotion-photos { margin-top: .8rem; color: #e7e0d2; font-size: .85rem; }
+.admin-promotion-photos > div { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .4rem; }
+.admin-promotion-photos a { color: #e3b64e; font-weight: 700; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+	.admin-promotion-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.admin-promotion-search { grid-column: auto; }
+}
+@media (max-width: 600px) {
+	.admin-promotion-filters, .admin-promotion-detail dl { grid-template-columns: 1fr; }
+	.admin-promotion-summary { flex-direction: column; }
+	.admin-promotion-price { text-align: left; }
+	.admin-promotion-detail .admin-promotion-description { grid-column: auto; }
+}

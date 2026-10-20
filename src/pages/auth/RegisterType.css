@@ -1,0 +1,18 @@
+.register-type-page, .auth-page { min-height: 100vh; color: #182521; background: #f6f4ef; }
+.register-type-header { width: min(1060px, calc(100% - 50px)); min-height: 86px; margin: auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d7d8ce; }
+.back-link { color: #63706a; font-size: 12px; font-weight: 700; text-decoration: none; }
+.register-type-content { width: min(900px, calc(100% - 50px)); margin: 0 auto; padding: 92px 0 120px; }
+.register-type-content h1 { max-width: 630px; margin: 0; color: #182521; font: 400 clamp(45px, 7vw, 75px)/.98 Georgia, serif; letter-spacing: -3px; }
+.register-type-lead { color: #63706a; margin: 24px 0 50px; font-size: 16px; }
+.account-options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.account-card { min-height: 350px; padding: 30px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #d7d8ce; }
+.client-card { background: #ebe7db; }
+.store-card { color: #fff; background: #203a3a; border-color: #203a3a; }
+.account-icon { font-size: 31px; margin-bottom: 45px; }
+.card-kicker { color: #e86649; text-transform: uppercase; letter-spacing: 1.5px; font-size: 10px; font-weight: 800; }
+.account-card h2 { margin: 9px 0 8px; color: inherit; font: 400 35px Georgia, serif; }
+.account-card > p:not(.card-kicker) { max-width: 230px; color: #63706a; font-size: 14px; line-height: 1.5; }
+.store-card > p:not(.card-kicker) { color: #b9c8c2; }
+.account-card .button { margin-top: auto; width: 100%; box-sizing: border-box; }
+.button-dark { color: #fff; background: #e86649; }
+@media (max-width: 680px) { .register-type-content { padding-top: 65px; } .account-options { grid-template-columns: 1fr; } .account-card { min-height: 300px; } .account-icon { margin-bottom: 30px; } }

@@ -1,0 +1,71 @@
+.received-reviews-page .store-page-heading { align-items: center; padding-bottom: 32px; border-bottom: 1px solid #d7d8ce; }
+.received-reviews-page .store-page-heading h1 { font-size: clamp(42px, 5vw, 62px); }
+.received-reviews-page .store-lead { max-width: 570px; }
+.received-reviews-back { display: inline-flex; align-items: center; gap: 9px; padding: 12px 16px; border: 1px solid #d7d8ce; color: #182521; background: transparent; font-size: 12px; font-weight: 800; text-decoration: none; white-space: nowrap; transition: border-color .2s, color .2s, background .2s; }
+.received-reviews-back:hover { border-color: #1f766d; color: #1f766d; background: #e5eee8; }
+.received-reviews-back span { color: #1f766d; font-size: 18px; line-height: 1; }
+.received-reviews-content { margin-top: 26px; }
+.received-reviews-store { display: flex; align-items: center; gap: 13px; margin-bottom: 22px; }
+.received-reviews-store-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50% 50% 50% 5px; color: #fff; background: #1f766d; font: 22px Georgia, serif; }
+.received-reviews-store > div:last-child { display: grid; gap: 4px; }
+.received-reviews-store > div:last-child span { color: #63706a; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; }
+.received-reviews-store > div:last-child strong { color: #182521; font: 21px Georgia, serif; }
+.received-reviews-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.received-reviews-stat { min-height: 146px; box-sizing: border-box; display: flex; align-items: flex-start; gap: 17px; padding: 25px; border: 1px solid #d7d8ce; background: #ebe7db; }
+.received-reviews-stat-rating { color: #fff; border-color: #203a3a; background: #203a3a; }
+.received-reviews-stat-icon { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border-radius: 50%; color: #a56b00; background: #f7e8bd; font-size: 22px; }
+.received-reviews-stat-rating .received-reviews-stat-icon { color: #203a3a; background: #d8e7dd; }
+.received-reviews-count-icon { color: #1f766d; background: #dceae2; }
+.received-reviews-stat > div { display: grid; gap: 5px; }
+.received-reviews-stat small { color: #63706a; font-size: 9px; font-weight: 800; letter-spacing: 1.2px; }
+.received-reviews-stat-rating small { color: #b9c8c2; }
+.received-reviews-stat strong { color: #182521; font: 400 37px/.98 Georgia, serif; }
+.received-reviews-stat-rating strong { color: #fff; }
+.received-reviews-out-of { color: #63706a; font: 15px var(--sans); }
+.received-reviews-stat-rating .received-reviews-out-of { color: #b9c8c2; }
+.received-reviews-stat-note { color: #63706a; font-size: 11px; line-height: 1.4; }
+.received-reviews-stat-rating .received-reviews-stat-note { color: #b9c8c2; }
+.received-reviews-section { margin-top: 42px; }
+.received-reviews-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding-bottom: 15px; border-bottom: 1px solid #d7d8ce; }
+.received-reviews-section-heading .store-eyebrow { margin-bottom: 7px; }
+.received-reviews-section-heading h2 { margin: 0; color: #182521; font: 400 31px/1.1 Georgia, serif; }
+.received-reviews-section-heading > span { padding: 7px 10px; color: #1f766d; background: #dceae2; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.received-reviews-list { display: grid; gap: 12px; margin-top: 17px; }
+.received-review-card { display: flex; gap: 16px; padding: 21px 23px; border: 1px solid #d7d8ce; background: #f6f4ef; transition: border-color .2s, transform .2s; }
+.received-review-card:hover { transform: translateY(-2px); border-color: #b8c6bc; }
+.received-review-avatar { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 50%; color: #a56b00; background: #f7e8bd; font-size: 17px; }
+.received-review-body { min-width: 0; flex: 1; }
+.received-review-topline { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.received-review-author { color: #182521; font-size: 14px; font-weight: 800; }
+.received-review-topline time { color: #63706a; font-size: 11px; }
+.received-review-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.received-review-heading > div { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.received-review-stars { color: #a56b00; font-size: 19px; letter-spacing: .08em; white-space: nowrap; }
+.received-review-score { margin: 0; color: #63706a; font-size: 11px; font-weight: 800; }
+.received-review-heading { margin-top: 5px; }
+.received-review-comment { margin: 12px 0 0; color: #182521; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.received-review-no-comment { margin: 12px 0 0; color: #63706a; font-size: 13px; font-style: italic; }
+.received-reviews-empty { margin-top: 25px; padding: 48px 25px; border: 1px solid #d7d8ce; background: #ebe7db; text-align: center; }
+.received-reviews-empty-icon { width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 15px; border-radius: 50%; color: #a56b00; background: #f7e8bd; font-size: 30px; }
+.received-reviews-empty h2 { margin: 0; color: #182521; font: 400 28px Georgia, serif; }
+.received-reviews-empty p { max-width: 420px; margin: 10px auto 0; color: #63706a; font-size: 13px; line-height: 1.6; }
+.received-reviews-page .store-empty .store-button { margin-top: 12px; }
+.received-reviews-page .store-message, .received-reviews-page .store-error { margin-top: 26px; background: #ebe7db; }
+.received-reviews-page .store-error { background: #f9e8e2; }
+@media (max-width: 760px) {
+	.received-reviews-page .store-page-heading { padding-bottom: 26px; }
+	.received-reviews-page .store-page-heading .received-reviews-back { margin-top: 22px; }
+	.received-reviews-summary { gap: 10px; }
+	.received-reviews-stat { min-height: 132px; gap: 12px; padding: 18px 15px; }
+	.received-reviews-stat-icon { width: 35px; height: 35px; flex-basis: 35px; font-size: 18px; }
+}
+@media (max-width: 560px) {
+	.received-reviews-summary { grid-template-columns: 1fr; }
+	.received-reviews-stat { min-height: 112px; }
+	.received-reviews-section-heading h2 { font-size: 26px; }
+	.received-review-card { gap: 11px; padding: 16px 14px; }
+	.received-review-avatar { width: 34px; height: 34px; flex-basis: 34px; }
+	.received-review-heading { align-items: flex-start; flex-direction: column; }
+	.received-review-topline { align-items: flex-start; flex-direction: column; gap: 4px; }
+	.received-reviews-empty { padding: 36px 18px; }
+}

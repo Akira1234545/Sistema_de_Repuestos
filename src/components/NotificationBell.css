@@ -1,0 +1,50 @@
+/* Notificaciones: superficies grafito, líneas cálidas y acentos dorados de theme.css. */
+.notification-bell { position: relative; display: flex; align-items: center; }
+.notification-trigger { min-width: 38px; min-height: 38px; display: inline-flex; align-items: center; justify-content: center; position: relative; border: 1px solid transparent; border-radius: 9px; background: transparent; cursor: pointer; font-size: 25px !important; line-height: 1; transition: color .16s ease, background .16s ease, border-color .16s ease; }
+.notification-bell .notification-trigger:hover, .notification-bell .notification-trigger[aria-expanded="true"] { border-color: #5d4925; color: #f1cd78; background: #24211a; }
+.notification-trigger:focus-visible { outline: 3px solid #d8a93f; outline-offset: 2px; }
+.notification-count { min-width: 18px; height: 18px; box-sizing: border-box; position: absolute; top: -2px; right: -4px; display: grid; place-items: center; padding: 0 4px; border: 2px solid #090a0b; border-radius: 999px; color: #fff4ed; background: #b54a3c; font: 800 10px/1 Inter, "Segoe UI", system-ui, sans-serif; }
+
+/* Panel desplegable */
+.notification-popover { width: min(410px, calc(100vw - 24px)); max-height: min(620px, calc(100vh - 100px)); box-sizing: border-box; position: absolute; top: calc(100% + 12px); right: -10px; z-index: 30; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #49443a; border-radius: 14px; color: #f4efe4; background: #1d1e20; box-shadow: 0 20px 48px rgb(0 0 0 / 45%); }
+.notification-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid #49443a; border-top: 3px solid #d8a93f; background: #202123; }
+.notification-popover-header p { margin: 0 0 4px; color: #e3b64e; font-size: 11px; font-weight: 850; letter-spacing: 1.35px; }
+.notification-popover-header h2 { margin: 0; color: #f4efe4; font-size: 20px; font-weight: 750; letter-spacing: -.03em; line-height: 1.15; }
+.notification-popover-header > span { padding: 5px 10px; border: 1px solid #7f6532; border-radius: 999px; color: #f2d58e; background: #332a1b; font-size: 11px; font-weight: 750; white-space: nowrap; }
+
+/* Lista */
+.notification-list { flex: 1 1 auto; max-height: min(480px, calc(100vh - 210px)); overflow: auto; margin: 0; padding: 0; list-style: none; scrollbar-color: #5b5038 #1d1e20; }
+.notification-item { display: flex; gap: 12px; padding: 14px 18px; border-bottom: 1px solid #34322d; background: #1d1e20; }
+.notification-item:last-child { border-bottom: 0; }
+.notification-item-unread { background: #24211a; box-shadow: inset 3px 0 #d8a93f; }
+.notification-item-mark { width: 10px; flex: 0 0 10px; padding-top: 2px; color: #e3b64e; font-size: 22px; line-height: 1; }
+.notification-item:not(.notification-item-unread) .notification-item-mark { color: #625b4d; }
+.notification-item-content { min-width: 0; flex: 1; }
+.notification-item-meta { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 6px; }
+.notification-item-meta span { color: #e3b64e; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+.notification-item-meta time { color: #a59c8c; font-size: 11px; }
+.notification-item-content > strong { display: block; color: #f4efe4; font-size: 14px; font-weight: 700; }
+.notification-item:not(.notification-item-unread) .notification-item-content > strong { color: #e7e0d2; font-weight: 650; }
+.notification-item-content > p { margin: 4px 0 0; color: #c2b9a9; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+
+/* Acciones de cada aviso */
+.notification-item-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
+.notification-item-actions a, .notification-item-actions button, .notification-item-actions > span { padding: 0; border: 0; color: #e3b64e; background: transparent; font: inherit; font-size: 12px; font-weight: 750; text-decoration: none; cursor: pointer; }
+.notification-item-actions a:hover, .notification-item-actions button:hover { color: #f1cd78; text-decoration: underline; }
+/* theme.css colorea con !important todos los enlaces del header, donde vive este panel. */
+.notification-bell .notification-popover .notification-item-actions a { border: 0 !important; color: #e3b64e !important; background: transparent !important; }
+.notification-bell .notification-popover .notification-item-actions a:hover { color: #f1cd78 !important; }
+.notification-item-actions button { padding: 4px 10px; border: 1px solid #7c673e; border-radius: 999px; color: #f2e8d2; background: #292725; }
+.notification-item-actions button:hover { border-color: #d8a93f; color: #f5d786; background: #393124; text-decoration: none; }
+.notification-item-actions button:disabled { opacity: .6; cursor: wait; }
+.notification-item-actions > span { color: #a59c8c; font-weight: 650; cursor: default; }
+
+/* Estados */
+.notification-empty, .notification-error { margin: 0; padding: 26px 20px; color: #c2b9a9; font-size: 13px; line-height: 1.5; text-align: center; }
+.notification-error { margin: 14px 16px 0; padding: 12px 14px; border: 1px solid #76433b; border-radius: 10px; color: #ffc1b6; background: #321f1e; text-align: left; }
+.notification-retry { align-self: flex-start; margin: 12px 16px 16px; padding: 8px 14px; border: 1px solid #7c673e; border-radius: 9px; color: #f2e8d2; background: #292725; cursor: pointer; font: inherit; font-size: 12px; font-weight: 750; }
+.notification-retry:hover { color: #f5d786; background: #393124; }
+
+@media (max-width: 720px) {
+	.notification-popover { width: auto; position: fixed; top: 68px; right: 12px; left: 12px; }
+}

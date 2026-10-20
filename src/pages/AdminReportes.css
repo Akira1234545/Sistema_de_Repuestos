@@ -1,0 +1,73 @@
+/* Reportes de actividad. El panel y el encabezado compartidos están en AdminAccess.css. */
+
+/* Filtro de periodo */
+.admin-report-period { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .8rem 1rem; padding: 1rem; margin: 1.25rem 0; border: 1px solid #49443a; border-radius: 14px; background: #202123; }
+.admin-report-period label { display: grid; flex: 0 1 220px; gap: .4rem; min-width: 0; font-size: 13px; font-weight: 650; }
+.admin-report-period input { box-sizing: border-box; width: 100%; min-height: 44px; padding: .65rem .8rem; font: inherit; font-size: 15px; }
+.admin-report-export { margin-left: auto; }
+
+/* Mensajes y estados */
+.admin-reports .admin-alert, .admin-reports .admin-notice { margin: 0 0 1rem; }
+.admin-report-state { margin: 0; padding: 1.1rem 1.25rem; border: 1px solid #49443a; border-radius: 14px; color: #c2b9a9; background: #202123; }
+.admin-reports .admin-empty { margin: 0; color: #c2b9a9 !important; }
+.admin-report-meta { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin: 0; color: #c2b9a9; font-size: 13px; }
+.admin-report-meta b { color: #f4efe4; font-weight: 700; }
+
+/* Secciones */
+.admin-report-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #49443a; }
+.admin-report-section > h3 { margin: 0; font-size: 1.25rem; }
+.admin-report-note { max-width: 760px; margin: .35rem 0 1rem; color: #c2b9a9; font-size: 14px; line-height: 1.6; }
+.admin-report-subtitle { margin: 1.5rem 0 .75rem; font-size: 1rem; }
+
+/* Tarjetas de indicadores */
+.admin-report-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+.admin-report-cards-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-report-card { display: flex; flex-direction: column; gap: .3rem; min-width: 0; padding: 1rem 1.1rem; border: 1px solid #49443a; border-top: 3px solid #d8a93f; border-radius: 14px; background: #202123; }
+.admin-report-card-label { color: #c2b9a9; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.admin-report-card-value { color: #f4efe4; font-size: 2rem; font-weight: 780; letter-spacing: -.035em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.admin-report-card small { color: #a59c8c; }
+.admin-report-card-footer { display: grid; gap: .2rem; margin-top: auto; padding-top: .65rem; border-top: 1px solid #34322d; }
+.admin-report-card-footer small { color: #c2b9a9; }
+.admin-report-card-footer b { color: #e3b64e; font-variant-numeric: tabular-nums; }
+
+/* Distribución por estado */
+.admin-report-distributions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+.admin-report-distribution { min-width: 0; padding: 1rem; border: 1px solid #49443a; border-radius: 14px; background: #202123; }
+.admin-report-distribution h4 { margin: 0 0 .75rem; font-size: 15px; letter-spacing: -.01em; }
+.admin-report-distribution dl { display: grid; gap: .35rem; margin: 0; }
+.admin-report-distribution dl div { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; padding: .5rem .65rem; border-radius: 9px; background: #292a2b; }
+.admin-report-distribution dt { min-width: 0; color: #c2b9a9; font-size: 14px; overflow-wrap: anywhere; }
+.admin-report-distribution dd { margin: 0; color: #f4efe4; font-weight: 750; font-variant-numeric: tabular-nums; }
+
+/* Tablas */
+.admin-report-table-wrap { overflow-x: auto; border: 1px solid #49443a; border-radius: 14px; background: #202123; }
+.admin-report-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-report-table th, .admin-report-table td { padding: .75rem 1rem; border-bottom: 1px solid #34322d; text-align: left; white-space: nowrap; }
+.admin-report-table thead th { color: #c2b9a9; background: #292a2b; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.admin-report-table tbody th { min-width: 12rem; color: #f4efe4; font-weight: 650; white-space: normal; }
+.admin-report-table td { color: #e7e0d2; }
+.admin-report-table .is-numeric { text-align: right; font-variant-numeric: tabular-nums; }
+.admin-report-table tbody tr:hover { background: #24211a; }
+.admin-report-table tbody tr:last-child th, .admin-report-table tbody tr:last-child td { border-bottom: 0; }
+.admin-report-badge { display: inline-block; padding: .2rem .6rem; border: 1px solid #70413b; border-radius: 999px; color: #f0b0a5; background: #382321; font-size: 12px; font-weight: 700; }
+.admin-report-badge.is-active { border-color: #43684b; color: #b8e0bd; background: #1d3023; }
+
+@media (max-width: 900px) {
+	.admin-report-cards, .admin-report-cards-4, .admin-report-distributions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+	.admin-report-period { align-items: stretch; }
+	.admin-report-period label { flex: 1 1 100%; }
+	.admin-report-period .button { flex: 1 1 auto; }
+	.admin-report-export { margin-left: 0; }
+	.admin-report-distributions { grid-template-columns: 1fr; }
+	.admin-report-card { padding: .9rem; }
+	.admin-report-card-value { font-size: 1.6rem; }
+	.admin-report-table th, .admin-report-table td { padding: .65rem .75rem; }
+	.admin-report-table tbody th { min-width: 9rem; }
+}
+
+@media (max-width: 420px) {
+	.admin-report-cards, .admin-report-cards-4 { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,28 @@
+.proposal-comparison { max-width: 1200px; }
+.proposal-comparison .request-error { margin: 15px 0; }
+.proposal-comparison-grid { gap: 22px; margin-top: 30px; }
+.proposal-card { padding: 26px; border-radius: 14px; }
+.proposal-card-heading { align-items: center; }
+.proposal-card-heading h2 { font-size: 22px; }
+.proposal-status { padding: 7px 11px; font-size: 12px; font-weight: 750; }
+.proposal-price { margin: 22px 0; font-size: 34px; font-weight: 800; letter-spacing: -.03em; }
+.proposal-data { gap: 0; }
+.proposal-data div { grid-template-columns: minmax(110px, .7fr) minmax(0, 1.3fr); gap: 14px; padding: 12px 0; border-bottom-color: #49443a; }
+.proposal-data dt { color: #d8cdb8 !important; font-size: 13px; font-weight: 700; }
+.proposal-data dd { color: #fff8eb !important; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.selected-shop-contact { margin-top: 22px; padding: 20px; border: 1px solid #625438; border-left: 4px solid #d8a93f; border-radius: 12px; }
+.selected-shop-contact h3 { margin: 0 0 16px; color: #fff8eb; font-size: 17px; }
+.selected-shop-phone { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 14px; }
+.selected-shop-phone strong { color: #d8cdb8; font-size: 13px; }
+.selected-shop-phone a { display: inline-flex; align-items: center; min-height: 42px; padding: 0 15px; border: 1px solid #d8a93f; border-radius: 8px; color: #17130b !important; background: #d8a93f; font-size: 18px; font-weight: 850; letter-spacing: .02em; text-decoration: none; }
+.selected-shop-phone a:hover { background: #edc462; }
+.selected-shop-phone a.whatsapp-link { border-color: #228b51; color: #fff !important; background: #168a4a; font-size: 14px; letter-spacing: 0; }
+.selected-shop-phone a.whatsapp-link:hover { background: #11733d; }
+.selected-shop-phone span { color: #c2b9a9; }
+.selected-shop-contact > p:not(.selected-shop-phone) { color: #ded4c2 !important; font-size: 14px; }
+.selected-shop-contact > p:not(.selected-shop-phone) strong { color: #fff8eb; }
+@media (max-width: 760px) {
+	.proposal-comparison-grid { grid-template-columns: 1fr; }
+	.proposal-card { padding: 20px; }
+	.proposal-data div { grid-template-columns: 1fr; gap: 4px; }
+}

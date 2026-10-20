@@ -1,0 +1,21 @@
+.store-review-form { margin-top: 18px; padding-top: 17px; border-top: 1px solid #625438; }
+.store-review-form h3 { margin: 0 0 12px; color: #fff8eb; font-size: 16px; }
+.store-review-form p { color: #ded4c2; line-height: 1.5; }
+.store-review-rating { margin: 0 0 14px; padding: 0; border: 0; }
+.store-review-rating legend, .store-review-comment-field { color: #fff8eb; font-size: 14px; font-weight: 700; }
+.store-review-rating div { display: flex; gap: 6px; margin-top: 7px; }
+.store-review-rating button { padding: 1px 4px; border: 0; color: #8d8577; background: transparent; cursor: pointer; font-size: 30px; line-height: 1.2; }
+.store-review-rating button.selected { color: #f2bd48; }
+.store-review-rating button:focus-visible, .store-review-submit:focus-visible, .store-review-retry:focus-visible { outline: 3px solid #f2bd48; outline-offset: 2px; }
+.store-review-comment-field { display: grid; gap: 7px; }
+.store-review-comment-field textarea { width: 100%; min-height: 78px; padding: 10px; border: 1px solid #786d5a; border-radius: 8px; color: #fff8eb; background: #201d17; font: inherit; resize: vertical; }
+.store-review-submit, .store-review-retry { min-height: 40px; margin-top: 12px; padding: 0 15px; border: 1px solid #d8a93f; border-radius: 8px; color: #17130b; background: #d8a93f; font-weight: 750; cursor: pointer; }
+.store-review-submit:disabled { cursor: not-allowed; opacity: .55; }
+.store-review-retry { color: #fff8eb; background: transparent; }
+.store-review-error { color: #ffd0c8 !important; }
+.store-review-success { color: #a8e3b7 !important; }
+.store-review-saved { padding: 12px; border-radius: 8px; background: #29251c; }
+.store-review-saved > p:first-child { margin-top: 0; }
+.store-review-saved > p:last-child { margin-bottom: 0; }
+.store-review-comment { white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-stars { color: #f2bd48; letter-spacing: .08em; white-space: nowrap; }
