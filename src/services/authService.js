@@ -13,6 +13,12 @@ export async function obtenerPerfilAutenticado(userId) {
 	return data
 }
 
+export async function actualizarMiPerfil({ nombre, apellido, telefono }) {
+	const { data, error } = await supabase.rpc('update_my_profile', { new_nombre: nombre, new_apellido: apellido, new_telefono: telefono || null })
+	if (error) throw error
+	if (!data) throw new Error('Cuenta no disponible para actualizar.')
+}
+
 export async function registrarCuenta({ email, password, nombre, apellido, telefono, role }) {
 	if (!['cliente', 'tienda'].includes(role)) throw new Error('El registro público solo admite cuentas de cliente o tienda.')
 	return supabase.auth.signUp({ email, password, options: { data: { nombre, apellido, telefono, role } } })

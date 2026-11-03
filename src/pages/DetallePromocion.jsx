@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import FavoriteToggle from '../components/FavoriteToggle.jsx'
 import { obtenerPromocion } from '../services/promocionService.js'
+import { whatsappPhone } from '../lib/format.js'
 
 
 
@@ -26,5 +27,3 @@ function DetallePromocion() {
 	return <section className="promo-page"><article className="promo-detail"><p className="promo-eyebrow">{item.categoriaNombre} · {item.estado === 'activa' ? 'Activa' : item.estado}</p><h1>{item.titulo}</h1>{item.marca && <p className="promo-brand">Marca: {item.marca}</p>}<p className="promo-description">{item.descripcion || 'Sin descripción adicional.'}</p>{item.caracteristicas && <section><h2>Características</h2><p>{item.caracteristicas}</p></section>}<div className="promo-prices"><del>{new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(item.precio_anterior))}</del><strong>{new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(item.precio_oferta))}</strong><span>{Number(item.porcentaje_descuento || 0).toFixed(0)}% menos</span></div><p className="promo-dates">Desde {new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'medium' }).format(new Date(item.fecha_inicio))} hasta {new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'medium' }).format(new Date(item.fecha_fin))}</p>{valid && item.tienda && <section className="promo-store-contact"><h2>¿Te interesa esta oferta?</h2><p>Contacta directamente a <strong>{item.tienda.nombre}</strong>.</p>{shopWhatsAppPhone ? <a className="promo-whatsapp-button" href={`https://wa.me/${shopWhatsAppPhone}`} target="_blank" rel="noopener noreferrer">Contactar por WhatsApp</a> : <p>Esta tienda no tiene un teléfono de contacto registrado.</p>}</section>}{valid && <FavoriteToggle type="promocion" itemId={item.id} label="promoción" />}{!valid && <p className="promo-state">Esta promoción no está vigente actualmente.</p>}<nav className="promo-detail-navigation" aria-label="Navegación de promoción"><Link to="/promociones">← Volver a promociones</Link><Link to={role === 'tienda' ? '/tienda' : '/cliente'}>Volver al panel</Link></nav></article></section>
 }
 export default DetallePromocion
-
-import { whatsappPhone } from "../lib/format.js"

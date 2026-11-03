@@ -65,11 +65,11 @@ function ResenasRecibidas() {
 			<div className="received-reviews-summary" aria-label="Resumen de reseñas">
 				<div className="received-reviews-stat received-reviews-stat-rating">
 					<span className="received-reviews-stat-icon" aria-hidden="true">★</span>
-					<div><small>CALIFICACIÓN PROMEDIO</small><strong>{reviews.length ? average : '—'}<span className="received-reviews-out-of"> / 5</span></strong><span className="received-reviews-stat-note">{reviews.length ? 'Basada en las opiniones recibidas' : 'Aún sin calificaciones'}</span></div>
+					<div><small>CALIFICACIÓN PROMEDIO</small><strong>{Number(total) > 0 ? average : '—'}<span className="received-reviews-out-of"> / 5</span></strong><span className="received-reviews-stat-note">{Number(total) > 0 ? 'Basada en todas las opiniones recibidas' : 'Aún sin calificaciones'}</span></div>
 				</div>
 				<div className="received-reviews-stat">
 					<span className="received-reviews-stat-icon received-reviews-count-icon" aria-hidden="true">✎</span>
-					<div><small>TOTAL DE RESEÑAS</small><strong>{total}</strong><span className="received-reviews-stat-note">{reviews.length === 1 ? 'opinión de tus clientes' : 'opiniones de tus clientes'}</span></div>
+					<div><small>TOTAL DE RESEÑAS</small><strong>{total}</strong><span className="received-reviews-stat-note">{Number(total) === 1 ? 'opinión de tus clientes' : 'opiniones de tus clientes'}</span></div>
 				</div>
 			</div>
 			{reviews.length === 0

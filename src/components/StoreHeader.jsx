@@ -4,8 +4,8 @@ import NotificationBell from './NotificationBell.jsx'
 
 function StoreHeader() {
 	const navigate = useNavigate()
-	const { user, signOut } = useAuth()
-	const userLabel = user?.email || 'Tienda'
+	const { user, profile, signOut } = useAuth()
+	const userLabel = profile?.nombre || user?.email || 'Tienda'
 
 	async function handleSignOut() {
 		if (await signOut()) navigate('/login')
@@ -19,8 +19,8 @@ function StoreHeader() {
 			</form>
 			<div className="store-header-actions">
 				<NotificationBell key={user?.id || 'anonymous'} variant="store" />
-				<Link className="store-profile-link" to="/tienda/perfil">
-					<span className="store-profile-label">Mi tienda</span>
+				<Link className="store-profile-link" to="/cuenta" aria-label="Mi cuenta">
+					<span className="store-profile-label">{userLabel}</span>
 					<span className="store-avatar">{userLabel.charAt(0).toUpperCase()}</span>
 				</Link>
 				<button className="store-logout" type="button" onClick={handleSignOut}>

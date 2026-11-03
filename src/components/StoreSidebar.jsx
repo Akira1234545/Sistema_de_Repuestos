@@ -11,6 +11,7 @@ const storeNavigation = [
 	{ label: 'Mi tienda', icon: 'store', to: '/tienda/perfil' },
 	{ label: 'Categorías', icon: 'categories', to: '/tienda/categorias' },
 	{ label: 'Favoritos', icon: 'heart', to: '/tienda/favoritos' },
+	{ label: 'Mi cuenta', icon: 'user', to: '/cuenta' },
 ]
 
 function StoreSidebar() {

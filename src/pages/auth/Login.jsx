@@ -56,10 +56,9 @@ function Login() {
 			<div className="auth-intro"><Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link><p>Vuelve a poner tu vehículo en movimiento.</p></div>
 			<form className="auth-card" onSubmit={handleSubmit}>
 				<p className="eyebrow">Acceder</p><h1>Bienvenido de vuelta</h1><p className="auth-description">Ingresa para continuar con tu experiencia.</p>
-				<label>Correo electrónico<input name="email" type="email" required placeholder="tu@correo.com" /></label>
-				<label>Contraseña<input name="password" type="password" required placeholder="Tu contraseña" /></label>
-				<p><Link to="/forgot-password">Olvidé mi contraseña</Link></p>
-				<p><Link to="/resend-confirmation">Reenviar correo de confirmación</Link></p>
+				<label>Correo electrónico<input name="email" type="email" autoComplete="email" required placeholder="tu@correo.com" /></label>
+				<label>Contraseña<input name="password" type="password" autoComplete="current-password" required placeholder="Tu contraseña" /></label>
+				<p className="auth-links"><Link to="/forgot-password">Olvidé mi contraseña</Link><Link to="/resend-confirmation">Reenviar confirmación</Link></p>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				<button className="button button-primary" type="submit" disabled={loading}>{loading ? 'Ingresando...' : 'Iniciar sesión'}</button>
 				<p className="auth-switch">¿Aún no tienes cuenta? <Link to="/register">Regístrate</Link></p>

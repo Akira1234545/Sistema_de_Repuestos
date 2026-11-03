@@ -60,11 +60,11 @@ function Register() {
 				<h1>Únete a RepuestosPro</h1>
 				{!role && <p className="auth-error" role="alert">Selecciona primero el tipo de cuenta en <Link to="/register">Registro</Link>.</p>}
 				<p className="auth-description">Crea tu cuenta para {role === 'tienda' ? 'ofrecer tus repuestos y hacer crecer tu tienda.' : 'encontrar repuestos para tu vehículo.'}</p>
-				<label>Nombre<input name="name" type="text" maxLength="100" autoComplete="given-name" required placeholder="Tu nombre" /></label>
-				<label>Apellido<input name="apellido" type="text" maxLength="100" autoComplete="family-name" required placeholder="Tu apellido" /></label>
-				<label>Teléfono<input name="telefono" type="tel" placeholder="Tu teléfono" /></label>
-				<label>Correo electrónico<input name="email" type="email" required placeholder="tu@correo.com" /></label>
-				<label>Contraseña<input name="password" type="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 6 caracteres" /></label>
+				<div className="auth-grid"><label>Nombre<input name="name" type="text" maxLength="100" autoComplete="given-name" required placeholder="Tu nombre" /></label>
+				<label>Apellido<input name="apellido" type="text" maxLength="100" autoComplete="family-name" required placeholder="Tu apellido" /></label></div>
+				<label>Teléfono <small>Opcional</small><input name="telefono" type="tel" autoComplete="tel" maxLength="20" placeholder="+591 70000000" /></label>
+				<label>Correo electrónico<input name="email" type="email" autoComplete="email" required placeholder="tu@correo.com" /></label>
+				<label>Contraseña<input name="password" type="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 12 caracteres" /></label>
 				<label>Confirmar contraseña<input name="confirmPassword" type="password" required minLength="12" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				{message && <p className="auth-message" role="status">{message}</p>}

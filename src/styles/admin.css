@@ -148,3 +148,7 @@
 @media (max-width: 420px) {
   .admin-report-cards, .admin-report-cards-4 { grid-template-columns: 1fr; }
 }
+
+.admin-brand { margin-bottom: 18px; }
+.admin-overview { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px; }
+.admin-overview .admin-report-card-value { font-size: clamp(26px, 2.6vw, 32px); }

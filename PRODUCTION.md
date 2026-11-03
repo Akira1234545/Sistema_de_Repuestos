@@ -18,11 +18,26 @@ Estado: cambios implementados y comprobados localmente. No se han aplicado a un 
 - Fotografías con límites de tamaño, MIME y cantidad; cola de limpieza para archivos retirados o subidos sin asociación.
 - Mejoras puntuales de contraste, navegación, formularios y errores. La revisión visual completa sigue pendiente en un navegador real.
 
+## Endurecimiento de seguridad (20261112)
+
+Aplicada en el proyecto Supabase `sistema-repuestos` el 3 de noviembre de 2026.
+
+- Las vistas de proyección (`sprint2_tienda_contacto`, `sprint2_tiendas_publicas`, `resenas_publicas`, `resenas_resumen`, `sprint3_resenas_tienda`) quedan de solo lectura. `sprint2_tienda_contacto` era actualizable y se ejecutaba con los permisos del propietario, así que un usuario autenticado podía modificar o borrar datos de contacto de tiendas saltándose RLS.
+- Se eliminaron RPC heredadas que solo existían en el proyecto remoto y permitían cambiar roles o estados sin segundo factor: `admin_change_user_role`, `change_user_role`, `sprint1_admin_set_user_role`, `set_user_active`, `cambiar_estado_tienda`, `registrar_tienda` e `is_super_admin`.
+- Ejecución de funciones: ninguna es invocable por visitantes anónimos salvo `sprint3_get_system_status` y `public_store_reviews`. Las funciones de trigger no son invocables como RPC. `claim_storage_cleanup` es exclusiva de `service_role`. Las funciones nuevas nacen cerradas.
+- Políticas duplicadas o inalcanzables consolidadas y `auth.uid()` evaluado una vez por consulta en todas las políticas.
+- Índices para claves foráneas sin cubrir.
+- Nuevas RPC: `get_dashboard_stats` (resumen administrativo, exige `aal2`) y `update_my_profile` (página *Mi cuenta*).
+
+Pendiente en el panel de Supabase (no se puede hacer por SQL): activar **Leaked password protection** en Auth → Password security.
+
+Advertencias del asesor que se mantienen a propósito: las vistas `SECURITY DEFINER` son proyecciones públicas de columnas limitadas (ahora solo `SELECT`), y las RPC `SECURITY DEFINER` invocables por usuarios autenticados validan rol, propiedad y segundo factor internamente.
+
 ## Base nueva y actualización
 
 1. Crear un proyecto de staging y respaldar cualquier base existente antes de migrar.
 2. Solo en una base vacía, ejecutar `BD_Sistema_Repuestos.sql` una vez.
-3. Aplicar los archivos de `database/migrations` en orden lexicográfico. Incluye `20261006_sprint1a_helpers.sql`, antes de Sprint 2, y todas las correcciones desde `20261027_production_security.sql` hasta `20261111_data_rules.sql`.
+3. Aplicar los archivos de `database/migrations` en orden lexicográfico. Incluye `20261006_sprint1a_helpers.sql`, antes de Sprint 2, y todas las correcciones desde `20261027_production_security.sql` hasta `20261112_security_hardening.sql`.
 4. En una instalación existente, registrar qué migraciones ya se aplicaron y ejecutar únicamente las pendientes. No volver a ejecutar el SQL base ni todas las migraciones antiguas indiscriminadamente.
 5. Ejecutar `database/preflight_production.sql` como propietario para inspeccionar restricciones pendientes, RLS y categorías repetidas. No modifica datos. Revisar y corregir datos antiguos antes de validar restricciones `NOT VALID`; las migraciones conservan registros históricos y aplican los límites a nuevas escrituras.
 6. Ejecutar `database/preflight_rpc.sql` como propietario. Debe devolver `installed = true` para cada RPC; comparar `actual_arguments` con las firmas de las migraciones. La prueba local valida nombres y parámetros del código contra el SQL del repositorio, pero no confirma qué migraciones están instaladas en el proyecto remoto.

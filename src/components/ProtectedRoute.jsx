@@ -7,7 +7,7 @@ function ProtectedRoute({ allowedRoles }) {
 	const { user, role, loading, profileError, retryProfile, signOut } = useAuth()
 
   if (loading) {
-    return <p>Comprobando sesión...</p>
+    return <p className="route-loading" role="status">Comprobando sesión…</p>
   }
 
   if (!user) {

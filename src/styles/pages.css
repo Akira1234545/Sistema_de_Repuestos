@@ -342,3 +342,14 @@
 @media (max-width: 380px) {
   .quick-actions, .store-actions { grid-template-columns: 1fr; }
 }
+
+/* ---------- Account ---------- */
+.account-page { display: grid; gap: 20px; max-width: 920px; }
+.account-identity { display: flex; align-items: center; gap: 18px; }
+.account-avatar { width: 64px; height: 64px; font-size: 26px; }
+.account-page .store-form-card h2 { font-size: var(--fs-h3); }
+.store-hero h1 em { color: var(--amber); font-style: normal; }
+.store-hero-status { margin-top: 18px; }
+.store-dashboard .store-hero { margin-bottom: 20px; }
+.store-notice { display: flex !important; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.store-action-card .quick-icon { margin: 4px 0 0; }

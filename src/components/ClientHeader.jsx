@@ -19,7 +19,7 @@ function ClientHeader() {
 			</form>
 			<div className="client-header-actions">
 				<NotificationBell key={user?.id || 'anonymous'} variant="client" />
-				<Link className="client-profile-link" to="/cliente">
+				<Link className="client-profile-link" to="/cuenta" aria-label="Mi cuenta">
 					<span className="client-profile-label">{userLabel}</span>
 					<span className="client-avatar">{userLabel.charAt(0).toUpperCase()}</span>
 				</Link>

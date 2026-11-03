@@ -10,6 +10,7 @@ const paths = {
   star: 'm12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z',
   edit: 'm15 5 4 4M4 20l4-1L21 6l-4-4L4 15ZM13 20h8',
   proposal: 'M5 19 19 5M5 5h14v14',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0',
 }
 
 export default function Icon({ name, size = 20 }) {

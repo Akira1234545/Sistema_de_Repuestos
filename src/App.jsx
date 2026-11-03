@@ -36,6 +36,7 @@ const GestionPromocion = lazy(() => import('./pages/tienda/GestionPromocion.jsx'
 const AdminAccess = lazy(() => import('./pages/AdminAccess.jsx'))
 const TiendasPublicas = lazy(() => import('./pages/TiendasPublicas.jsx'))
 const AccountRecovery = lazy(() => import('./pages/auth/AccountRecovery.jsx'))
+const Cuenta = lazy(() => import('./pages/Cuenta.jsx'))
 
 function RouteIdentity() {
   const { pathname, hash } = useLocation()
@@ -82,6 +83,7 @@ function App() {
               <Route element={<RoleLayout />}>
                 <Route path="/promociones" element={<Promociones />} />
                 <Route path="/promociones/:id" element={<DetallePromocion />} />
+                <Route path="/cuenta" element={<Cuenta />} />
               </Route>
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['cliente']} />}>

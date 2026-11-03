@@ -22,6 +22,11 @@ export function boliviaDateTimeInput(value) {
   return `${data.year}-${data.month}-${data.day}T${data.hour}:${data.minute}`
 }
 
+const currency = new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' })
+export function money(value) {
+  return currency.format(Number(value))
+}
+
 export function vehicleYearLimit(now = new Date()) {
   return Number(boliviaDay(now).slice(0, 4)) + 1
 }

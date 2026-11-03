@@ -129,7 +129,7 @@ function Home() {
 					<div className="hero-copy">
 						<p className="eyebrow" data-hero-fade>RepuestosPro · Tu aliado automotor</p>
 						<h1 id="hero-title">
-							<span className="hero-line"><span className="hero-word">Tu</span> <span className="hero-word">vehículo,</span></span>
+							<span className="hero-line"><span className="hero-word">Tu</span> <span className="hero-word">vehículo,</span></span>{' '}
 							<span className="hero-line"><em><span className="hero-word">en</span> <span className="hero-word">buenas</span> <span className="hero-word">manos</span></em></span>
 						</h1>
 						<p className="hero-text" data-hero-fade>Encuentra repuestos confiables y tiendas especializadas para mantener tu vehículo listo para la ruta.</p>
@@ -200,7 +200,7 @@ function Home() {
 								<h2 id="process-title">Cómo funciona RepuestosPro</h2>
 							</div>
 							<ol className="process-steps">
-								{steps.map((step) => <li className="process-step" key={step.title} data-reveal>
+								{steps.map((step) => <li className="process-step" key={step.title}>
 									<span className="process-step-kicker">{step.kicker}</span>
 									<h3>{step.title}</h3>
 									<p>{step.detail}</p>

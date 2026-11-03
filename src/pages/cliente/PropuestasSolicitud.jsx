@@ -6,6 +6,7 @@ import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import ResenaTienda from '../../components/ResenaTienda.jsx'
 import { obtenerPropuestasDeSolicitud, seleccionarPropuesta } from '../../services/propuestaService.js'
 import { confirmarAtencion, obtenerSolicitudPorId } from '../../services/solicitudService.js'
+import { whatsappPhone } from '../../lib/format.js'
 
 const statusLabels = { enviada: 'Enviada', aceptada: 'Seleccionada', rechazada: 'No seleccionada', retirada: 'Retirada' }
 function money(value) { return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(value)) }
@@ -58,9 +59,9 @@ function PropuestasSolicitud() {
 	if (!request) return <section className="requests-page"><h1>Solicitud no disponible</h1><Link to="/cliente/solicitudes">Volver a mis solicitudes</Link></section>
 	const canSelect = ['publicada', 'recibiendo_propuestas'].includes(request.estado)
 	return <section className="requests-page proposal-comparison">
-		<div className="requests-heading"><div><p className="requests-eyebrow">Panel de cliente / Solicitud</p><h1>Propuestas recibidas</h1><p className="requests-lead">{request.titulo} · Estado: {request.estado.replaceAll('_', ' ')}</p></div><Link className="button requests-button" to="/cliente/solicitudes">Volver a solicitudes</Link></div>
+		<div className="requests-heading"><div><p className="requests-eyebrow">Panel de cliente / Solicitud</p><h1>Propuestas recibidas</h1><p className="requests-lead">{request.titulo} · Estado: {request.estado.replaceAll('_', ' ')}</p></div><Link className="button button-secondary" to="/cliente/solicitudes">← Volver a solicitudes</Link></div>
 		{error && <p className="request-error" role="alert">{error}</p>}
-		<p>Cada precio es el total para la cantidad solicitada: {request.cantidad}.</p>
+		<p className="request-history-notice">Cada precio es el total para la cantidad solicitada: <strong>{request.cantidad}</strong>.</p>
 		{request.estado === 'propuesta_seleccionada' && <button className="button" type="button" disabled={Boolean(selectingId)} onClick={complete}>{selectingId === 'attention' ? 'Confirmando…' : 'Confirmar atención recibida'}</button>}
 		{proposals.length === 0 ? <div className="request-empty"><h2>Aún no hay propuestas</h2><p>Las tiendas todavía no han respondido a esta solicitud.</p></div> : <div className="proposal-comparison-grid">{proposals.map((proposal) => {
 			const selected = request.propuesta_seleccionada_id === proposal.id && proposal.estado === 'aceptada'
@@ -81,5 +82,3 @@ function PropuestasSolicitud() {
 	</section>
 }
 export default PropuestasSolicitud
-
-import { whatsappPhone } from "../../lib/format.js"

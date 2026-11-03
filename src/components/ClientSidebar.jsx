@@ -9,6 +9,7 @@ const clientNavigation = [
 	{ label: 'Promociones', icon: 'promotion', to: '/promociones' },
 	{ label: 'Tiendas', icon: 'store', to: '/tiendas' },
 	{ label: 'Favoritos', icon: 'heart', to: '/cliente/favoritos' },
+	{ label: 'Mi cuenta', icon: 'user', to: '/cuenta' },
 ]
 
 function ClientSidebar() {

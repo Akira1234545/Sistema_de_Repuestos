@@ -20,6 +20,13 @@ export async function obtenerUsuariosAdministracion(page = 0, search = '') {
 	return { items: (data || []).slice(0, 25), hasMore: data?.length > 25 }
 }
 
+export async function obtenerResumenAdministracion() {
+	requireSupabase()
+	const { data, error } = await supabase.rpc('get_dashboard_stats')
+	throwRpcError(error)
+	return data?.[0] || null
+}
+
 export async function cambiarEstadoUsuario(userId, active) {
 	requireSupabase()
 	const { error } = await supabase.rpc('sprint3_admin_set_user_active', {

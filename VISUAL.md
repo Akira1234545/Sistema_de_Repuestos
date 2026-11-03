@@ -1,17 +1,31 @@
-# Actualización visual
+# Sistema visual
 
-La presentación compartida se define en `src/theme.css`: grafito, superficies azul grisáceo, dorado para acciones y colores semánticos para estados. Tipografía del sistema, iconos SVG locales, formularios de altura consistente, bordes suaves y sombras discretas.
+Dirección: taller de grafito de noche iluminado por una lámpara ámbar. Superficies oscuras escalonadas, un único acento ámbar para las acciones principales y colores semánticos (acero, verde, ámbar claro, coral) para estados.
 
-Los estilos anteriores de componentes y páginas están dentro de `@layer legacy`. Las reglas compartidas, fuera de esa capa, tienen prioridad aunque una página cargue su CSS después. Se retiraron las declaraciones `!important` y se reemplazaron colores heredados frecuentes por variables compartidas. Para añadir una pantalla, conservar sus reglas de distribución en la capa y reutilizar las variables de presentación.
+## Estructura de estilos
 
-Incluye portada renovada, accesos según sesión, navegación, paneles de cliente y tienda, administración, formularios, cuentas, promociones, reseñas, estados, tablas y paginación. La navegación móvil conserva todas sus entradas mediante desplazamiento horizontal. Se incorporaron enlaces para saltar al contenido, foco visible y respeto a movimiento reducido.
+Todos los estilos viven en `src/styles/` y se cargan una sola vez desde `src/main.jsx`, en este orden:
 
-## Validación realizada
+| Archivo | Contenido |
+| --- | --- |
+| `tokens.css` | Variables de color, tipografía, radios, sombras, movimiento y fuentes autoalojadas (Archivo e Inter). |
+| `base.css` | Reinicio, tipografía global, foco visible, enlace para saltar al contenido, movimiento reducido. |
+| `components.css` | Botones, campos, filtros, superficies, estados vacíos y de carga, alertas, insignias de estado, paginación, reseñas, mapas y fotos. |
+| `shell.css` | Encabezado público, marcos privados de cliente y tienda, barra inferior móvil, notificaciones y mantenimiento. |
+| `pages.css` | Paneles, listas, formularios, propuestas, promociones, tiendas públicas, perfil, categorías, reseñas, acceso y cuenta. |
+| `admin.css` | Consola administrativa y reportes. |
+| `home.css` | Portada. |
 
-- Compilación Vite y ESLint.
-- Capturas en Edge sin interfaz visible, escritorio de 1440 px y móvil emulado de 390 px.
-- Inspección de portada, acceso, selección de cuenta, panel de cliente, panel de tienda, administración y estado de error del formulario de vehículo.
-- Comprobación de anchura de documento en las rutas inspeccionadas: sin desbordamiento horizontal a 390 px.
-- Las vistas privadas se renderizaron con un contexto de demostración temporal y los componentes reales; no se accedió a cuentas ni se escribieron datos remotos. Los archivos temporales de demostración se retiraron del proyecto.
+Las páginas no importan CSS propio. Para una pantalla nueva, reutiliza las clases existentes y, si hace falta, añade reglas en el archivo de su grupo usando las variables de `tokens.css`.
 
-Falta la aceptación visual con datos reales: fotografías, nombres largos, listas pobladas, estados completos de formularios y todos los tamaños intermedios. La revisión local no es una certificación de accesibilidad ni sustituye pruebas en dispositivos reales.
+## Movimiento
+
+- **Portada** (`src/pages/Home.jsx`): GSAP con ScrollTrigger. Entrada del titular, parallax del hero y una sección fija en la que un freno (disco, pinza y pastillas, `src/components/home/BrakeAssembly.jsx`) se ensambla al ritmo de los tres pasos del proceso.
+- **Páginas privadas** (`src/components/PageOutlet.jsx`): entrada breve y escalonada de los bloques de cada página. La carga diferida de páginas ocurre dentro del marco, sin pantallas en blanco.
+- Con `prefers-reduced-motion` no hay fijado, parallax ni animaciones; todo el contenido queda visible y en su estado final. Por debajo de 900 px la sección del proceso se muestra apilada y con el freno ya ensamblado.
+
+## Validación
+
+Revisado en navegador a 1440 px y 375 px: portada completa (hero, búsqueda, categorías, sección fija en ambos sentidos de scroll, beneficios, tiendas, llamada final), tiendas públicas con datos reales, acceso y selección de cuenta. Sin errores de consola ni desbordamiento horizontal.
+
+Pendiente: recorrido visual con sesiones reales de cliente, tienda y administración (requiere cuentas de prueba).

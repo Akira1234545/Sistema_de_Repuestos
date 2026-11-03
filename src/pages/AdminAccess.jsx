@@ -9,6 +9,32 @@ import AdminCategories from './AdminCategories.jsx'
 import AdminRequests from './AdminRequests.jsx'
 import AdminPromociones from './AdminPromociones.jsx'
 import AdminReportes from './AdminReportes.jsx'
+import { obtenerResumenAdministracion } from '../services/adminService.js'
+
+const statLabels = [
+	['total_usuarios', 'Cuentas registradas'],
+	['total_clientes', 'Clientes'],
+	['tiendas_activas', 'Tiendas activas'],
+	['tiendas_pendientes', 'Tiendas por revisar'],
+	['solicitudes_activas', 'Solicitudes abiertas'],
+	['total_propuestas', 'Propuestas enviadas'],
+	['promociones_activas', 'Promociones vigentes'],
+]
+
+function AdminOverview() {
+	const [stats, setStats] = useState(null)
+	const [failed, setFailed] = useState(false)
+	useEffect(() => {
+		let active = true
+		obtenerResumenAdministracion().then((data) => { if (active) setStats(data) }).catch(() => { if (active) setFailed(true) })
+		return () => { active = false }
+	}, [])
+	if (failed) return null
+	return <section className="admin-report-cards admin-overview" aria-label="Resumen del sistema">{statLabels.map(([key, text]) => <article className="admin-report-card" key={key}>
+		<span className="admin-report-card-label">{text}</span>
+		<strong className="admin-report-card-value">{stats ? Number(stats[key] || 0).toLocaleString('es-BO') : '—'}</strong>
+	</article>)}</section>
+}
 
 const statuses = ['pendiente', 'aprobada', 'rechazada', 'suspendida']
 const columns = 'id, nombre, descripcion, telefono, direccion, latitud, longitud, horario, fotografias, activa, estado, motivo_estado, fecha_creacion, usuario_id'
@@ -72,7 +98,8 @@ function AdminAccess() {
 
 	return <main className="admin-page">
 		{profileError && <p className="admin-alert" role="alert">{profileError}</p>}
-		<header className="admin-heading"><div><p className="eyebrow">Sistema Repuestos / Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
+		<header className="admin-heading"><div><Link className="brand admin-brand" to="/"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link><p className="eyebrow">Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
+		<AdminOverview />
 		<nav className="admin-tabs" aria-label="Administración del sistema">
 			<button className={section === 'tiendas' ? 'active' : ''} type="button" onClick={() => setSection('tiendas')}>Cuentas de tiendas</button>
 			<button className={section === 'usuarios' ? 'active' : ''} type="button" onClick={() => setSection('usuarios')}>Usuarios</button>
@@ -97,7 +124,7 @@ function AdminAccess() {
 			<p>{store.descripcion || 'Sin descripción.'}</p><dl><div><dt>Teléfono</dt><dd>{store.telefono || 'No registrado'}</dd></div><div><dt>Dirección</dt><dd>{store.direccion || 'No registrada'}</dd></div><div><dt>Horario</dt><dd>{store.horario || 'No registrado'}</dd></div><div><dt>Ubicación</dt><dd>{store.latitud != null && store.longitud != null ? `${store.latitud}, ${store.longitud}` : 'No registrada'}</dd></div></dl>
 			{store.motivo_estado && <p className="admin-reason"><strong>Último motivo:</strong> {store.motivo_estado}</p>}
 			<label className="admin-reason-field">Motivo (obligatorio para rechazo o suspensión)<textarea value={reasons[store.id] || ''} onChange={(event) => setReasons((current) => ({ ...current, [store.id]: event.target.value }))} rows="2" maxLength="500" /></label>
-			<div className="admin-actions"><button className="button button-primary" type="button" onClick={() => review(store, 'aprobar')} disabled={Boolean(busyId)}>{busyId === store.id ? 'Guardando…' : 'Aprobar'}</button>{store.estado !== 'rechazada' && <button className="button button-secondary" type="button" onClick={() => review(store, 'rechazar')} disabled={Boolean(busyId)}>Rechazar</button>}{store.estado !== 'suspendida' && <button className="button button-danger" type="button" onClick={() => review(store, 'suspender')} disabled={Boolean(busyId)}>Suspender</button>}</div>
+			<div className="admin-actions">{store.estado !== 'aprobada' && <button className="button button-primary" type="button" onClick={() => review(store, 'aprobar')} disabled={Boolean(busyId)}>{busyId === store.id ? 'Guardando…' : store.estado === 'suspendida' ? 'Reactivar' : 'Aprobar'}</button>}{store.estado !== 'rechazada' && <button className="button button-secondary" type="button" onClick={() => review(store, 'rechazar')} disabled={Boolean(busyId)}>Rechazar</button>}{store.estado !== 'suspendida' && <button className="button button-danger" type="button" onClick={() => review(store, 'suspender')} disabled={Boolean(busyId)}>Suspender</button>}</div>
 		</article>)}</div>}
 		</>}
 	</main>

@@ -57,10 +57,10 @@ export default function AdminMfaGate({ children }) {
     } catch { setError('Código incorrecto o vencido. Comprueba la hora de tu autenticador e inténtalo de nuevo.') }
     finally { setBusy(false) }
   }
-  if (loading) return <p className="route-message" role="status">Comprobando segundo factor…</p>
+  if (loading) return <p className="route-loading" role="status">Comprobando segundo factor…</p>
   if (verified) return children
-  return <main className="route-message"><h1>Verificación administrativa</h1><p>El panel requiere una contraseña y un código de tu aplicación autenticadora.</p>
-    {error && <p role="alert">{error}</p>}
+  return <main className="route-message"><p className="eyebrow">Administración</p><h1>Verificación administrativa</h1><p>El panel requiere una contraseña y un código de tu aplicación autenticadora.</p>
+    {error && <p className="auth-error" role="alert">{error}</p>}
     {!factorId && <button className="button" type="button" disabled={busy} onClick={enroll}>Configurar autenticador</button>}
     {enrollment && <div><p>Escanea el QR con tu autenticador y guarda el acceso en un lugar seguro.</p><img src={enrollment.totp.qr_code} alt="QR para configurar el segundo factor" width="240" height="240" /><details><summary>Configurar manualmente</summary><code>{enrollment.totp.secret}</code></details></div>}
     {factorId && <form onSubmit={verify}><label>Código de seis dígitos<input name="code" inputMode="numeric" pattern="[0-9]{6}" minLength={6} maxLength={6} autoComplete="one-time-code" required /></label><button className="button" type="submit" disabled={busy}>{busy ? 'Verificando…' : 'Verificar código'}</button></form>}

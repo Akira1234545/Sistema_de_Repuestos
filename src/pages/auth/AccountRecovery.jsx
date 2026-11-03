@@ -39,8 +39,8 @@ export default function AccountRecovery({ reset = false, confirmation = false })
     } catch (cause) { setError(cause.message) }
     finally { setBusy(false) }
   }
-  return <main className="auth-page"><div className="auth-intro"><Link className="brand" to="/">RepuestosPro</Link><p>Recupera el acceso a tu cuenta.</p></div>
-    <form className="auth-card" onSubmit={submit}><h1>{reset ? 'Nueva contraseña' : confirmation ? 'Confirmar correo' : 'Recuperar contraseña'}</h1>
+  return <main className="auth-page"><div className="auth-intro"><Link className="brand" to="/"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link><p>Recupera el acceso a tu cuenta.</p></div>
+    <form className="auth-card" onSubmit={submit}><p className="eyebrow">Tu cuenta</p><h1>{reset ? 'Nueva contraseña' : confirmation ? 'Confirmar correo' : 'Recuperar contraseña'}</h1>
       {reset ? <><label>Nueva contraseña<input name="password" type="password" minLength={12} autoComplete="new-password" required /></label><label>Repite la contraseña<input name="confirmation" type="password" minLength={12} autoComplete="new-password" required /></label><p>Usa al menos 12 caracteres.</p></> : <label>Correo electrónico<input name="email" type="email" autoComplete="email" required /></label>}
       {error && <p role="alert" className="auth-error">{error}</p>}{message && <p role="status" className="auth-message">{message}</p>}
       {!message && <button className="button" disabled={busy || (reset && loading)} type="submit">{busy ? 'Procesando…' : reset ? 'Guardar contraseña' : 'Enviar enlace'}</button>}

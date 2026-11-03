@@ -47,7 +47,7 @@ function GestionPromocion() {
 		finally { setSaving(false) }
 	}
 	if (loading) return <section className="promo-page"><p className="promo-state">Cargando…</p></section>
-	return <section className="promo-page promo-form-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">Panel de tienda / HU-11</p><h1>{id ? 'Editar promoción' : 'Crear promoción'}</h1><p>El descuento porcentual se calcula automáticamente a partir de ambos precios.</p></div><Link to="/tienda/promociones">Volver</Link></header>
+	return <section className="promo-page promo-form-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">Panel de tienda / Promociones</p><h1>{id ? 'Editar promoción' : 'Crear promoción'}</h1><p>El descuento porcentual se calcula automáticamente a partir de ambos precios.</p></div><Link to="/tienda/promociones">← Volver a mis promociones</Link></header>
 		{error && <p className="promo-error" role="alert">{error}</p>}
 		{store && !canManagePromotions && <p className="promo-state" role="status">La gestión de promociones requiere una tienda activa y aprobada. Estado actual: {store.estado}{store.activa ? '' : ' (inactiva)'}.</p>}
 		{store && canManagePromotions && (!id || form.categoria_id) && <form className="promo-form" onSubmit={submit}><div className="promo-form-grid">

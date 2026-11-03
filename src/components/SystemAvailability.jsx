@@ -51,8 +51,7 @@ function SystemAvailability({ children }) {
 		}
 	}, [loadStatus])
 
-	if (status.loading) return <main className="system-status-loading" role="status">Comprobando disponibilidad del sistema…</main>
-
+	// Pages render immediately; the maintenance screen replaces them only once confirmed.
 	const administrativeRole = ['administrador', 'superAdministrador'].includes(role)
 	if (status.maintenance && !administrativeRole && !['/login', '/forgot-password', '/reset-password'].includes(pathname)) {
 		return <main className="system-maintenance-page">
