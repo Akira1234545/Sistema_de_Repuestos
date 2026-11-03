@@ -15,11 +15,14 @@ const actions = [
 	{ to: '/tienda/perfil', icon: 'store', title: 'Mi tienda', text: 'Consulta la información y fotografías de tu tienda.' },
 ]
 
+// Ends the admin's reason with a full stop so the sentence that follows reads correctly.
+const reason = (text) => text ? `: ${text.trim().replace(/[.!?]?$/, '.')}` : '.'
+
 function storeNotice(store) {
 	if (!store) return { tone: 'warn', text: 'Completa el perfil de tu tienda para que el equipo pueda revisarla.', action: { to: '/tienda/editar', label: 'Crear mi tienda' } }
 	if (store.estado === 'pendiente') return { tone: 'info', text: 'Tu tienda está en revisión. Mientras tanto puedes preparar tus categorías y completar tu perfil.', action: { to: '/tienda/categorias', label: 'Elegir categorías' } }
-	if (store.estado === 'rechazada') return { tone: 'warn', text: `Tu tienda fue rechazada${store.motivo_estado ? `: ${store.motivo_estado}` : '.'} Actualiza tu información para una nueva revisión.`, action: { to: '/tienda/editar', label: 'Editar información' } }
-	if (store.estado === 'suspendida' || !store.activa) return { tone: 'warn', text: `Tu tienda está suspendida${store.motivo_estado ? `: ${store.motivo_estado}` : '.'} Contacta con soporte para reactivarla.` }
+	if (store.estado === 'rechazada') return { tone: 'warn', text: `Tu tienda fue rechazada${reason(store.motivo_estado)} Actualiza tu información para una nueva revisión.`, action: { to: '/tienda/editar', label: 'Editar información' } }
+	if (store.estado === 'suspendida' || !store.activa) return { tone: 'warn', text: `Tu tienda está suspendida${reason(store.motivo_estado)} Contacta con soporte para reactivarla.` }
 	return null
 }
 

@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import { obtenerFavoritosUsuario, quitarFavorito } from '../services/favoritoService.js'
+import { statusLabel } from '../lib/format.js'
 
 const itemIdField = { tienda: 'tienda_id', solicitud: 'solicitud_id', promocion: 'promocion_id' }
 const itemType = { tienda: 'Tiendas', solicitud: 'Solicitudes', promocion: 'Promociones' }
+const itemKind = { tienda: 'Tienda', solicitud: 'Solicitud', promocion: 'Promoción' }
 function Favoritos() {
 	const { user, role } = useAuth()
 	const [items, setItems] = useState([])
@@ -34,7 +36,7 @@ function Favoritos() {
 		{!loading && items.length > 0 && <div className="favorites-groups">{Object.keys(itemType).map((type) => {
 			const group = items.filter((item) => item.type === type)
 			if (!group.length) return null
-			return <section className="favorites-group" key={type}><h2>{itemType[type]}</h2><div className="favorites-list">{group.map((favorite) => <article className="favorite-card" key={favorite.id}><div><p className="promo-category">{type}</p><h3>{favorite.item?.nombre || favorite.item?.titulo || 'Elemento no disponible'}</h3>{type === 'tienda' && favorite.item && <p>{favorite.item.direccion || 'Dirección no registrada'}{favorite.item.telefono ? ` · ${favorite.item.telefono}` : ''}</p>}{type === 'solicitud' && favorite.item && <p>Estado: {favorite.item.estado.replaceAll('_', ' ')}</p>}{type === 'promocion' && favorite.item && <p>Precio de oferta: {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(favorite.item.precio_oferta))}</p>}</div><div className="favorite-actions">{type === 'tienda' && favorite.item && <Link className="favorite-view-link" to={`/tiendas#${favorite.tienda_id}`}>Ver tienda</Link>}{type === 'promocion' && favorite.item && <Link className="favorite-view-link" to={`/promociones/${favorite.item.id}`}>Ver promoción</Link>}{type === 'solicitud' && favorite.item && <Link className="favorite-view-link" to={role === 'tienda' ? `/tienda/solicitudes/${favorite.item.id}` : `/cliente/solicitudes/${favorite.item.id}/propuestas`}>Ver solicitud</Link>}<button className="promo-secondary favorite-remove-button" type="button" onClick={() => remove(favorite)} disabled={Boolean(removing)}>{removing === favorite.id ? 'Quitando…' : 'Quitar'}</button></div></article>)}</div></section>
+			return <section className="favorites-group" key={type}><h2>{itemType[type]}</h2><div className="favorites-list">{group.map((favorite) => <article className="favorite-card" key={favorite.id}><div><p className="promo-category">{itemKind[type]}</p><h3>{favorite.item?.nombre || favorite.item?.titulo || 'Elemento no disponible'}</h3>{type === 'tienda' && favorite.item && <p>{favorite.item.direccion || 'Dirección no registrada'}{favorite.item.telefono ? ` · ${favorite.item.telefono}` : ''}</p>}{type === 'solicitud' && favorite.item && <p>Estado: {statusLabel(favorite.item.estado)}</p>}{type === 'promocion' && favorite.item && <p>Precio de oferta: {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(favorite.item.precio_oferta))}</p>}</div><div className="favorite-actions">{type === 'tienda' && favorite.item && <Link className="favorite-view-link" to={`/tiendas#${favorite.tienda_id}`}>Ver tienda</Link>}{type === 'promocion' && favorite.item && <Link className="favorite-view-link" to={`/promociones/${favorite.item.id}`}>Ver promoción</Link>}{type === 'solicitud' && favorite.item && <Link className="favorite-view-link" to={role === 'tienda' ? `/tienda/solicitudes/${favorite.item.id}` : `/cliente/solicitudes/${favorite.item.id}/propuestas`}>Ver solicitud</Link>}<button className="promo-secondary favorite-remove-button" type="button" onClick={() => remove(favorite)} disabled={Boolean(removing)}>{removing === favorite.id ? 'Quitando…' : 'Quitar'}</button></div></article>)}</div></section>
 		})}</div>}
 	<Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} /></section>
 }

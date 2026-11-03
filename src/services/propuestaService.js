@@ -73,7 +73,7 @@ export async function obtenerMisPropuestas(userId, page = 0) {
 	if (storeError) throw storeError
 	if (!store) return { items: [], hasMore: false }
 	const { data, error } = await supabase.from('propuestas')
-		.select(`${proposalColumns}, solicitud:solicitudes(id,titulo,estado,cantidad)`)
+		.select(`${proposalColumns}, solicitud:solicitudes!propuestas_solicitud_id_fkey(id,titulo,estado,cantidad)`)
 		.eq('tienda_id', store.id).order('fecha_creacion', { ascending: false }).order('id').range(page * 25, page * 25 + 25)
 	if (error) throw error
 	return { items: data.slice(0, 25), hasMore: data.length > 25 }

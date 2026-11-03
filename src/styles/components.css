@@ -182,7 +182,7 @@ input[type="search"]::-webkit-search-cancel-button { filter: invert(.7); }
   width: fit-content; padding: 4px 10px;
   border: 1px solid rgb(245 177 61 / 35%); border-radius: 999px;
   color: var(--amber-hot); background: var(--amber-wash);
-  font: 600 11px/1.4 var(--font-body); letter-spacing: .02em; text-transform: capitalize; white-space: nowrap;
+  font: 600 11px/1.4 var(--font-body); letter-spacing: .02em; white-space: nowrap;
 }
 .request-status::before, .store-request-status::before, .proposal-status::before, .admin-status::before, .admin-user-state::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor;

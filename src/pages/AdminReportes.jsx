@@ -31,7 +31,7 @@ const requestStatusLabels = {
 
 const proposalStatusLabels = {
 	enviada: 'Enviadas',
-	aceptada: 'Aceptadas',
+	aceptada: 'Seleccionadas',
 	rechazada: 'Rechazadas',
 	retirada: 'Retiradas',
 }

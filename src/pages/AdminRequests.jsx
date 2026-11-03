@@ -1,6 +1,7 @@
 import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerSolicitudesAdministracion } from '../services/adminService.js'
+import { statusLabel } from '../lib/format.js'
 
 const requestStatuses = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada', 'atendida', 'cerrada']
 const pageSize = 25
@@ -72,7 +73,7 @@ function AdminRequests() {
 		</div>
 		{error && <p className="admin-alert" role="alert">{error}</p>}
 		<div className="admin-request-filters">
-			<label>Estado<select name="estado" value={filter.estado} onChange={updateFilter}><option value="">Todos los estados</option>{requestStatuses.map((status) => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}</select></label>
+			<label>Estado<select name="estado" value={filter.estado} onChange={updateFilter}><option value="">Todos los estados</option>{requestStatuses.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}</select></label>
 			<label>Categoría<select name="categoriaId" value={filter.categoriaId} onChange={updateFilter}><option value="">Todas las categorías</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
 			<label>Desde<input type="date" name="fechaDesde" value={filter.fechaDesde} onChange={updateFilter} /></label>
 			<label>Hasta<input type="date" name="fechaHasta" value={filter.fechaHasta} onChange={updateFilter} /></label>
@@ -84,7 +85,7 @@ function AdminRequests() {
 				<p className="admin-request-count">Solicitudes encontradas: {totalCount}</p>
 				<div className="admin-request-list">{requests.map((request) => <details className="admin-request-card" key={request.id}>
 					<summary>
-						<div className="admin-request-summary"><div><span className={`admin-status admin-request-status-${request.estado}`}>{request.estado.replaceAll('_', ' ')}</span><h3>{request.titulo}</h3><p>{request.categoria_nombre || 'Categoría no disponible'} · {request.cliente_nombre || 'Cliente no disponible'}</p></div><time dateTime={request.fecha_creacion}>{formatDate(request.fecha_creacion)}</time></div>
+						<div className="admin-request-summary"><div><span className={`admin-status admin-request-status-${request.estado}`}>{statusLabel(request.estado)}</span><h3>{request.titulo}</h3><p>{request.categoria_nombre || 'Categoría no disponible'} · {request.cliente_nombre || 'Cliente no disponible'}</p></div><time dateTime={request.fecha_creacion}>{formatDate(request.fecha_creacion)}</time></div>
 					</summary>
 					<div className="admin-request-detail">
 						<dl>

@@ -49,6 +49,19 @@ test('every frontend RPC has a versioned SQL definition', async () => {
   const preflightRpcs = new Set([...preflight.matchAll(/\('([a-z0-9_]+)'\)/g)].map(match => match[1]))
   assert.deepEqual([...preflightRpcs].sort(), [...frontendRpcs].sort(), 'remote RPC preflight must cover every frontend RPC exactly')
 })
+// propuestas.solicitud_id and solicitudes.propuesta_seleccionada_id link the two tables both
+// ways, so PostgREST rejects an embed between them unless it names the foreign key.
+test('embeds between propuestas and solicitudes name their foreign key', async () => {
+  const files = (await readdir('src', { recursive: true })).filter(file => /\.(jsx?|mjs)$/.test(file))
+  for (const file of files) {
+    const text = await readFile(`src/${file}`, 'utf8')
+    for (const query of text.matchAll(/\.from\('(propuestas|solicitudes)'\)\s*\.select\(([`'])([\s\S]*?)\2/g)) {
+      const other = query[1] === 'propuestas' ? 'solicitudes' : 'propuestas'
+      assert.doesNotMatch(query[3], new RegExp(String.raw`\b${other}\(`), `${file}: embed ${query[1]} -> ${other} must use ${other}!<foreign_key>(...)`)
+    }
+  }
+})
+
 test('public errors keep business instructions and hide internal SQL details', () => {
   assert.match(publicError({ message: 'Las fotos cambiaron en otra sesión.' }), /Las fotos/)
   assert.doesNotMatch(publicError({ message: 'relation public.usuarios does not exist' }), /usuarios|relation|SQL/)

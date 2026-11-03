@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerMisPropuestas } from '../../services/propuestaService.js'
 import Pagination from '../../components/Pagination.jsx'
-import { money } from '../../lib/format.js'
+import { money, statusLabel } from '../../lib/format.js'
 
 const proposalLabels = { enviada: 'Enviada', aceptada: 'Seleccionada', rechazada: 'No seleccionada', retirada: 'Retirada' }
-const label = (value) => value ? value.replaceAll('_', ' ') : ''
+const label = statusLabel
 
 export default function MisPropuestas() {
 	const { user } = useAuth()

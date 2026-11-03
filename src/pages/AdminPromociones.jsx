@@ -1,6 +1,7 @@
 import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerPromocionesAdministracion, obtenerTiendasConPromocionesAdministracion } from '../services/adminService.js'
+import { statusLabel } from '../lib/format.js'
 
 const pageSize = 25
 const promotionStatuses = ['activa', 'pausada', 'finalizada']
@@ -119,7 +120,7 @@ function AdminPromociones() {
 				<div className="admin-promotion-list">{promotions.map((promotion) => <details className="admin-promotion-card" key={promotion.id}>
 					<summary>
 						<div className="admin-promotion-summary">
-							<div><span className={`admin-user-state admin-promotion-state-${promotion.estado}`}>{promotion.estado}</span><h3>{promotion.titulo}</h3><p>{promotion.tienda_nombre} · {promotion.categoria_nombre}{promotion.marca ? ` · ${promotion.marca}` : ''}</p></div>
+							<div><span className={`admin-user-state admin-promotion-state-${promotion.estado}`}>{statusLabel(promotion.estado)}</span><h3>{promotion.titulo}</h3><p>{promotion.tienda_nombre} · {promotion.categoria_nombre}{promotion.marca ? ` · ${promotion.marca}` : ''}</p></div>
 							<div className="admin-promotion-price"><del>{currency.format(Number(promotion.precio_anterior))}</del><strong>{currency.format(Number(promotion.precio_oferta))}</strong><span>{Number(promotion.porcentaje_descuento || 0).toFixed(0)}% de descuento</span></div>
 						</div>
 						<div className="admin-promotion-dates"><span>Inicio: {formatDate(promotion.fecha_inicio)}</span><span>Fin: {formatDate(promotion.fecha_fin)}</span></div>

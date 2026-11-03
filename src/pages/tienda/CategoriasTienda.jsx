@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { guardarCategoriasTienda, obtenerCategoriasGestionTienda } from '../../services/tiendaService.js'
+import { statusLabel } from '../../lib/format.js'
 
 function CategoriasTienda() {
 	const { user } = useAuth()
@@ -78,7 +79,7 @@ function CategoriasTienda() {
 	return <section className="store-page store-categories-page">
 		<header className="categories-heading">
 			<div><p className="store-eyebrow">Configuración de tienda / Categorías</p><h1>Categorías que atiende tu tienda</h1><p className="store-lead">Elige las familias de repuestos que ofreces. Esta selección determina qué solicitudes puedes consultar y para cuáles puedes enviar propuestas.</p></div>
-			<div className={`categories-store-status${store.estado === 'aprobada' && store.activa ? ' is-approved' : ''}`}><span>{store.estado === 'aprobada' && store.activa ? 'Tienda aprobada' : `Estado: ${store.estado}`}</span><strong>{store.nombre}</strong></div>
+			<div className={`categories-store-status${store.estado === 'aprobada' && store.activa ? ' is-approved' : ''}`}><span>{store.estado === 'aprobada' && store.activa ? 'Tienda aprobada' : `Estado: ${statusLabel(store.estado)}`}</span><strong>{store.nombre}</strong></div>
 		</header>
 
 		{store.estado !== 'aprobada' || !store.activa ? <p className="categories-pending" role="status">Puedes preparar tus categorías ahora. Las solicitudes y propuestas estarán disponibles cuando la tienda esté aprobada y activa.</p> : null}

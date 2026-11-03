@@ -120,7 +120,7 @@
 .admin-report-distribution h4 { margin-bottom: 12px; font-size: var(--fs-md); }
 .admin-report-distribution dl { display: grid; gap: 6px; }
 .admin-report-distribution dl div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: var(--r-xs); background: var(--bg-raised); }
-.admin-report-distribution dt { color: var(--text-muted); font-size: var(--fs-sm); text-transform: capitalize; }
+.admin-report-distribution dt { color: var(--text-muted); font-size: var(--fs-sm); }
 .admin-report-distribution dd { font-weight: 700; font-variant-numeric: tabular-nums; }
 .admin-report-table-wrap { overflow-x: auto; padding: 0; }
 .admin-report-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }

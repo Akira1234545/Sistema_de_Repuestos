@@ -84,7 +84,7 @@
 .request-timeline h3 { margin-bottom: 12px; color: var(--text-soft); font: 650 var(--fs-xs)/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; }
 .request-timeline ol { position: relative; display: grid; gap: 12px; padding-left: 20px; list-style: none; }
 .request-timeline ol::before { content: ''; position: absolute; left: 4px; top: 6px; bottom: 6px; width: 1px; background: var(--line-strong); }
-.request-timeline li { position: relative; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: var(--fs-sm); text-transform: capitalize; }
+.request-timeline li { position: relative; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: var(--fs-sm); }
 .request-timeline li::before { content: ''; position: absolute; left: -20px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg-raised); border: 2px solid var(--amber); }
 .request-timeline li:last-child::before { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
 .request-timeline time, .request-timeline p { color: var(--text-muted); font-size: var(--fs-xs); text-transform: none; }
@@ -146,7 +146,7 @@
 .store-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .store-detail-grid div { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg-raised); }
 .store-detail-grid span { color: var(--text-muted); font-size: var(--fs-xs); }
-.store-detail-grid strong { font-size: var(--fs-md); text-transform: capitalize; }
+.store-detail-grid strong { font-size: var(--fs-md); }
 .existing-proposal { display: grid; gap: 6px; }
 .existing-proposal strong { color: var(--amber); font: 800 28px/1.1 var(--font-display); }
 .existing-proposal span, .existing-proposal small { color: var(--text-muted); }
@@ -204,6 +204,8 @@
 .profile-hero p { margin-top: 10px; color: var(--text-muted); }
 .profile-status-row { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-raised); }
 .profile-status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 12px var(--ok); }
+.profile-status-dot.is-pendiente { background: var(--warn); box-shadow: 0 0 12px var(--warn); }
+.profile-status-dot:is(.is-rechazada, .is-suspendida) { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
 .profile-status-row strong { font-size: var(--fs-sm); }
 .profile-status-value { margin-left: auto; }
 .profile-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }

@@ -1,4 +1,4 @@
-import { boliviaDateTimeInput } from '../../lib/format.js'
+import { boliviaDateTimeInput, statusLabel } from '../../lib/format.js'
 import { useToast } from '../../context/toastState.js'
 import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
@@ -52,7 +52,7 @@ function GestionPromocion() {
 	if (loading) return <section className="promo-page"><p className="promo-state">Cargando…</p></section>
 	return <section className="promo-page promo-form-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">Panel de tienda / Promociones</p><h1>{id ? 'Editar promoción' : 'Crear promoción'}</h1><p>El descuento porcentual se calcula automáticamente a partir de ambos precios.</p></div><Link to="/tienda/promociones">← Volver a mis promociones</Link></header>
 		{error && <p className="promo-error" role="alert">{error}</p>}
-		{store && !canManagePromotions && <p className="promo-state" role="status">La gestión de promociones requiere una tienda activa y aprobada. Estado actual: {store.estado}{store.activa ? '' : ' (inactiva)'}.</p>}
+		{store && !canManagePromotions && <p className="promo-state" role="status">La gestión de promociones requiere una tienda activa y aprobada. Estado actual: {statusLabel(store.estado)}{store.activa ? '' : ' (inactiva)'}.</p>}
 		{store && canManagePromotions && (!id || form.categoria_id) && <form className="promo-form" onSubmit={submit}><div className="promo-form-grid">
 			<label>Título<input name="titulo" value={form.titulo} onChange={update} maxLength="160" required /></label>
 			<label>Categoría<select name="categoria_id" value={form.categoria_id} onChange={update} required><option value="">Selecciona una categoría</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>

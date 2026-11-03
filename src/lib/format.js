@@ -30,3 +30,22 @@ export function money(value) {
 export function vehicleYearLimit(now = new Date()) {
   return Number(boliviaDay(now).slice(0, 4)) + 1
 }
+
+// Human labels for the status values stored in the database; unknown values fall back to sentence case.
+const statusLabels = {
+  publicada: 'Publicada',
+  recibiendo_propuestas: 'Recibiendo propuestas',
+  propuesta_seleccionada: 'Propuesta seleccionada',
+  atendida: 'Atendida',
+  cerrada: 'Cerrada',
+  enviada: 'Enviada',
+  aceptada: 'Seleccionada',
+  rechazada: 'No seleccionada',
+  retirada: 'Retirada',
+}
+export function statusLabel(value) {
+  if (!value) return ''
+  if (statusLabels[value]) return statusLabels[value]
+  const text = String(value).replaceAll('_', ' ')
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
