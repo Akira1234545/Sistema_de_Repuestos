@@ -1,3 +1,4 @@
+@layer legacy {
 .admin-promotion-filters { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)); gap: .8rem; padding: 1rem; margin: 1.25rem 0; border: 1px solid #49443a; border-radius: 14px; background: #202123; }
 .admin-promotion-filters label { display: grid; gap: .4rem; font-weight: 650; }
 .admin-promotion-filters input, .admin-promotion-filters select { box-sizing: border-box; width: 100%; min-width: 0; padding: .7rem .8rem; border: 1px solid #625b4d; border-radius: 8px; font: inherit; }
@@ -36,4 +37,5 @@
 	.admin-promotion-summary { flex-direction: column; }
 	.admin-promotion-price { text-align: left; }
 	.admin-promotion-detail .admin-promotion-description { grid-column: auto; }
+}
 }

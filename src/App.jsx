@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes, useSearchParams } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Link, Outlet, Route, Routes, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
 import ClienteLayout from './layouts/ClienteLayout.jsx'
 import TiendaLayout from './layouts/TiendaLayout.jsx'
@@ -6,37 +7,47 @@ import AuthContext from './context/AuthContext.jsx'
 import { useAuth } from './context/authState.js'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import SystemAvailability from './components/SystemAvailability.jsx'
-import Home from './pages/Home.jsx'
-import Login from './pages/auth/Login.jsx'
-import Register from './pages/auth/Register.jsx'
-import RegisterType from './pages/auth/RegisterType.jsx'
-import DashboardCliente from './pages/cliente/DashboardCliente.jsx'
-import Vehiculos from './pages/cliente/Vehiculos.jsx'
-import CrearVehiculo from './pages/cliente/CrearVehiculo.jsx'
-import EditarVehiculo from './pages/cliente/EditarVehiculo.jsx'
-import Solicitudes from './pages/cliente/Solicitudes.jsx'
-import CrearSolicitud from './pages/cliente/CrearSolicitud.jsx'
-import EditarSolicitud from './pages/cliente/EditarSolicitud.jsx'
-import DashboardTienda from './pages/tienda/DashboardTienda.jsx'
-import PerfilTienda from './pages/tienda/PerfilTienda.jsx'
-import EditarTienda from './pages/tienda/EditarTienda.jsx'
-import SolicitudesDisponibles from './pages/tienda/SolicitudesDisponibles.jsx'
-import DetalleSolicitud from './pages/tienda/DetalleSolicitud.jsx'
-import PropuestasSolicitud from './pages/cliente/PropuestasSolicitud.jsx'
-import Promociones from './pages/Promociones.jsx'
-import DetallePromocion from './pages/DetallePromocion.jsx'
-import Favoritos from './pages/Favoritos.jsx'
-import TiendaPromociones from './pages/tienda/TiendaPromociones.jsx'
-import ResenasRecibidas from './pages/tienda/ResenasRecibidas.jsx'
-import CategoriasTienda from './pages/tienda/CategoriasTienda.jsx'
-import GestionPromocion from './pages/tienda/GestionPromocion.jsx'
-import AdminAccess from './pages/AdminAccess.jsx'
-import TiendasPublicas from './pages/TiendasPublicas.jsx'
-import FormDraftPersistence from './components/FormDraftPersistence.jsx'
+const Home = lazy(() => import('./pages/Home.jsx'))
+const Login = lazy(() => import('./pages/auth/Login.jsx'))
+const Register = lazy(() => import('./pages/auth/Register.jsx'))
+const RegisterType = lazy(() => import('./pages/auth/RegisterType.jsx'))
+const DashboardCliente = lazy(() => import('./pages/cliente/DashboardCliente.jsx'))
+const Vehiculos = lazy(() => import('./pages/cliente/Vehiculos.jsx'))
+const CrearVehiculo = lazy(() => import('./pages/cliente/CrearVehiculo.jsx'))
+const EditarVehiculo = lazy(() => import('./pages/cliente/EditarVehiculo.jsx'))
+const Solicitudes = lazy(() => import('./pages/cliente/Solicitudes.jsx'))
+const CrearSolicitud = lazy(() => import('./pages/cliente/CrearSolicitud.jsx'))
+const EditarSolicitud = lazy(() => import('./pages/cliente/EditarSolicitud.jsx'))
+const DashboardTienda = lazy(() => import('./pages/tienda/DashboardTienda.jsx'))
+const MisPropuestas = lazy(() => import('./pages/tienda/MisPropuestas.jsx'))
+const PerfilTienda = lazy(() => import('./pages/tienda/PerfilTienda.jsx'))
+const EditarTienda = lazy(() => import('./pages/tienda/EditarTienda.jsx'))
+const SolicitudesDisponibles = lazy(() => import('./pages/tienda/SolicitudesDisponibles.jsx'))
+const DetalleSolicitud = lazy(() => import('./pages/tienda/DetalleSolicitud.jsx'))
+const PropuestasSolicitud = lazy(() => import('./pages/cliente/PropuestasSolicitud.jsx'))
+const Promociones = lazy(() => import('./pages/Promociones.jsx'))
+const DetallePromocion = lazy(() => import('./pages/DetallePromocion.jsx'))
+const Favoritos = lazy(() => import('./pages/Favoritos.jsx'))
+const TiendaPromociones = lazy(() => import('./pages/tienda/TiendaPromociones.jsx'))
+const ResenasRecibidas = lazy(() => import('./pages/tienda/ResenasRecibidas.jsx'))
+const CategoriasTienda = lazy(() => import('./pages/tienda/CategoriasTienda.jsx'))
+const GestionPromocion = lazy(() => import('./pages/tienda/GestionPromocion.jsx'))
+const AdminAccess = lazy(() => import('./pages/AdminAccess.jsx'))
+const TiendasPublicas = lazy(() => import('./pages/TiendasPublicas.jsx'))
+const AccountRecovery = lazy(() => import('./pages/auth/AccountRecovery.jsx'))
+
+function RouteIdentity() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const heading = document.querySelector('h1')
+    if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); document.title = `${heading.textContent} | RepuestosPro` }
+  }, [pathname])
+  return <Outlet key={pathname} />
+}
 
 function RegisterRoute() {
   const [searchParams] = useSearchParams()
-  return searchParams.get('role') ? <Register /> : <RegisterType />
+  return searchParams.get('role') ? <Register key={searchParams.get('role')} /> : <RegisterType />
 }
 
 function RoleLayout() {
@@ -48,12 +59,16 @@ function App() {
   return (
     <BrowserRouter>
       <AuthContext>
-        <FormDraftPersistence />
         <SystemAvailability>
+          <Suspense fallback={<p className="route-message" role="status">Cargando página…</p>}>
           <Routes>
+            <Route element={<RouteIdentity />}>
             <Route path="/" element={<Home />} />
             <Route path="/tiendas" element={<TiendasPublicas />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<AccountRecovery />} />
+            <Route path="/resend-confirmation" element={<AccountRecovery confirmation />} />
+            <Route path="/reset-password" element={<AccountRecovery reset />} />
             <Route path="/register" element={<RegisterRoute />} />
             <Route element={<ProtectedRoute allowedRoles={['administrador', 'superAdministrador']} />}>
               <Route path="/admin" element={<AdminAccess />} />
@@ -84,6 +99,7 @@ function App() {
                 <Route path="editar" element={<EditarTienda />} />
                 <Route path="categorias" element={<CategoriasTienda />} />
                 <Route path="solicitudes" element={<SolicitudesDisponibles />} />
+                <Route path="propuestas" element={<MisPropuestas />} />
                 <Route path="solicitudes/:id" element={<DetalleSolicitud />} />
                 <Route path="promociones" element={<TiendaPromociones />} />
                 <Route path="resenas" element={<ResenasRecibidas />} />
@@ -92,7 +108,10 @@ function App() {
                 <Route path="favoritos" element={<Favoritos />} />
               </Route>
             </Route>
+            <Route path="*" element={<main className="route-message"><h1>Página no encontrada</h1><p>La dirección no existe o cambió.</p><Link className="button" to="/">Volver al inicio</Link></main>} />
+            </Route>
           </Routes>
+          </Suspense>
         </SystemAvailability>
       </AuthContext>
     </BrowserRouter>

@@ -1,12 +1,13 @@
+import Icon from './Icon.jsx'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 
 const clientNavigation = [
-	{ label: 'Inicio', icon: '⌂', to: '/cliente', end: true },
-	{ label: 'Solicitudes', icon: '▤', to: '/cliente/solicitudes' },
-	{ label: 'Vehículos', icon: '▱', to: '/cliente/vehiculos' },
-	{ label: 'Promociones', icon: '％', to: '/promociones' },
-	{ label: 'Favoritos', icon: '♡', to: '/cliente/favoritos' },
+	{ label: 'Inicio', icon: 'home', to: '/cliente', end: true },
+	{ label: 'Solicitudes', icon: 'requests', to: '/cliente/solicitudes' },
+	{ label: 'Vehículos', icon: 'vehicle', to: '/cliente/vehiculos' },
+	{ label: 'Promociones', icon: 'promotion', to: '/promociones' },
+	{ label: 'Favoritos', icon: 'heart', to: '/cliente/favoritos' },
 ]
 
 function ClientSidebar() {
@@ -14,8 +15,7 @@ function ClientSidebar() {
 	const { signOut } = useAuth()
 
 	async function handleSignOut() {
-		await signOut()
-		navigate('/login')
+		if (await signOut()) navigate('/login')
 	}
 
 	return (
@@ -31,11 +31,11 @@ function ClientSidebar() {
 			<nav className="client-navigation">
 				{clientNavigation.map((item) => item.to ? (
 					<NavLink className="client-navigation-link" to={item.to} end={item.end} key={item.label}>
-						<span className="client-navigation-icon">{item.icon}</span><span>{item.label}</span>
+						<span className="client-navigation-icon"><Icon name={item.icon} /></span><span>{item.label}</span>
 					</NavLink>
 				) : (
 					<span className="client-navigation-link client-navigation-disabled" aria-disabled="true" key={item.label}>
-						<span className="client-navigation-icon">{item.icon}</span><span>{item.label}</span>
+						<span className="client-navigation-icon"><Icon name={item.icon} /></span><span>{item.label}</span>
 					</span>
 				))}
 			</nav>

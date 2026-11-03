@@ -1,3 +1,4 @@
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -8,6 +9,7 @@ import {
 	eliminarFotografiaTienda,
 	obtenerTiendaUsuario,
 	subirFotografiaTienda,
+	limpiarSubidasFallidas,
 } from '../../services/tiendaService.js'
 import './TiendaPages.css'
 import './StoreLocation.css'
@@ -48,7 +50,7 @@ function EditarTienda() {
 					setExistingPhotos(loadedStore.fotografias || [])
 				}
 			} catch (loadError) {
-				if (active) setError(`No se pudo cargar tu tienda: ${loadError.message}`)
+				if (active) setError(`No se pudo cargar tu tienda: ${publicError(loadError)}`)
 			} finally {
 				if (active) setLoading(false)
 			}
@@ -80,7 +82,8 @@ function EditarTienda() {
 	function handleFileChange(event) {
 		setError('')
 		const files = Array.from(event.target.files || [])
-		const invalidFile = files.find((file) => !file.type.startsWith('image/') || file.size > MAX_IMAGE_SIZE)
+		const invalidFile = files.find((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > MAX_IMAGE_SIZE)
+		if (files.length + existingPhotos.length > 12) { setError('Puedes guardar hasta 12 fotografías.'); return }
 		if (invalidFile) {
 			setSelectedFiles([])
 			setPreviews([])
@@ -97,11 +100,12 @@ function EditarTienda() {
 		setRemovingPhoto(photoUrl)
 		try {
 			const remaining = existingPhotos.filter((photo) => photo !== photoUrl)
-			await eliminarFotografiaTienda(user.id, photoUrl, remaining)
+			const updated = await eliminarFotografiaTienda(user.id, photoUrl, remaining, store.fotografias_version)
+			setStore(updated)
 			setExistingPhotos(remaining)
-			setSuccess('Fotografía eliminada correctamente.')
+			setSuccess(updated.cleanupPending ? 'Fotografía retirada del perfil. Su archivo está pendiente de limpieza.' : 'Fotografía eliminada correctamente.')
 		} catch (removeError) {
-			setError(`No se pudo eliminar la fotografía: ${removeError.message}`)
+			setError(`No se pudo eliminar la fotografía: ${publicError(removeError)}`)
 		} finally {
 			setRemovingPhoto('')
 		}
@@ -112,29 +116,42 @@ function EditarTienda() {
 		setError('')
 		setSuccess('')
 		if (!form.nombre.trim()) { setError('El nombre de la tienda es obligatorio.'); return }
+		if ((form.latitud === '') !== (form.longitud === '')) { setError('Completa ambas coordenadas o deja ambas vacías.'); return }
 		if (form.latitud !== '' && (!Number.isFinite(Number(form.latitud)) || Number(form.latitud) < -90 || Number(form.latitud) > 90)) { setError('La latitud debe ser un número entre -90 y 90.'); return }
 		if (form.longitud !== '' && (!Number.isFinite(Number(form.longitud)) || Number(form.longitud) < -180 || Number(form.longitud) > 180)) { setError('La longitud debe ser un número entre -180 y 180.'); return }
 		if (Boolean(form.horaApertura) !== Boolean(form.horaCierre)) { setError('Indica la hora de apertura y la de cierre.'); return }
 		if (form.horaApertura && form.horaCierre <= form.horaApertura) { setError('La hora de cierre debe ser posterior a la de apertura.'); return }
 		setSaving(true)
+		const uploadedPhotos = []
+		let photosCommitted = false
 		try {
 			const datos = { ...form, horario: form.horaApertura ? `${form.horaApertura} - ${form.horaCierre}` : '' }
 			const savedStore = store ? await actualizarTienda(user.id, datos) : await crearTienda(user.id, datos)
+			setStore(savedStore)
+			setExistingPhotos(savedStore.fotografias || [])
+			if (store && savedStore.fotografias_version !== store.fotografias_version) {
+				setSelectedFiles([]); setPreviews([])
+				throw new Error('Las fotos cambiaron en otra sesión. Revisa las fotografías antes de volver a subir archivos.')
+			}
 			let photos = existingPhotos
+			let photoVersion = store?.fotografias_version ?? savedStore.fotografias_version
 			if (selectedFiles.length > 0) {
-				const uploadedPhotos = []
 				for (const file of selectedFiles) uploadedPhotos.push(await subirFotografiaTienda(user.id, file))
 				photos = [...existingPhotos, ...uploadedPhotos]
-				await actualizarFotografiasTienda(user.id, photos)
+				const updated = await actualizarFotografiasTienda(user.id, photos, photoVersion)
+				photoVersion = updated.fotografias_version
+				photosCommitted = true
 			}
-			setStore({ ...savedStore, fotografias: photos })
+			setStore({ ...savedStore, fotografias: photos, fotografias_version: photoVersion })
 			setExistingPhotos(photos)
 			setSelectedFiles([])
 			setPreviews([])
 			setSuccess('Fotografías y datos guardados correctamente.')
 			setTimeout(() => navigate('/tienda/perfil'), 700)
 		} catch (saveError) {
-			setError(`No se pudieron guardar los cambios: ${saveError.message}`)
+			try { if (!photosCommitted) await limpiarSubidasFallidas(uploadedPhotos) }
+			catch (cleanupError) { setError(cleanupError.message); return }
+			setError(`No se pudieron guardar los cambios: ${publicError(saveError)}`)
 		} finally {
 			setSaving(false)
 		}

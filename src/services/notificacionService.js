@@ -11,7 +11,9 @@ export async function obtenerNotificaciones() {
 	const [notificationsResult, unreadResult] = await Promise.all([
 		supabase.from('notificaciones')
 			.select(notificationColumns)
+			.order('leida', { ascending: true })
 			.order('fecha_creacion', { ascending: false })
+			.order('id')
 			.limit(50),
 		supabase.from('notificaciones')
 			.select('id', { count: 'exact', head: true })
@@ -25,13 +27,14 @@ export async function obtenerNotificaciones() {
 
 export async function marcarNotificacionLeida(notificationId) {
 	requireSupabase()
-	const { data, error } = await supabase.from('notificaciones')
-		.update({ leida: true })
-		.eq('id', notificationId)
-		.select('id, leida')
-		.maybeSingle()
+	const { error } = await supabase.rpc('marcar_notificaciones_leidas', { p_ids: [notificationId] })
 
 	if (error) throw error
-	if (!data) throw new Error('La notificación no existe o no pertenece a tu cuenta.')
-	return data
+	return { id: notificationId, leida: true }
+}
+
+export async function marcarTodasLeidas() {
+	requireSupabase()
+	const { error } = await supabase.rpc('marcar_notificaciones_leidas', { p_ids: null })
+	if (error) throw error
 }

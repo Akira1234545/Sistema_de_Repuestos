@@ -1,10 +1,12 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { publicError } from '../../lib/errors.js'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
 import './Auth.css'
 
 function Login() {
 	const navigate = useNavigate()
+	const location = useLocation()
 	const [error, setError] = useState('')
 	const [loading, setLoading] = useState(false)
 
@@ -13,6 +15,7 @@ function Login() {
 		setError('')
 		if (!supabase) { setError('Supabase no está configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'); return }
 		setLoading(true)
+		try {
 		const formData = new FormData(event.currentTarget)
 		const { data, error: signInError } = await supabase.auth.signInWithPassword({
 			email: formData.get('email'),
@@ -20,7 +23,7 @@ function Login() {
 		})
 
 		if (signInError) {
-			setError(signInError.message)
+			setError(publicError(signInError))
 			setLoading(false)
 			return
 		}
@@ -33,13 +36,20 @@ function Login() {
 
 		if (profileError || !profile || !profile.activo || !['cliente', 'tienda', 'administrador', 'superAdministrador'].includes(profile.rol)) {
 			await supabase.auth.signOut()
-			setError(profileError ? `No se pudo leer el perfil: ${profileError.message}` : profile && !profile.activo ? 'Tu cuenta está desactivada. Contacta al administrador del sistema.' : 'No se encontró un perfil o rol válido. Contacta al administrador del sistema.')
+			setError(profileError ? `No se pudo leer el perfil: ${publicError(profileError)}` : profile && !profile.activo ? 'Tu cuenta está desactivada. Contacta al administrador del sistema.' : 'No se encontró un perfil o rol válido. Contacta al administrador del sistema.')
 			setLoading(false)
 			return
 		}
 
-		navigate(profile.rol === 'tienda' ? '/tienda' : profile.rol === 'cliente' ? '/cliente' : '/admin')
+		const target = location.state?.from
+		const ownPanel = profile.rol === 'tienda' ? '/tienda' : profile.rol === 'cliente' ? '/cliente' : '/admin'
+		const allowedTarget = typeof target === 'string' && !target.startsWith('//') &&
+			(target.startsWith(`${ownPanel}/`) || target === ownPanel || (['cliente','tienda'].includes(profile.rol) && target.startsWith('/promociones')))
+		navigate(allowedTarget ? target : ownPanel)
 		setLoading(false)
+		} catch {
+			setError('No se pudo iniciar sesión. Revisa tu conexión e inténtalo de nuevo.')
+		} finally { setLoading(false) }
 	}
 
 	return (
@@ -49,6 +59,8 @@ function Login() {
 				<p className="eyebrow">Acceder</p><h1>Bienvenido de vuelta</h1><p className="auth-description">Ingresa para continuar con tu experiencia.</p>
 				<label>Correo electrónico<input name="email" type="email" required placeholder="tu@correo.com" /></label>
 				<label>Contraseña<input name="password" type="password" required placeholder="Tu contraseña" /></label>
+				<p><Link to="/forgot-password">Olvidé mi contraseña</Link></p>
+				<p><Link to="/resend-confirmation">Reenviar correo de confirmación</Link></p>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				<button className="button button-primary" type="submit" disabled={loading}>{loading ? 'Ingresando...' : 'Iniciar sesión'}</button>
 				<p className="auth-switch">¿Aún no tienes cuenta? <Link to="/register">Regístrate</Link></p>

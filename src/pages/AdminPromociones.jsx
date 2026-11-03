@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { publicError } from '../lib/errors.js'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerPromocionesAdministracion, obtenerTiendasConPromocionesAdministracion } from '../services/adminService.js'
 import './AdminPromociones.css'
 
 const pageSize = 25
 const promotionStatuses = ['activa', 'pausada', 'finalizada']
 const currency = new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' })
-const dateFormatter = new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeStyle: 'short' })
+const dateFormatter = new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' })
 
 function formatDate(value) {
 	if (!value) return 'Sin fecha'
@@ -14,6 +15,8 @@ function formatDate(value) {
 }
 
 function AdminPromociones() {
+	const requestVersion = useRef(0)
+	useEffect(() => () => { requestVersion.current += 1 }, [])
 	const [promotions, setPromotions] = useState([])
 	const [categories, setCategories] = useState([])
 	const [stores, setStores] = useState([])
@@ -38,13 +41,14 @@ function AdminPromociones() {
 			setCategories(categoryRows)
 			setStores(storeRows)
 		} catch (cause) {
-			setOptionsError(`No se pudieron cargar las opciones de filtro: ${cause.message}`)
+			setOptionsError(`No se pudieron cargar las opciones de filtro: ${publicError(cause)}`)
 		} finally {
 			setOptionsLoading(false)
 		}
 	}, [])
 
 	const loadPromotions = useCallback(async () => {
+		const version = ++requestVersion.current
 		setLoading(true)
 		setError('')
 		try {
@@ -54,14 +58,16 @@ function AdminPromociones() {
 				limit: pageSize,
 				offset: page * pageSize,
 			})
+			if (version !== requestVersion.current) return
 			setPromotions(data)
 			setTotalCount(Number(data[0]?.total_count || 0))
 		} catch (cause) {
+			if (version !== requestVersion.current) return
 			setPromotions([])
 			setTotalCount(0)
-			setError(`No se pudieron cargar las promociones: ${cause.message}`)
+			setError(`No se pudieron cargar las promociones: ${publicError(cause)}`)
 		} finally {
-			setLoading(false)
+			if (version === requestVersion.current) setLoading(false)
 		}
 	}, [filters, debouncedSearch, page])
 

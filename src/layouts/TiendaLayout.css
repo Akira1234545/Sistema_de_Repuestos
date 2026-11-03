@@ -1,11 +1,12 @@
+@layer legacy {
 .store-layout {
-	--store-ink: #182521;
-	--store-muted: #63706a;
-	--store-paper: #f6f4ef;
-	--store-cream: #ebe7db;
-	--store-coral: #e86649;
-	--store-teal: #1f766d;
-	--store-line: #d7d8ce;
+	--store-ink: var(--ink);
+	--store-muted: var(--muted);
+	--store-paper: var(--paper);
+	--store-cream: var(--cream);
+	--store-coral: var(--accent);
+	--store-teal: var(--teal);
+	--store-line: var(--line);
 	min-height: 100vh;
 	color: var(--store-ink);
 	background: var(--store-paper);
@@ -86,7 +87,7 @@
 .store-sidebar-intro p { margin: 11px 0 0; color: var(--store-ink); font: 20px/1.12 Georgia, serif; }
 .store-navigation { display: grid; gap: 3px; padding-top: 24px; }
 .store-navigation-link { min-height: 47px; padding: 0 13px; display: flex; align-items: center; gap: 13px; color: var(--store-muted); border-left: 2px solid transparent; text-decoration: none; font-size: 12px; font-weight: 700; }
-.store-navigation-link:hover, .store-navigation-link.active { color: var(--store-ink); background: #f6f4ef; border-left-color: var(--store-teal); }
+.store-navigation-link:hover, .store-navigation-link.active { color: var(--store-ink); background: var(--paper); border-left-color: var(--store-teal); }
 .store-navigation-icon { width: 18px; color: var(--store-teal); text-align: center; font-size: 18px; font-weight: 400; }
 .store-sidebar-footer { margin-top: auto; padding: 17px 13px; border-top: 1px solid var(--store-line); }
 .store-sidebar-footer span { color: var(--store-teal); font-size: 10px; font-weight: 800; }
@@ -119,4 +120,5 @@
 		padding-top: 72px;
 		padding-bottom: 67px;
 	}
+}
 }

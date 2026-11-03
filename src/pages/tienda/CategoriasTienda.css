@@ -1,3 +1,4 @@
+@layer legacy {
 .store-categories-page { max-width: 1160px; }
 .categories-heading { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 28px; }
 .categories-heading h1 { max-width: 760px; margin: 0; color: var(--ink); font-size: clamp(38px, 5vw, 58px); line-height: 1.04; letter-spacing: -.05em; }
@@ -37,7 +38,7 @@
 .categories-empty p { color: #c2b9a9; }
 .categories-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #49443a; }
 .categories-footer p { max-width: 600px; }
-.categories-footer button:disabled { opacity: .48; cursor: not-allowed; transform: none; box-shadow: none !important; }
+.categories-footer button:disabled { opacity: .48; cursor: not-allowed; transform: none; box-shadow: none; }
 @media (max-width: 760px) {
 	.categories-heading { align-items: stretch; flex-direction: column; }
 	.categories-store-status { min-width: 0; }
@@ -45,4 +46,5 @@
 	.categories-selection { justify-items: start; }
 	.categories-grid { grid-template-columns: 1fr; }
 	.categories-footer button, .categories-select-visible { width: 100%; }
+}
 }

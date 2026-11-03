@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
+import { publicError } from '../lib/errors.js'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerSolicitudesAdministracion } from '../services/adminService.js'
 
 const requestStatuses = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada', 'atendida', 'cerrada']
 const pageSize = 25
 
 function formatDate(value) {
-	return value ? new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Sin fecha'
+	return value ? new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Sin fecha'
 }
 
 function AdminRequests() {
+	const requestVersion = useRef(0)
+	useEffect(() => () => { requestVersion.current += 1 }, [])
 	const [categories, setCategories] = useState([])
 	const [requests, setRequests] = useState([])
 	const [filter, setFilter] = useState({ estado: '', categoriaId: '', fechaDesde: '', fechaHasta: '', buscar: '' })
@@ -21,23 +24,26 @@ function AdminRequests() {
 		try {
 			setCategories(await obtenerCategoriasAdministracion())
 		} catch (cause) {
-			setError(`No se pudieron cargar las categorías para filtrar: ${cause.message}`)
+			setError(`No se pudieron cargar las categorías para filtrar: ${publicError(cause)}`)
 		}
 	}, [])
 
 	const loadRequests = useCallback(async () => {
+		const version = ++requestVersion.current
 		setLoading(true)
 		setError('')
 		try {
 			const data = await obtenerSolicitudesAdministracion({ ...filter, limit: pageSize, offset: page * pageSize })
+			if (version !== requestVersion.current) return
 			setRequests(data)
 			setTotalCount(Number(data[0]?.total_count || 0))
 		} catch (cause) {
+			if (version !== requestVersion.current) return
 			setRequests([])
 			setTotalCount(0)
-			setError(`No se pudieron cargar las solicitudes: ${cause.message}`)
+			setError(`No se pudieron cargar las solicitudes: ${publicError(cause)}`)
 		} finally {
-			setLoading(false)
+			if (version === requestVersion.current) setLoading(false)
 		}
 	}, [filter, page])
 

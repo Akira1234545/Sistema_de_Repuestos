@@ -1,3 +1,4 @@
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -17,7 +18,7 @@ function PerfilTienda() {
 				const data = await obtenerTiendaUsuario(user.id)
 				if (active) setStore(data)
 			} catch (loadError) {
-				if (active) setError(`No se pudo cargar tu tienda: ${loadError.message}`)
+				if (active) setError(`No se pudo cargar tu tienda: ${publicError(loadError)}`)
 			} finally {
 				if (active) setLoading(false)
 			}

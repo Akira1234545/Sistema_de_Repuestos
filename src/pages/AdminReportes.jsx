@@ -1,5 +1,6 @@
+import { publicError } from '../lib/errors.js'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerReportesActividadAdministracion } from '../services/adminService.js'
 import './AdminReportes.css'
 
@@ -180,6 +181,8 @@ function downloadCsv(report, period) {
 }
 
 function AdminReportes() {
+	const requestVersion = useRef(0)
+	useEffect(() => () => { requestVersion.current += 1 }, [])
 	const [period, setPeriod] = useState(initialPeriod)
 	const [report, setReport] = useState(null)
 	const [loading, setLoading] = useState(true)
@@ -187,10 +190,11 @@ function AdminReportes() {
 	const [notice, setNotice] = useState('')
 
 	const loadReport = useCallback(async () => {
+		const version = ++requestVersion.current
 		if (!period.fechaDesde || !period.fechaHasta) {
 			setError('Selecciona una fecha inicial y una fecha final.')
 			setReport(null)
-			setLoading(false)
+			if (version === requestVersion.current) setLoading(false)
 			return
 		}
 
@@ -206,17 +210,15 @@ function AdminReportes() {
 		setNotice('')
 
 		try {
-			setReport(
-				await obtenerReportesActividadAdministracion(
-					period.fechaDesde,
-					period.fechaHasta,
-				),
-			)
+			const loadedReport = await obtenerReportesActividadAdministracion(period.fechaDesde, period.fechaHasta)
+			if (version !== requestVersion.current) return
+			setReport(loadedReport)
 		} catch (cause) {
+			if (version !== requestVersion.current) return
 			setReport(null)
-			setError(`No se pudieron cargar los reportes de actividad: ${cause.message}`)
+			setError(`No se pudieron cargar los reportes de actividad: ${publicError(cause)}`)
 		} finally {
-			setLoading(false)
+			if (version === requestVersion.current) setLoading(false)
 		}
 	}, [period])
 
@@ -250,7 +252,7 @@ function AdminReportes() {
 			return
 		}
 
-		downloadCsv(report, period)
+		downloadCsv(report, { fechaDesde: report.periodo.desde, fechaHasta: report.periodo.hasta })
 	}
 
 	const totalCards = report

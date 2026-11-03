@@ -1,3 +1,4 @@
+import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
@@ -33,7 +34,7 @@ function SystemAvailability({ children }) {
 				message: '',
 				supportEmail: '',
 				supportPhone: '',
-				error: `No se pudo comprobar la configuración de mantenimiento: ${cause.message}`,
+				error: `No se pudo comprobar la configuración de mantenimiento: ${publicError(cause)}`,
 			})
 		}
 	}, [])
@@ -53,7 +54,7 @@ function SystemAvailability({ children }) {
 	if (status.loading) return <main className="system-status-loading" role="status">Comprobando disponibilidad del sistema…</main>
 
 	const administrativeRole = ['administrador', 'superAdministrador'].includes(role)
-	if (status.maintenance && !administrativeRole && pathname !== '/login') {
+	if (status.maintenance && !administrativeRole && !['/login', '/forgot-password', '/reset-password'].includes(pathname)) {
 		return <main className="system-maintenance-page">
 			<div className="system-maintenance-card">
 				<p className="system-maintenance-kicker">REPUESTOS PRO / AVISO</p>
@@ -67,7 +68,7 @@ function SystemAvailability({ children }) {
 	}
 
 	return <>
-		{status.error && <p className="system-status-warning" role="alert">{status.error} La aplicación seguirá disponible; el control de acceso a los datos continúa dependiendo de RLS en Supabase.</p>}
+		{status.error && <p className="system-status-warning" role="alert">No pudimos comprobar el estado del servicio. Algunas funciones podrían no estar disponibles. Intenta actualizar la página más tarde.</p>}
 		{children}
 	</>
 }

@@ -8,16 +8,15 @@ function StoreHeader() {
 	const userLabel = user?.email || 'Tienda'
 
 	async function handleSignOut() {
-		await signOut()
-		navigate('/login')
+		if (await signOut()) navigate('/login')
 	}
 
 	return (
 		<header className="store-header">
-			<div className="store-search" role="search">
+			<form className="store-search" role="search" onSubmit={event => { event.preventDefault(); navigate('/promociones?q=' + encodeURIComponent(new FormData(event.currentTarget).get('q').trim())) }}>
 				<span>⌕</span>
-				<input type="search" placeholder="Buscar repuestos, marcas, modelos..." aria-label="Buscar repuestos, marcas y modelos" />
-			</div>
+				<input name="q" maxLength={160} type="search" placeholder="Buscar promociones..." aria-label="Buscar promociones" />
+			</form>
 			<div className="store-header-actions">
 				<NotificationBell key={user?.id || 'anonymous'} variant="store" />
 				<Link className="store-profile-link" to="/tienda/perfil">

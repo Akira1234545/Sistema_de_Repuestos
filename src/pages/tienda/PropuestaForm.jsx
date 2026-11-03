@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { crearPropuesta } from '../../services/propuestaService.js'
+import { useFormDraft } from '../../hooks/useFormDraft.js'
+import { useAuth } from '../../context/authState.js'
 
 const emptyProposal = { precio: '', marca: '', disponibilidad: '', caracteristicas: '', garantia: '', observaciones: '' }
 
 function PropuestaForm({ solicitudId, onCreated }) {
-	const [form, setForm] = useState(emptyProposal)
+	const { user } = useAuth()
+	const [form, setForm] = useFormDraft(emptyProposal)
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState('')
 	function update(event) { setForm((current) => ({ ...current, [event.target.name]: event.target.value })) }
@@ -14,14 +17,14 @@ function PropuestaForm({ solicitudId, onCreated }) {
 			setError('Completa un precio válido, la marca y la disponibilidad.'); return
 		}
 		setSaving(true)
-		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId }); onCreated() }
+		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId, userId: user.id }); onCreated() }
 		catch (saveError) { setError(saveError.message || 'No se pudo enviar la propuesta.') }
 		finally { setSaving(false) }
 	}
 	return <form className="proposal-form" onSubmit={submit}>
 		{error && <p className="proposal-error" role="alert">{error}</p>}
 		<div className="proposal-form-grid">
-			<label>Precio<input name="precio" type="number" min="0" step="0.01" value={form.precio} onChange={update} required /></label>
+			<label>Precio total de la solicitud (Bs)<input name="precio" type="number" min="0" max="99999999.99" step="0.01" value={form.precio} onChange={update} required /><small>Incluye toda la cantidad solicitada.</small></label>
 			<label>Marca<input name="marca" value={form.marca} onChange={update} maxLength="100" required /></label>
 			<label className="proposal-field-wide">Disponibilidad<input name="disponibilidad" value={form.disponibilidad} onChange={update} placeholder="Ej. Disponible para entrega inmediata" maxLength="250" required /></label>
 			<label>Garantía<input name="garantia" value={form.garantia} onChange={update} maxLength="250" /></label>

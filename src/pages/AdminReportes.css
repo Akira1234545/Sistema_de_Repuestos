@@ -1,3 +1,4 @@
+@layer legacy {
 /* Reportes de actividad. El panel y el encabezado compartidos están en AdminAccess.css. */
 
 /* Filtro de periodo */
@@ -9,7 +10,7 @@
 /* Mensajes y estados */
 .admin-reports .admin-alert, .admin-reports .admin-notice { margin: 0 0 1rem; }
 .admin-report-state { margin: 0; padding: 1.1rem 1.25rem; border: 1px solid #49443a; border-radius: 14px; color: #c2b9a9; background: #202123; }
-.admin-reports .admin-empty { margin: 0; color: #c2b9a9 !important; }
+.admin-reports .admin-empty { margin: 0; color: #c2b9a9; }
 .admin-report-meta { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin: 0; color: #c2b9a9; font-size: 13px; }
 .admin-report-meta b { color: #f4efe4; font-weight: 700; }
 
@@ -70,4 +71,5 @@
 
 @media (max-width: 420px) {
 	.admin-report-cards, .admin-report-cards-4 { grid-template-columns: 1fr; }
+}
 }

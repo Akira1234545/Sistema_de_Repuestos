@@ -13,11 +13,11 @@ function throwRpcError(error) {
 	}
 }
 
-export async function obtenerUsuariosAdministracion() {
+export async function obtenerUsuariosAdministracion(page = 0, search = '') {
 	requireSupabase()
-	const { data, error } = await supabase.rpc('sprint3_admin_list_users')
+	const { data, error } = await supabase.rpc('admin_user_page', { p_search: search || null, p_offset: page * 25, p_limit: 26 })
 	throwRpcError(error)
-	return data || []
+	return { items: (data || []).slice(0, 25), hasMore: data?.length > 25 }
 }
 
 export async function cambiarEstadoUsuario(userId, active) {
@@ -43,11 +43,12 @@ export async function obtenerConfiguracionSistema() {
 
 export async function guardarConfiguracionSistema(settings) {
 	requireSupabase()
-	const { error } = await supabase.rpc('sprint3_admin_update_system_settings', {
+	const { error } = await supabase.rpc('guardar_configuracion_segura', {
 		p_support_email: settings.correo_soporte || null,
 		p_support_phone: settings.telefono_soporte || null,
 		p_maintenance_enabled: settings.mantenimiento_activo,
 		p_maintenance_message: settings.mensaje_mantenimiento,
+		p_expected_version: settings.actualizado_en,
 	})
 	throwRpcError(error)
 }

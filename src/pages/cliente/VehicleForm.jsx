@@ -1,23 +1,28 @@
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenerMarcas, obtenerModelos, obtenerTiposVehiculo } from '../../services/vehiculoService.js'
+import { useFormDraft } from '../../hooks/useFormDraft.js'
+import { vehicleYearLimit } from '../../lib/format.js'
 
 export function VehicleForm({ initialValues, onSubmit, saving, error, submitLabel }) {
-	const [form, setForm] = useState(initialValues)
+	const [form, setForm] = useFormDraft(initialValues)
 	const [types, setTypes] = useState([])
 	const [brands, setBrands] = useState([])
 	const [models, setModels] = useState([])
 	const [loadingModels, setLoadingModels] = useState(false)
 	const [loadingOptions, setLoadingOptions] = useState(true)
 	const [optionsError, setOptionsError] = useState('')
+	const [modelError, setModelError] = useState('')
+	const [retry, setRetry] = useState(0)
 
 	useEffect(() => {
 		let active = true
 		Promise.all([obtenerTiposVehiculo(), obtenerMarcas()]).then(([loadedTypes, loadedBrands]) => {
 			if (active) { setTypes(loadedTypes); setBrands(loadedBrands) }
-		}).catch((loadError) => { if (active) setOptionsError(`No se pudieron cargar los catálogos: ${loadError.message}`) }).finally(() => { if (active) setLoadingOptions(false) })
+		}).catch((loadError) => { if (active) setOptionsError(`No se pudieron cargar los catálogos: ${publicError(loadError)}`) }).finally(() => { if (active) setLoadingOptions(false) })
 		return () => { active = false }
-	}, [])
+	}, [retry])
 
 	useEffect(() => {
 		let active = true
@@ -26,14 +31,14 @@ export function VehicleForm({ initialValues, onSubmit, saving, error, submitLabe
 		}
 
 		Promise.resolve().then(() => {
-			if (active) { setModels([]); setLoadingModels(true); setOptionsError('') }
+			if (active) { setModels([]); setLoadingModels(true); setModelError('') }
 			return obtenerModelos(form.marca_id, form.tipo_vehiculo_id)
 		})
 			.then((data) => { if (active) setModels(data) })
-			.catch((loadError) => { if (active) setOptionsError(`No se pudieron cargar los modelos: ${loadError.message}`) })
+			.catch(() => { if (active) setModelError('No se pudieron cargar los modelos. Cambia la selección o reintenta.') })
 			.finally(() => { if (active) setLoadingModels(false) })
 		return () => { active = false }
-	}, [form.marca_id, form.tipo_vehiculo_id])
+	}, [form.marca_id, form.tipo_vehiculo_id, retry])
 
 	function updateField(event) {
 		const { name, value } = event.target
@@ -42,15 +47,15 @@ export function VehicleForm({ initialValues, onSubmit, saving, error, submitLabe
 
 	function handleSubmit(event) {
 		event.preventDefault()
-		const currentYear = new Date().getFullYear()
+		const currentYear = vehicleYearLimit() - 1
 		const validationError = !form.tipo_vehiculo_id ? 'Selecciona un tipo de vehículo.' : !form.marca_id ? 'Selecciona una marca.' : !form.modelo_id ? 'Selecciona un modelo.' : !form.anio ? 'Escribe el año del vehículo.' : !Number.isInteger(Number(form.anio)) || Number(form.anio) < 1886 || Number(form.anio) > currentYear + 1 ? `El año debe estar entre 1886 y ${currentYear + 1}.` : ''
 		if (validationError) { onSubmit(null, validationError); return }
 		onSubmit({ ...form, anio: Number(form.anio) })
 	}
 
 	if (loadingOptions) return <p className="vehicle-message">Cargando tipos, marcas y modelos...</p>
-	if (optionsError) return <p className="vehicle-error" role="alert">{optionsError}</p>
+	if (optionsError) return <div className="vehicle-error" role="alert"><p>No se pudieron cargar los catálogos.</p><button className="button" type="button" onClick={() => { setOptionsError(''); setLoadingOptions(true); setRetry(value => value + 1) }}>Reintentar</button></div>
 	if (types.length === 0 || brands.length === 0) return <div className="vehicle-error" role="status"><strong>Catálogo de vehículos incompleto.</strong><p>{types.length === 0 ? 'No hay tipos de vehículo activos.' : ''}{types.length === 0 && brands.length === 0 ? ' ' : ''}{brands.length === 0 ? 'No hay marcas activas.' : ''} Pide al administrador que revise los catálogos y permisos de lectura en Supabase.</p></div>
 
-	return <form className="vehicle-form-card" onSubmit={handleSubmit}>{error && <p className="vehicle-form-error" role="alert">{error}</p>}<div className="vehicle-form-grid"><label className="vehicle-field">Tipo de vehículo<select name="tipo_vehiculo_id" value={form.tipo_vehiculo_id} onChange={updateField} required><option value="">Selecciona un tipo</option>{types.map((type) => <option value={type.id} key={type.id}>{type.nombre}</option>)}</select></label><label className="vehicle-field">Marca<select name="marca_id" value={form.marca_id} onChange={updateField} required><option value="">Selecciona una marca</option>{brands.map((brand) => <option value={brand.id} key={brand.id}>{brand.nombre}</option>)}</select></label><label className="vehicle-field">Modelo<select name="modelo_id" value={form.modelo_id} onChange={updateField} required disabled={!form.marca_id || !form.tipo_vehiculo_id || loadingModels}><option value="">{loadingModels ? 'Cargando modelos...' : models.length === 0 ? 'No hay modelos compatibles con este tipo y marca' : 'Selecciona un modelo'}</option>{models.map((model) => <option value={model.id} key={model.id}>{model.nombre}</option>)}</select>{form.marca_id && form.tipo_vehiculo_id && !loadingModels && models.length === 0 && <small role="status">No hay modelos activos para esta combinación. Comprueba los filtros del catálogo.</small>}</label><label className="vehicle-field">Año<input name="anio" type="number" min="1886" max={new Date().getFullYear() + 1} step="1" value={form.anio} onChange={updateField} required /></label><label className="vehicle-field vehicle-field-full">Descripción<textarea name="descripcion" value={form.descripcion} onChange={updateField} placeholder="Información adicional del vehículo (opcional)" /></label></div><div className="vehicle-form-actions"><Link className="vehicle-cancel" to="/cliente/vehiculos">Cancelar</Link><button className="button vehicle-button" type="submit" disabled={saving}>{saving ? 'Guardando...' : submitLabel}</button></div></form>
+	return <form className="vehicle-form-card" onSubmit={handleSubmit}>{modelError && <p role="alert">{modelError}<button type="button" onClick={() => setRetry(value => value + 1)}>Reintentar</button></p>}{error && <p className="vehicle-form-error" role="alert">{error}</p>}<div className="vehicle-form-grid"><label className="vehicle-field">Tipo de vehículo<select name="tipo_vehiculo_id" value={form.tipo_vehiculo_id} onChange={updateField} required><option value="">Selecciona un tipo</option>{types.map((type) => <option value={type.id} key={type.id}>{type.nombre}</option>)}</select></label><label className="vehicle-field">Marca<select name="marca_id" value={form.marca_id} onChange={updateField} required><option value="">Selecciona una marca</option>{brands.map((brand) => <option value={brand.id} key={brand.id}>{brand.nombre}</option>)}</select></label><label className="vehicle-field">Modelo<select name="modelo_id" value={form.modelo_id} onChange={updateField} required disabled={!form.marca_id || !form.tipo_vehiculo_id || loadingModels}><option value="">{loadingModels ? 'Cargando modelos...' : models.length === 0 ? 'No hay modelos compatibles con este tipo y marca' : 'Selecciona un modelo'}</option>{models.map((model) => <option value={model.id} key={model.id}>{model.nombre}</option>)}</select>{form.marca_id && form.tipo_vehiculo_id && !loadingModels && models.length === 0 && <small role="status">No hay modelos activos para esta combinación. Comprueba los filtros del catálogo.</small>}</label><label className="vehicle-field">Año<input name="anio" type="number" min="1886" max={vehicleYearLimit()} step="1" value={form.anio} onChange={updateField} required /></label><label className="vehicle-field vehicle-field-full">Descripción<textarea name="descripcion" value={form.descripcion} onChange={updateField} placeholder="Información adicional del vehículo (opcional)" /></label></div><div className="vehicle-form-actions"><Link className="vehicle-cancel" to="/cliente/vehiculos">Cancelar</Link><button className="button vehicle-button" type="submit" disabled={saving}>{saving ? 'Guardando...' : submitLabel}</button></div></form>
 }

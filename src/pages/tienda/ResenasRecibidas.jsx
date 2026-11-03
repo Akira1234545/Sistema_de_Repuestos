@@ -1,3 +1,5 @@
+import Pagination from '../../components/Pagination.jsx'
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenerResenasRecibidas } from '../../services/resenaService.js'
@@ -11,34 +13,34 @@ function Stars({ rating }) {
 }
 
 function formatDate(value) {
-	return new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+	return new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
 function ResenasRecibidas() {
 	const [store, setStore] = useState(null)
 	const [reviews, setReviews] = useState([])
+	const [page, setPage] = useState(0)
+	const [hasMore, setHasMore] = useState(false)
+	const [total, setTotal] = useState('0')
+	const [average, setAverage] = useState('0.0')
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 
 	useEffect(() => {
 		let active = true
-		obtenerResenasRecibidas()
-			.then(({ store: currentStore, reviews: receivedReviews }) => {
+		obtenerResenasRecibidas(page)
+			.then(({ store: currentStore, reviews: receivedReviews, total, average, hasMore }) => {
 				if (active) {
 					setStore(currentStore)
-					setReviews(receivedReviews)
+					setReviews(receivedReviews); setTotal(total); setAverage(Number(average || 0).toFixed(1)); setHasMore(hasMore)
 				}
 			})
 			.catch((cause) => {
-				if (active) setError(`No se pudieron cargar las reseñas recibidas: ${cause.message}`)
+				if (active) setError(`No se pudieron cargar las reseñas recibidas: ${publicError(cause)}`)
 			})
 			.finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
-	}, [])
-
-	const average = reviews.length
-		? (reviews.reduce((total, review) => total + review.calificacion, 0) / reviews.length).toFixed(1)
-		: '0.0'
+	}, [page])
 
 	return <section className="store-page received-reviews-page">
 		<header className="store-page-heading">
@@ -69,7 +71,7 @@ function ResenasRecibidas() {
 				</div>
 				<div className="received-reviews-stat">
 					<span className="received-reviews-stat-icon received-reviews-count-icon" aria-hidden="true">✎</span>
-					<div><small>TOTAL DE RESEÑAS</small><strong>{reviews.length}</strong><span className="received-reviews-stat-note">{reviews.length === 1 ? 'opinión de tus clientes' : 'opiniones de tus clientes'}</span></div>
+					<div><small>TOTAL DE RESEÑAS</small><strong>{total}</strong><span className="received-reviews-stat-note">{reviews.length === 1 ? 'opinión de tus clientes' : 'opiniones de tus clientes'}</span></div>
 				</div>
 			</div>
 			{reviews.length === 0
@@ -99,6 +101,7 @@ function ResenasRecibidas() {
 					</article>)}</div>
 				</section>}
 		</div>}
+		<Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} />
 	</section>
 }
 

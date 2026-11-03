@@ -1,3 +1,4 @@
+import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useState } from 'react'
 import { guardarConfiguracionSistema, obtenerConfiguracionSistema } from '../services/adminService.js'
 
@@ -14,14 +15,16 @@ function AdminSettings() {
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState('')
 	const [notice, setNotice] = useState('')
+	const [loaded, setLoaded] = useState(false)
 
 	const loadSettings = useCallback(async () => {
 		setLoading(true)
 		setError('')
 		try {
 			setSettings(await obtenerConfiguracionSistema())
+			setLoaded(true)
 		} catch (cause) {
-			setError(`No se pudo cargar la configuración: ${cause.message}`)
+			setError(`No se pudo cargar la configuración: ${publicError(cause)}`)
 		} finally {
 			setLoading(false)
 		}
@@ -39,6 +42,7 @@ function AdminSettings() {
 
 	async function saveSettings(event) {
 		event.preventDefault()
+		if (!loaded) return
 		setSaving(true)
 		setError('')
 		setNotice('')
@@ -47,7 +51,7 @@ function AdminSettings() {
 			setNotice('La configuración se guardó correctamente.')
 			await loadSettings()
 		} catch (cause) {
-			setError(`No se pudo guardar la configuración: ${cause.message}`)
+			setError(`No se pudo guardar la configuración: ${publicError(cause)}`)
 		} finally {
 			setSaving(false)
 		}
@@ -57,7 +61,7 @@ function AdminSettings() {
 		<div className="admin-section-heading"><div><p className="admin-kicker">PREFERENCIAS DE LA PLATAFORMA</p><h2 id="admin-settings-title">Configuración general</h2><p>Administra el contacto de soporte y el aviso de mantenimiento.</p></div><button type="button" className="button button-secondary" onClick={() => { void loadSettings() }} disabled={loading || saving}>Actualizar</button></div>
 		{error && <p className="admin-alert" role="alert">{error}</p>}
 		{notice && <p className="admin-notice" role="status">{notice}</p>}
-		{loading ? <p role="status">Cargando configuración…</p> : <form className="admin-settings-form" onSubmit={saveSettings}>
+		{loading ? <p role="status">Cargando configuración…</p> : !loaded ? <button className="button" onClick={loadSettings} type="button">Reintentar carga</button> : <form className="admin-settings-form" onSubmit={saveSettings}>
 			<fieldset disabled={saving}>
 				<legend>Contacto y soporte</legend>
 				<label>Correo de soporte<input type="email" name="correo_soporte" value={settings.correo_soporte || ''} onChange={updateField} maxLength="254" placeholder="soporte@ejemplo.com" /></label>

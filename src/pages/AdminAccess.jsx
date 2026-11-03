@@ -1,3 +1,4 @@
+import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
@@ -14,11 +15,11 @@ const statuses = ['pendiente', 'aprobada', 'rechazada', 'suspendida']
 const columns = 'id, nombre, descripcion, telefono, direccion, latitud, longitud, horario, fotografias, activa, estado, motivo_estado, fecha_creacion, usuario_id'
 
 function formatDate(value) {
-	return value ? new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Sin fecha'
+	return value ? new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Sin fecha'
 }
 
 function AdminAccess() {
-	const { role } = useAuth()
+	const { role, signOut, profileError } = useAuth()
 	const [stores, setStores] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
@@ -32,7 +33,7 @@ function AdminAccess() {
 		setLoading(true)
 		setError('')
 		const { data, error: loadError } = await supabase.from('tiendas').select(columns).order('fecha_creacion', { ascending: false })
-		if (loadError) setError(`No se pudieron cargar las tiendas: ${loadError.message}`)
+		if (loadError) setError(`No se pudieron cargar las tiendas: ${publicError(loadError)}`)
 		else setStores(data || [])
 		setLoading(false)
 	}, [])
@@ -64,14 +65,15 @@ function AdminAccess() {
 			setNotice(`La tienda “${store.nombre}” fue ${action === 'aprobar' ? 'aprobada' : action === 'rechazar' ? 'rechazada' : 'suspendida'}.`)
 			await loadStores()
 		} catch (cause) {
-			setError(`No se pudo actualizar la tienda: ${cause.message}`)
+			setError(`No se pudo actualizar la tienda: ${publicError(cause)}`)
 		} finally {
 			setBusyId('')
 		}
 	}
 
 	return <main className="admin-page">
-		<header className="admin-heading"><div><p className="eyebrow">Sistema Repuestos / Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><Link className="button button-secondary" to="/">Volver al inicio</Link></header>
+		{profileError && <p className="admin-alert" role="alert">{profileError}</p>}
+		<header className="admin-heading"><div><p className="eyebrow">Sistema Repuestos / Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
 		<nav className="admin-tabs" aria-label="Administración del sistema">
 			<button className={section === 'tiendas' ? 'active' : ''} type="button" onClick={() => setSection('tiendas')}>Cuentas de tiendas</button>
 			<button className={section === 'usuarios' ? 'active' : ''} type="button" onClick={() => setSection('usuarios')}>Usuarios</button>

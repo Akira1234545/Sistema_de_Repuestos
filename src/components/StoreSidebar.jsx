@@ -1,14 +1,16 @@
+import Icon from './Icon.jsx'
 import { Link, NavLink } from 'react-router-dom'
 
 const storeNavigation = [
-	{ label: 'Resumen', icon: '⌂', to: '/tienda', end: true },
-	{ label: 'Mi tienda', icon: '▣', to: '/tienda/perfil' },
-	{ label: 'Categorías que atiendo', icon: '◈', to: '/tienda/categorias' },
-	{ label: 'Solicitudes disponibles', icon: '▤', to: '/tienda/solicitudes' },
-	{ label: 'Promociones', icon: '％', to: '/tienda/promociones' },
-	{ label: 'Reseñas recibidas', icon: '★', to: '/tienda/resenas' },
-	{ label: 'Favoritos', icon: '♡', to: '/tienda/favoritos' },
-	{ label: 'Editar información', icon: '✎', to: '/tienda/editar' },
+    { label: 'Mis propuestas', icon: 'proposal', to: '/tienda/propuestas' },
+	{ label: 'Resumen', icon: 'home', to: '/tienda', end: true },
+	{ label: 'Mi tienda', icon: 'store', to: '/tienda/perfil' },
+	{ label: 'Categorías que atiendo', icon: 'categories', to: '/tienda/categorias' },
+	{ label: 'Solicitudes disponibles', icon: 'requests', to: '/tienda/solicitudes' },
+	{ label: 'Promociones', icon: 'promotion', to: '/tienda/promociones' },
+	{ label: 'Reseñas recibidas', icon: 'star', to: '/tienda/resenas' },
+	{ label: 'Favoritos', icon: 'heart', to: '/tienda/favoritos' },
+	{ label: 'Editar información', icon: 'edit', to: '/tienda/editar' },
 ]
 
 function StoreSidebar() {
@@ -25,13 +27,13 @@ function StoreSidebar() {
 			<nav className="store-navigation">
 				{storeNavigation.map((item) => (
 					<NavLink className="store-navigation-link" to={item.to} end={item.end} key={item.label}>
-						<span className="store-navigation-icon">{item.icon}</span>
+						<span className="store-navigation-icon"><Icon name={item.icon} /></span>
 						<span>{item.label}</span>
 					</NavLink>
 				))}
 			</nav>
 			<div className="store-sidebar-footer">
-				<span>HU-2</span>
+				<span>ESPACIO DE TIENDA</span>
 				<p>Gestión de<br />tu tienda</p>
 			</div>
 		</aside>

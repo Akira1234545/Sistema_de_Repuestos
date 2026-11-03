@@ -1,6 +1,7 @@
+@layer legacy {
 /* Notificaciones: superficies grafito, líneas cálidas y acentos dorados de theme.css. */
 .notification-bell { position: relative; display: flex; align-items: center; }
-.notification-trigger { min-width: 38px; min-height: 38px; display: inline-flex; align-items: center; justify-content: center; position: relative; border: 1px solid transparent; border-radius: 9px; background: transparent; cursor: pointer; font-size: 25px !important; line-height: 1; transition: color .16s ease, background .16s ease, border-color .16s ease; }
+.notification-trigger { min-width: 38px; min-height: 38px; display: inline-flex; align-items: center; justify-content: center; position: relative; border: 1px solid transparent; border-radius: 9px; background: transparent; cursor: pointer; font-size: 25px; line-height: 1; transition: color .16s ease, background .16s ease, border-color .16s ease; }
 .notification-bell .notification-trigger:hover, .notification-bell .notification-trigger[aria-expanded="true"] { border-color: #5d4925; color: #f1cd78; background: #24211a; }
 .notification-trigger:focus-visible { outline: 3px solid #d8a93f; outline-offset: 2px; }
 .notification-count { min-width: 18px; height: 18px; box-sizing: border-box; position: absolute; top: -2px; right: -4px; display: grid; place-items: center; padding: 0 4px; border: 2px solid #090a0b; border-radius: 999px; color: #fff4ed; background: #b54a3c; font: 800 10px/1 Inter, "Segoe UI", system-ui, sans-serif; }
@@ -31,9 +32,9 @@
 .notification-item-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
 .notification-item-actions a, .notification-item-actions button, .notification-item-actions > span { padding: 0; border: 0; color: #e3b64e; background: transparent; font: inherit; font-size: 12px; font-weight: 750; text-decoration: none; cursor: pointer; }
 .notification-item-actions a:hover, .notification-item-actions button:hover { color: #f1cd78; text-decoration: underline; }
-/* theme.css colorea con !important todos los enlaces del header, donde vive este panel. */
-.notification-bell .notification-popover .notification-item-actions a { border: 0 !important; color: #e3b64e !important; background: transparent !important; }
-.notification-bell .notification-popover .notification-item-actions a:hover { color: #f1cd78 !important; }
+/* theme.css colorea con todos los enlaces del header, donde vive este panel. */
+.notification-bell .notification-popover .notification-item-actions a { border: 0; color: #e3b64e; background: transparent; }
+.notification-bell .notification-popover .notification-item-actions a:hover { color: #f1cd78; }
 .notification-item-actions button { padding: 4px 10px; border: 1px solid #7c673e; border-radius: 999px; color: #f2e8d2; background: #292725; }
 .notification-item-actions button:hover { border-color: #d8a93f; color: #f5d786; background: #393124; text-decoration: none; }
 .notification-item-actions button:disabled { opacity: .6; cursor: wait; }
@@ -47,4 +48,5 @@
 
 @media (max-width: 720px) {
 	.notification-popover { width: auto; position: fixed; top: 68px; right: 12px; left: 12px; }
+}
 }

@@ -1,22 +1,18 @@
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import ResenaTienda from '../../components/ResenaTienda.jsx'
 import { obtenerPropuestasDeSolicitud, seleccionarPropuesta } from '../../services/propuestaService.js'
-import { obtenerSolicitudPorId } from '../../services/solicitudService.js'
+import { confirmarAtencion, obtenerSolicitudPorId } from '../../services/solicitudService.js'
 import './Solicitudes.css'
 import './Propuestas.css'
 
 const statusLabels = { enviada: 'Enviada', aceptada: 'Seleccionada', rechazada: 'No seleccionada', retirada: 'Retirada' }
 function money(value) { return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(value)) }
-function date(value) { return new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) }
-function whatsappPhone(phone) {
-	const digits = phone?.replace(/\D/g, '') || ''
-	if (!digits) return ''
-	const internationalDigits = digits.startsWith('00') ? digits.slice(2) : digits
-	return internationalDigits.startsWith('591') ? internationalDigits : `591${internationalDigits}`
-}
+function date(value) { return new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) }
+
 function validCoordinates(store) {
 	const lat = Number(store?.latitud); const lon = Number(store?.longitud)
 	return store?.latitud !== null && store?.latitud !== '' && store?.longitud !== null && store?.longitud !== ''
@@ -41,7 +37,7 @@ function PropuestasSolicitud() {
 		let active = true
 		Promise.all([obtenerSolicitudPorId(id, user.id), obtenerPropuestasDeSolicitud(id)])
 			.then(([requestData, proposalData]) => { if (active) { setRequest(requestData); setProposals(proposalData); setError('') } })
-			.catch((loadError) => { if (active) setError(`No se pudieron cargar las propuestas: ${loadError.message}`) })
+			.catch((loadError) => { if (active) setError(`No se pudieron cargar las propuestas: ${publicError(loadError)}`) })
 			.finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
 	}, [id, user.id, refresh])
@@ -49,16 +45,25 @@ function PropuestasSolicitud() {
 		if (!window.confirm('¿Quieres seleccionar esta propuesta? Las demás propuestas abiertas quedarán rechazadas.')) return
 		setSelectingId(proposal.id); setError('')
 		try { await seleccionarPropuesta(id, proposal.id); setRefresh((value) => value + 1) }
-		catch (selectError) { setError(`No se pudo seleccionar la propuesta: ${selectError.message}`) }
+		catch (selectError) { setError(`No se pudo seleccionar la propuesta: ${publicError(selectError)}`) }
+		finally { setSelectingId('') }
+	}
+	async function complete() {
+		if (!window.confirm('¿Confirmas que la tienda atendió tu solicitud? Después podrás dejar tu reseña.')) return
+		setSelectingId('attention'); setError('')
+		try { await confirmarAtencion(id); setRefresh((value) => value + 1) }
+		catch (cause) { setError(`No se pudo confirmar la atención: ${publicError(cause)}`) }
 		finally { setSelectingId('') }
 	}
 	if (loading) return <section className="requests-page"><p className="request-loading">Cargando propuestas...</p></section>
 	if (error && !request) return <section className="requests-page"><p className="request-error" role="alert">{error}</p><Link to="/cliente/solicitudes">Volver a mis solicitudes</Link></section>
-	if (!request) return null
+	if (!request) return <section className="requests-page"><h1>Solicitud no disponible</h1><Link to="/cliente/solicitudes">Volver a mis solicitudes</Link></section>
 	const canSelect = ['publicada', 'recibiendo_propuestas'].includes(request.estado)
 	return <section className="requests-page proposal-comparison">
 		<div className="requests-heading"><div><p className="requests-eyebrow">Panel de cliente / Solicitud</p><h1>Propuestas recibidas</h1><p className="requests-lead">{request.titulo} · Estado: {request.estado.replaceAll('_', ' ')}</p></div><Link className="button requests-button" to="/cliente/solicitudes">Volver a solicitudes</Link></div>
 		{error && <p className="request-error" role="alert">{error}</p>}
+		<p>Cada precio es el total para la cantidad solicitada: {request.cantidad}.</p>
+		{request.estado === 'propuesta_seleccionada' && <button className="button" type="button" disabled={Boolean(selectingId)} onClick={complete}>{selectingId === 'attention' ? 'Confirmando…' : 'Confirmar atención recibida'}</button>}
 		{proposals.length === 0 ? <div className="request-empty"><h2>Aún no hay propuestas</h2><p>Las tiendas todavía no han respondido a esta solicitud.</p></div> : <div className="proposal-comparison-grid">{proposals.map((proposal) => {
 			const selected = request.propuesta_seleccionada_id === proposal.id && proposal.estado === 'aceptada'
 			const shop = proposal.tienda
@@ -71,10 +76,12 @@ function PropuestasSolicitud() {
 					{validCoordinates(shop) ? <div className="osm-map-wrap"><iframe title={`Mapa de ${shop.nombre}`} src={mapUrl(shop)} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><p><a href={`https://www.openstreetmap.org/?mlat=${shop.latitud}&mlon=${shop.longitud}#map=16/${shop.latitud}/${shop.longitud}`} target="_blank" rel="noreferrer">Abrir mapa de OpenStreetMap ↗</a> · © OpenStreetMap contributors</p></div> : <p className="map-unavailable">El perfil de la tienda no tiene coordenadas válidas; se muestra únicamente la dirección disponible.</p>}
 				</section>}
 				{selected && !shop && <p className="map-unavailable" role="status">La propuesta está seleccionada, pero no se pudo consultar el perfil de contacto de la tienda.</p>}
-				{selected && shop && <ResenaTienda usuarioId={user.id} tiendaId={shop.id} propuestaId={proposal.id} tiendaNombre={shop.nombre || 'la tienda'} />}
+				{selected && shop && request.estado === 'atendida' && <ResenaTienda key={proposal.id} usuarioId={user.id} tiendaId={shop.id} propuestaId={proposal.id} tiendaNombre={shop.nombre || 'la tienda'} />}
 				{canSelect && proposal.estado === 'enviada' && <button className="button proposal-select" type="button" onClick={() => choose(proposal)} disabled={Boolean(selectingId)}>{selectingId === proposal.id ? 'Seleccionando…' : 'Seleccionar propuesta'}</button>}
 			</article>
 		})}</div>}
 	</section>
 }
 export default PropuestasSolicitud
+
+import { whatsappPhone } from "../../lib/format.js"

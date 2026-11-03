@@ -3,7 +3,8 @@ import { useAuth } from '../context/authState.js'
 
 function Header({ privateArea = false }) {
 	const navigate = useNavigate()
-	const { user, signOut } = useAuth()
+	const { user, role, signOut } = useAuth()
+	const panel = role === 'tienda' ? '/tienda' : role === 'cliente' ? '/cliente' : '/admin'
 
 	if (privateArea) {
 		const userLabel = user?.name || user?.email || 'Cliente'
@@ -28,11 +29,10 @@ function Header({ privateArea = false }) {
 		<header className="site-header">
 			<Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link>
 			<nav className="site-nav" aria-label="Navegación principal">
-				<a href="#categorias">Categorías</a>
+				<Link to="/#categorias">Categorías</Link>
 				<Link to="/tiendas">Tiendas</Link>
 				<Link to="/promociones">Promociones</Link>
-				<Link to="/login">Iniciar sesión</Link>
-				<Link className="nav-register" to="/register">Registrarse <span>↗</span></Link>
+				{user ? <><Link to={panel}>Mi panel</Link><button className="button button-secondary" type="button" onClick={() => { void signOut() }}>Cerrar sesión</button></> : <><Link to="/login">Iniciar sesión</Link><Link className="nav-register" to="/register">Registrarse <span>↗</span></Link></>}
 			</nav>
 		</header>
 	)

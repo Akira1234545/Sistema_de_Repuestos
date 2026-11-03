@@ -1,3 +1,4 @@
+import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { guardarCategoriaAdministracion, obtenerCategoriasAdministracion } from '../services/adminService.js'
 
@@ -18,7 +19,7 @@ function AdminCategories() {
 		try {
 			setCategories(await obtenerCategoriasAdministracion())
 		} catch (cause) {
-			setError(`No se pudieron cargar las categorías: ${cause.message}`)
+			setError(`No se pudieron cargar las categorías: ${publicError(cause)}`)
 		} finally {
 			setLoading(false)
 		}
@@ -66,7 +67,7 @@ function AdminCategories() {
 			setForm(emptyForm)
 			await loadCategories()
 		} catch (cause) {
-			setError(`No se pudo guardar la categoría: ${cause.message}`)
+			setError(`No se pudo guardar la categoría: ${publicError(cause)}`)
 		} finally {
 			setSaving(false)
 		}
@@ -81,7 +82,7 @@ function AdminCategories() {
 			setNotice(`La categoría “${category.nombre}” fue ${category.activo ? 'desactivada' : 'activada'}.`)
 			await loadCategories()
 		} catch (cause) {
-			setError(`No se pudo cambiar el estado: ${cause.message}`)
+			setError(`No se pudo cambiar el estado: ${publicError(cause)}`)
 		} finally {
 			setSaving(false)
 		}

@@ -1,3 +1,4 @@
+import { publicError } from '../../lib/errors.js'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
@@ -20,6 +21,7 @@ function Register() {
 		setError('')
 		setMessage('')
 		setLoading(true)
+		try {
 		const formData = new FormData(event.currentTarget)
 		const password = formData.get('password')
 		const confirmPassword = formData.get('confirmPassword')
@@ -35,7 +37,7 @@ function Register() {
 		})
 
 		if (signUpError) {
-			setError(signUpError.message)
+			setError(publicError(signUpError))
 			setLoading(false)
 			return
 		}
@@ -46,6 +48,9 @@ function Register() {
 			setMessage('Revisa tu correo para confirmar la cuenta antes de iniciar sesión.')
 		}
 		setLoading(false)
+		} catch {
+			setError('No se pudo crear la cuenta. Comprueba tu conexión e inténtalo de nuevo.')
+		} finally { setLoading(false) }
 	}
 
 	return (
@@ -56,12 +61,12 @@ function Register() {
 				<h1>Únete a RepuestosPro</h1>
 				{!role && <p className="auth-error" role="alert">Selecciona primero el tipo de cuenta en <Link to="/register">Registro</Link>.</p>}
 				<p className="auth-description">Crea tu cuenta para {role === 'tienda' ? 'ofrecer tus repuestos y hacer crecer tu tienda.' : 'encontrar repuestos para tu vehículo.'}</p>
-				<label>Nombre<input name="name" type="text" required placeholder="Tu nombre" /></label>
-				<label>Apellido<input name="apellido" type="text" required placeholder="Tu apellido" /></label>
+				<label>Nombre<input name="name" type="text" maxLength="100" autoComplete="given-name" required placeholder="Tu nombre" /></label>
+				<label>Apellido<input name="apellido" type="text" maxLength="100" autoComplete="family-name" required placeholder="Tu apellido" /></label>
 				<label>Teléfono<input name="telefono" type="tel" placeholder="Tu teléfono" /></label>
 				<label>Correo electrónico<input name="email" type="email" required placeholder="tu@correo.com" /></label>
-				<label>Contraseña<input name="password" type="password" required minLength="6" autoComplete="new-password" placeholder="Mínimo 6 caracteres" /></label>
-				<label>Confirmar contraseña<input name="confirmPassword" type="password" required minLength="6" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
+				<label>Contraseña<input name="password" type="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 6 caracteres" /></label>
+				<label>Confirmar contraseña<input name="confirmPassword" type="password" required minLength="12" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				{message && <p className="auth-message" role="status">{message}</p>}
 				<button className="button button-primary" type="submit" disabled={loading || !role}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</button>

@@ -1,12 +1,13 @@
-:root {
-  --ink: #182521;
-  --muted: #63706a;
-  --paper: #f6f4ef;
-  --cream: #ebe7db;
-  --coral: #e86649;
-  --teal: #1f766d;
-  --line: #d7d8ce;
-  --navy: #203a3a;
+@layer legacy {
+.public-home {
+  --ink: #f1f3f5;
+  --muted: #a8b0bc;
+  --paper: #181d25;
+  --cream: #202733;
+  --coral: #edbf69;
+  --teal: #82cbb8;
+  --line: #303947;
+  --navy: #1f2c37;
 }
 
 .public-home {
@@ -173,4 +174,5 @@
   .store-cta .button { margin-top: 28px; }
   .home-footer { display: block; padding: 30px 0; }
   .home-footer p { margin: 12px 0; }
+}
 }
