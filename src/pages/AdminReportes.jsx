@@ -124,7 +124,7 @@ function downloadCsv(report, period) {
 		['Categorías principales', categories.principales ?? 0],
 		['Subcategorías', categories.subcategorias ?? 0],
 		[],
-		['Solicitudes por categoría'],
+		['Solicitudes por categoría creadas en el periodo'],
 		['Categoría', 'Estado', 'Cantidad de solicitudes'],
 		...categoryRequests.map((item) => [
 			item.nombre,
@@ -187,6 +187,7 @@ function AdminReportes() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 	const [notice, setNotice] = useState('')
+	const [showAllCategories, setShowAllCategories] = useState(false)
 
 	const loadReport = useCallback(async () => {
 		const version = ++requestVersion.current
@@ -293,6 +294,10 @@ function AdminReportes() {
 
 	const categories = report?.categorias ?? {}
 	const categoryRequests = categories.solicitudes_por_categoria ?? []
+	const rankedCategories = [...categoryRequests].sort((a, b) => Number(b.solicitudes) - Number(a.solicitudes) || a.nombre.localeCompare(b.nombre, 'es'))
+	const categoriesWithRequests = rankedCategories.filter((item) => Number(item.solicitudes) > 0)
+	const visibleCategories = showAllCategories ? rankedCategories : categoriesWithRequests
+	const maxCategoryRequests = Math.max(1, ...rankedCategories.map((item) => Number(item.solicitudes) || 0))
 
 	return (
 		<section className="admin-panel admin-reports" aria-labelledby="admin-reports-title">
@@ -436,8 +441,8 @@ function AdminReportes() {
 					>
 						<h3 id="admin-report-categories-title">Categorías de repuestos</h3>
 						<p className="admin-report-note">
-							Resumen del catálogo de categorías y cantidad de solicitudes asociadas
-							a cada categoría.
+							Resumen del catálogo actual y de las solicitudes creadas en el periodo
+							seleccionado para cada categoría.
 						</p>
 
 						<div className="admin-report-cards admin-report-cards-4">
@@ -463,7 +468,7 @@ function AdminReportes() {
 							</article>
 						</div>
 
-						<h4 className="admin-report-subtitle">Solicitudes por categoría</h4>
+						<h4 className="admin-report-subtitle">Solicitudes creadas en el periodo, por categoría</h4>
 
 						{categoryRequests.length === 0 ? (
 							<p className="admin-empty">
@@ -480,7 +485,7 @@ function AdminReportes() {
 										</tr>
 									</thead>
 									<tbody>
-										{categoryRequests.map((item) => (
+										{visibleCategories.map((item) => (
 											<tr key={item.id}>
 												<th scope="row">{item.nombre}</th>
 												<td>
@@ -488,12 +493,25 @@ function AdminReportes() {
 														{item.activa ? 'Activa' : 'Inactiva'}
 													</span>
 												</td>
-												<td className="is-numeric">{formatCount(item.solicitudes)}</td>
+												<td className="is-numeric">
+													<span className="admin-report-bar" aria-hidden="true"><i style={{ '--share': Number(item.solicitudes) / maxCategoryRequests }} /></span>
+													{formatCount(item.solicitudes)}
+												</td>
 											</tr>
 										))}
+										{visibleCategories.length === 0 && (
+											<tr><td colSpan="3">No se crearon solicitudes en este periodo. Amplía las fechas para ver más.</td></tr>
+										)}
 									</tbody>
 								</table>
 							</div>
+						)}
+						{categoryRequests.length > categoriesWithRequests.length && (
+							<button type="button" className="button button-secondary admin-report-toggle" aria-expanded={showAllCategories} onClick={() => setShowAllCategories((value) => !value)}>
+								{showAllCategories
+									? 'Mostrar solo categorías con solicitudes'
+									: `Ver las ${formatCount(categoryRequests.length)} categorías`}
+							</button>
 						)}
 					</section>
 

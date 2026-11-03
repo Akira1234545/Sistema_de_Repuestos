@@ -67,10 +67,11 @@
 /* Categories */
 .admin-category-form { display: grid; gap: 16px; margin-bottom: 20px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-raised); }
 .admin-category-description { grid-column: 1 / -1; }
-.admin-category-card { display: grid; gap: 12px; padding: 18px 20px; }
-.admin-category-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.admin-category-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.admin-category-card { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; padding: 18px 20px; }
+.admin-category-card-heading { display: flex; flex-direction: column-reverse; gap: 6px; }
 .admin-category-card-heading h3 { margin-top: 8px; font-size: var(--fs-lg); }
-.admin-category-card-heading small { text-align: right; }
+.admin-category-card-heading small { color: var(--text-muted); font-size: var(--fs-xs); }
 .admin-category-card > p { color: var(--text-muted); font-size: var(--fs-sm); }
 
 /* Requests and promotions (expandable) */
@@ -131,6 +132,9 @@
 .admin-report-table tbody tr { transition: background var(--dur-fast); }
 .admin-report-table tbody tr:hover { background: var(--surface-2); }
 .admin-report-table tbody tr:last-child > * { border-bottom: 0; }
+.admin-report-bar { display: inline-block; width: 88px; height: 6px; margin-right: 12px; vertical-align: middle; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.admin-report-bar i { display: block; height: 100%; border-radius: inherit; background: var(--amber); transform: scaleX(var(--share)); transform-origin: left; transition: transform .6s var(--ease-out); }
+.admin-report-toggle { margin-top: 12px; }
 .admin-report-badge { color: var(--danger); border-color: rgb(255 138 128 / 35%); background: var(--danger-wash); }
 .admin-report-badge.is-active { color: var(--ok); border-color: rgb(111 214 162 / 35%); background: var(--ok-wash); }
 
@@ -139,8 +143,8 @@
 }
 @media (max-width: 640px) {
   .admin-user-card { grid-template-columns: 1fr; }
-  .admin-store-top, .admin-request-summary, .admin-promotion-summary, .admin-category-card-heading, .admin-user-title { flex-direction: column; align-items: flex-start; }
-  .admin-promotion-price, .admin-category-card-heading small { text-align: left; }
+  .admin-store-top, .admin-request-summary, .admin-promotion-summary, .admin-user-title { flex-direction: column; align-items: flex-start; }
+  .admin-promotion-price { text-align: left; }
   .admin-request-search, .admin-promotion-search { grid-column: auto; }
   .admin-report-distributions { grid-template-columns: 1fr; }
   .admin-report-export { margin-left: 0; }
@@ -149,6 +153,16 @@
   .admin-report-cards, .admin-report-cards-4 { grid-template-columns: 1fr; }
 }
 
-.admin-brand { margin-bottom: 18px; }
+.admin-brand { display: flex; width: fit-content; margin-bottom: 18px; }
 .admin-overview { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px; }
 .admin-overview .admin-report-card-value { font-size: clamp(26px, 2.6vw, 32px); }
+@media (max-width: 640px) {
+  /* Swipeable metrics strip so the overview doesn't push the work area off screen. */
+  .admin-overview {
+    grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 46%;
+    margin-inline: calc(var(--gutter) * -1); padding: 0 var(--gutter) 4px; scroll-padding-inline: var(--gutter);
+    overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .admin-overview::-webkit-scrollbar { display: none; }
+  .admin-overview .admin-report-card { justify-content: space-between; scroll-snap-align: start; padding: 14px 16px; }
+}
