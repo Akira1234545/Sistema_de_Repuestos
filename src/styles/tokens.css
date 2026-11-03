@@ -1,0 +1,79 @@
+/* RepuestosPro design tokens.
+   Material: graphite workshop at night. Light: a single amber work lamp.
+   Motif: blueprint grid lines and machined, rounded-rect parts. */
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/archivo/wdth.css';
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces, darkest to lightest */
+  --bg: #0b0d11;
+  --bg-raised: #10131a;
+  --surface: #151922;
+  --surface-2: #1b2029;
+  --surface-3: #232935;
+  --line: #2a313d;
+  --line-strong: #3a4352;
+
+  /* Text */
+  --text: #eef1f5;
+  --text-soft: #c4cad4;
+  --text-muted: #8d96a5;
+
+  /* Amber work light */
+  --amber: #f5b13d;
+  --amber-hot: #ffc861;
+  --amber-deep: #c9861b;
+  --amber-ink: #1a1306;
+  --amber-wash: rgb(245 177 61 / 10%);
+  --amber-glow: rgb(245 177 61 / 28%);
+
+  /* Semantic */
+  --steel: #7fb2e5;
+  --steel-wash: rgb(127 178 229 / 12%);
+  --ok: #6fd6a2;
+  --ok-wash: rgb(111 214 162 / 12%);
+  --warn: #f2c66d;
+  --warn-wash: rgb(242 198 109 / 12%);
+  --danger: #ff8a80;
+  --danger-wash: rgb(255 138 128 / 12%);
+
+  /* Type */
+  --font-body: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Archivo Variable', 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-h3: 20px;
+  --fs-h2: clamp(24px, 2.4vw, 32px);
+  --fs-h1: clamp(32px, 3.6vw, 48px);
+
+  /* Shape and depth */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 8px 24px rgb(0 0 0 / 28%);
+  --shadow-2: 0 1px 0 rgb(255 255 255 / 4%) inset, 0 24px 60px rgb(0 0 0 / 45%);
+  --ring: 0 0 0 3px var(--amber-glow);
+
+  /* Layout */
+  --header-h: 72px;
+  --sidebar-w: 264px;
+  --page-max: 1240px;
+  --gutter: clamp(16px, 4vw, 48px);
+
+  /* Device safe areas: Capacitor injects --safe-area-inset-*; browsers use env(). */
+  --safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --safe-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+
+  /* Motion */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+}

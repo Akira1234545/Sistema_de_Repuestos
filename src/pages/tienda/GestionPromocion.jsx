@@ -1,22 +1,21 @@
+import { boliviaDateTimeInput, statusLabel } from '../../lib/format.js'
+import { useToast } from '../../context/toastState.js'
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerCategoriasActivas } from '../../services/solicitudService.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
 import { actualizarPromocion, crearPromocion, obtenerPromocion } from '../../services/promocionService.js'
-import '../Promociones.css'
 
 const blank = { categoria_id: '', titulo: '', descripcion: '', marca: '', precio_anterior: '', precio_oferta: '', caracteristicas: '', fecha_inicio: '', fecha_fin: '' }
-function localDateInput(value) {
-	if (!value) return ''
-	const date = new Date(value); const offset = date.getTimezoneOffset() * 60000
-	return new Date(date.getTime() - offset).toISOString().slice(0, 16)
-}
+const localDateInput = boliviaDateTimeInput
 function GestionPromocion() {
 	const { id } = useParams()
 	const { user } = useAuth()
 	const navigate = useNavigate()
-	const [form, setForm] = useState(blank)
+	const toast = useToast()
+	const [form, setForm] = useState(() => ({ ...blank, id: crypto.randomUUID() }))
 	const [categories, setCategories] = useState([])
 	const [store, setStore] = useState(null)
 	const [loading, setLoading] = useState(true)
@@ -30,9 +29,9 @@ function GestionPromocion() {
 				if (!active) return
 				setCategories(cats); setStore(ownStore)
 				if (!ownStore) setError('Primero completa el perfil de tu tienda.')
-				else if (id && !item) setError('No se encontró esta promoción en tu tienda.')
+				else if (id && (!item || item.tienda_id !== ownStore.id)) setError('No se encontró esta promoción en tu tienda.')
 				else if (item) setForm({ categoria_id: item.categoria_id, titulo: item.titulo, descripcion: item.descripcion || '', marca: item.marca || '', precio_anterior: String(item.precio_anterior), precio_oferta: String(item.precio_oferta), caracteristicas: item.caracteristicas || '', fecha_inicio: localDateInput(item.fecha_inicio), fecha_fin: localDateInput(item.fecha_fin) })
-			}).catch((cause) => { if (active) setError(`No se pudieron cargar los datos: ${cause.message}`) }).finally(() => { if (active) setLoading(false) })
+			}).catch((cause) => { if (active) setError(`No se pudieron cargar los datos: ${publicError(cause)}`) }).finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
 	}, [user.id, id])
 	function update(event) { setForm((current) => ({ ...current, [event.target.name]: event.target.value })) }
@@ -40,20 +39,21 @@ function GestionPromocion() {
 		event.preventDefault(); setError('')
 		if (!form.titulo.trim() || !form.categoria_id) { setError('Completa el título y la categoría.'); return }
 		if (!Number.isFinite(Number(form.precio_anterior)) || !Number.isFinite(Number(form.precio_oferta)) || Number(form.precio_anterior) < 0 || Number(form.precio_oferta) < 0 || Number(form.precio_oferta) > Number(form.precio_anterior)) { setError('El precio de oferta debe ser válido y no superar el precio anterior.'); return }
-		if (!form.fecha_inicio || !form.fecha_fin || new Date(form.fecha_fin) <= new Date(form.fecha_inicio)) { setError('La fecha final debe ser posterior a la fecha inicial.'); return }
+		if (!form.fecha_inicio || !form.fecha_fin || new Date(`${form.fecha_fin}-04:00`) <= new Date(`${form.fecha_inicio}-04:00`)) { setError('La fecha final debe ser posterior a la fecha inicial.'); return }
 		setSaving(true)
 		try {
 			if (id) await actualizarPromocion(id, form)
 			else await crearPromocion(store.id, form)
+			toast({ title: id ? 'Promoción actualizada' : 'Promoción publicada', tone: 'success' })
 			navigate('/tienda/promociones')
-		} catch (cause) { setError(`No se pudo guardar la promoción: ${cause.message}`) }
+		} catch (cause) { setError(`No se pudo guardar la promoción: ${publicError(cause)}`) }
 		finally { setSaving(false) }
 	}
-	if (loading) return <main className="promo-page"><p className="promo-state">Cargando…</p></main>
-	return <main className="promo-page promo-form-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">Panel de tienda / HU-11</p><h1>{id ? 'Editar promoción' : 'Crear promoción'}</h1><p>El descuento porcentual se calcula automáticamente a partir de ambos precios.</p></div><Link to="/tienda/promociones">Volver</Link></header>
+	if (loading) return <section className="promo-page"><p className="promo-state">Cargando…</p></section>
+	return <section className="promo-page promo-form-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">Panel de tienda / Promociones</p><h1>{id ? 'Editar promoción' : 'Crear promoción'}</h1><p>El descuento porcentual se calcula automáticamente a partir de ambos precios.</p></div><Link to="/tienda/promociones">← Volver a mis promociones</Link></header>
 		{error && <p className="promo-error" role="alert">{error}</p>}
-		{store && !canManagePromotions && <p className="promo-state" role="status">La gestión de promociones requiere una tienda activa y aprobada. Estado actual: {store.estado}{store.activa ? '' : ' (inactiva)'}.</p>}
-		{store && canManagePromotions && <form className="promo-form" onSubmit={submit}><div className="promo-form-grid">
+		{store && !canManagePromotions && <p className="promo-state" role="status">La gestión de promociones requiere una tienda activa y aprobada. Estado actual: {statusLabel(store.estado)}{store.activa ? '' : ' (inactiva)'}.</p>}
+		{store && canManagePromotions && (!id || form.categoria_id) && <form className="promo-form" onSubmit={submit}><div className="promo-form-grid">
 			<label>Título<input name="titulo" value={form.titulo} onChange={update} maxLength="160" required /></label>
 			<label>Categoría<select name="categoria_id" value={form.categoria_id} onChange={update} required><option value="">Selecciona una categoría</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
 			<label>Marca<input name="marca" value={form.marca} onChange={update} maxLength="100" /></label>
@@ -64,6 +64,6 @@ function GestionPromocion() {
 			<label className="promo-field-wide">Descripción<textarea name="descripcion" value={form.descripcion} onChange={update} rows="3" /></label>
 			<label className="promo-field-wide">Características<textarea name="caracteristicas" value={form.caracteristicas} onChange={update} rows="3" /></label>
 		</div><div className="promo-form-actions"><Link to="/tienda/promociones">Cancelar</Link><button className="button promo-button" type="submit" disabled={saving}>{saving ? 'Guardando…' : 'Guardar promoción'}</button></div></form>}
-	</main>
+	</section>
 }
 export default GestionPromocion

@@ -1,78 +1,78 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import SkeletonList from '../components/ui/Skeleton.jsx'
+import { Link, useLocation } from 'react-router-dom'
+import Header from '../components/Header.jsx'
+import Pagination from '../components/Pagination.jsx'
+import PublicReviews from '../components/PublicReviews.jsx'
+import { useDebouncedValue } from '../hooks/useDebouncedValue.js'
 import { obtenerResenasPublicasDeTiendas } from '../services/resenaService.js'
 import { obtenerTiendasPublicas } from '../services/tiendaService.js'
-import './TiendasPublicas.css'
 
-function TiendasPublicas() {
+// `embedded` renders the catalogue inside a signed-in panel instead of the public page shell.
+export default function TiendasPublicas({ embedded = false }) {
+	const { hash, pathname } = useLocation()
+	const focusId = /^#[0-9a-f-]{36}$/i.test(hash) ? hash.slice(1) : ''
 	const [stores, setStores] = useState([])
 	const [reviewsByStore, setReviewsByStore] = useState({})
+	const [summaries, setSummaries] = useState({})
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 	const [reviewError, setReviewError] = useState('')
+	const [page, setPage] = useState(0)
+	const [hasMore, setHasMore] = useState(false)
+	const [search, setSearch] = useState('')
+	const query = useDebouncedValue(search)
 
 	useEffect(() => {
 		let active = true
-		obtenerTiendasPublicas()
-			.then(async (data) => {
+		async function load() {
+			setLoading(true); setError(''); setReviewError('')
+			try {
+				const result = await obtenerTiendasPublicas(page, query, focusId)
 				if (!active) return
-				setStores(data)
+				setStores(result.items); setHasMore(result.hasMore)
+				setReviewsByStore({}); setSummaries({})
 				try {
-					const reviews = await obtenerResenasPublicasDeTiendas(data.map((store) => store.id))
-					if (active) {
-						setReviewsByStore(reviews.reduce((grouped, review) => {
-							(grouped[review.tienda_id] ||= []).push(review)
-							return grouped
-						}, {}))
-					}
-				} catch (cause) {
-					if (active) setReviewError(`No se pudieron cargar las reseñas públicas: ${cause.message}`)
-				}
-			})
-			.catch((cause) => { if (active) setError(`No se pudo cargar el catálogo de tiendas: ${cause.message}`) })
-			.finally(() => { if (active) setLoading(false) })
-		return () => { active = false }
-	}, [])
+					const { reviews, summaries: loadedSummaries } = await obtenerResenasPublicasDeTiendas(result.items.map(store => store.id))
+					if (!active) return
+					setSummaries(loadedSummaries)
+					setReviewsByStore(reviews.reduce((groups, review) => { (groups[review.tienda_id] ||= []).push(review); return groups }, {}))
+				} catch { if (active) setReviewError('No se pudieron consultar las reseñas. Vuelve a cargar la página para reintentar.') }
+			} catch { if (active) setError('No se pudieron cargar las tiendas. Comprueba tu conexión y vuelve a intentarlo.') }
+			finally { if (active) setLoading(false) }
+		}
+		const timer = setTimeout(() => { void load() }, 0)
+		return () => { active = false; clearTimeout(timer) }
+	}, [page, query, focusId])
 
-	useEffect(() => {
-		if (loading || !window.location.hash) return
-		const storeId = decodeURIComponent(window.location.hash.slice(1))
-		document.getElementById(storeId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-	}, [loading, stores])
-
-	return <main className="public-stores-page">
-		<header className="public-stores-heading">
-			<p className="eyebrow">RepuestosPro / Tiendas aprobadas</p>
-			<h1>Encuentra una tienda para tu próximo repuesto</h1>
-			<p>Explora perfiles activos. El contacto y la ubicación se muestran después de seleccionar una propuesta.</p>
-			<Link to="/">Volver al inicio</Link>
-		</header>
-		{loading && <p className="public-stores-state">Cargando tiendas...</p>}
-		{error && <p className="public-stores-error" role="alert">{error}</p>}
-		{reviewError && <p className="public-stores-error" role="alert">{reviewError}</p>}
-		{!loading && !error && stores.length === 0 && <div className="public-stores-state"><h2>Aún no hay tiendas disponibles</h2><p>Las tiendas aprobadas aparecerán aquí.</p></div>}
-		{!loading && !error && stores.length > 0 && <div className="public-stores-grid">{stores.map((store) => <article className="public-store-card" id={store.id} key={store.id}>
-			{store.fotografias?.[0] ? <img src={store.fotografias[0]} alt={`Imagen de ${store.nombre}`} /> : <div className="public-store-placeholder" aria-hidden="true">R</div>}
-			<div className="public-store-copy"><p className="public-store-label">Tienda aprobada</p><h2>{store.nombre}</h2><p>{store.descripcion || 'Perfil de tienda de repuestos.'}</p>{store.horario && <small>Horario: {store.horario}</small>}
-				{(() => {
-					const storeReviews = reviewsByStore[store.id] || []
-					const average = storeReviews.length
-						? (storeReviews.reduce((sum, review) => sum + review.calificacion, 0) / storeReviews.length).toFixed(1)
-						: null
-					return <section className="public-store-reviews" aria-label={`Reseñas de ${store.nombre}`}>
-						<h3>Calificaciones y reseñas</h3>
-						<p className="public-store-rating">{reviewError ? 'Reseñas no disponibles' : <>{average && <><span aria-label={`${average} de 5`}>★ {average}</span> · </>}{storeReviews.length} {storeReviews.length === 1 ? 'reseña' : 'reseñas'}</>}</p>
-						{storeReviews.length === 0 && <p>{reviewError ? 'No fue posible consultar las reseñas.' : 'Aún no hay reseñas.'}</p>}
-						{storeReviews.map((review) => <article className="public-store-review" key={review.id}>
-							<p className="public-store-review-stars" aria-label={`${review.calificacion} de 5 estrellas`}>{'★'.repeat(review.calificacion)}{'☆'.repeat(5 - review.calificacion)}</p>
-							{review.comentario && <p className="public-store-review-comment">{review.comentario}</p>}
-							<time dateTime={review.fecha_creacion}>{new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium' }).format(new Date(review.fecha_creacion))}</time>
-						</article>)}
-					</section>
-				})()}
-			</div>
-		</article>)}</div>}
-	</main>
+	const content = <>
+			<header className="public-stores-heading">
+				<p className="eyebrow">RepuestosPro · Tiendas aprobadas</p>
+				<h1>Encuentra tu tienda de repuestos</h1>
+				<p>Consulta perfiles y reseñas. El teléfono se comparte en promociones y la ubicación al seleccionar una propuesta.</p>
+			</header>
+			<label>Buscar por nombre<input type="search" maxLength={160} value={search} placeholder="Nombre de la tienda" onChange={event => { setPage(0); setSearch(event.target.value) }} /></label>
+			{focusId && <p><Link className="text-button" to={pathname}>Ver todas las tiendas →</Link></p>}
+			{loading && <SkeletonList variant="grid" label="Cargando tiendas…" />}
+			{error && <p className="public-stores-error" role="alert">{error}</p>}
+			{reviewError && <p className="request-history-notice" role="status">{reviewError}</p>}
+			{!loading && !error && !stores.length && <div className="promo-state"><h2>No hay tiendas que coincidan</h2><p>Prueba con otro nombre o vuelve más tarde.</p></div>}
+			{!loading && !error && stores.length > 0 && <div className="public-stores-grid">{stores.map(store => <article className="public-store-card" id={store.id} key={store.id}>
+				{store.fotografias?.[0] ? <img src={store.fotografias[0]} width="640" height="360" loading="lazy" alt={`Fotografía de ${store.nombre}`} /> : <div className="public-store-placeholder" aria-hidden="true">{store.nombre?.charAt(0)?.toUpperCase() || 'R'}</div>}
+				<div className="public-store-copy">
+					<p className="public-store-label">Tienda aprobada</p>
+					<h2>{store.nombre}</h2>
+					<p>{store.descripcion || 'Tienda de repuestos.'}</p>
+					{store.horario && <small>Horario: {store.horario}</small>}
+					<PublicReviews key={`${store.id}-${(reviewsByStore[store.id] || []).length}`} storeId={store.id} storeName={store.nombre} initial={reviewsByStore[store.id] || []} summary={summaries[store.id]} error={reviewError} />
+				</div>
+			</article>)}</div>}
+			{!focusId && <Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} />}
+	</>
+	if (embedded) return <section className="public-stores-page is-embedded">{content}</section>
+	return <div className="public-home">
+		<a className="skip-link" href="#contenido">Ir al contenido</a>
+		<Header />
+		<main className="public-stores-page" id="contenido" tabIndex={-1}>{content}</main>
+	</div>
 }
-
-export default TiendasPublicas

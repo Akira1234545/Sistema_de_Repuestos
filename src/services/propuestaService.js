@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js'
+import { clearFormDrafts } from '../lib/formDrafts.js'
 
 const proposalColumns = 'id, solicitud_id, tienda_id, precio, marca, disponibilidad, caracteristicas, garantia, observaciones, estado, fecha_creacion, fecha_actualizacion'
 
@@ -42,7 +43,14 @@ export async function crearPropuesta(values) {
 		p_garantia: values.garantia || null,
 		p_observaciones: values.observaciones || null,
 	})
+	if (error?.code === '23505' && values.userId) {
+		const existing = await obtenerMiPropuesta(values.solicitud_id, values.userId)
+		if (existing && Number(existing.precio) === Number(values.precio) && ['marca','disponibilidad','caracteristicas','garantia','observaciones'].every(key => (existing[key] || '').trim() === (values[key] || '').trim())) {
+			clearFormDrafts(); return existing.id
+		}
+	}
 	if (error) throw error
+	clearFormDrafts()
 	return data
 }
 
@@ -53,4 +61,20 @@ export async function seleccionarPropuesta(solicitudId, propuestaId) {
 	})
 	if (error) throw error
 	return data
+}
+
+export async function retirarPropuesta(id) {
+	const { error } = await supabase.rpc('retirar_propuesta', { p_propuesta_id: id })
+	if (error) throw error
+}
+
+export async function obtenerMisPropuestas(userId, page = 0) {
+	const { data: store, error: storeError } = await supabase.from('tiendas').select('id').eq('usuario_id', userId).maybeSingle()
+	if (storeError) throw storeError
+	if (!store) return { items: [], hasMore: false }
+	const { data, error } = await supabase.from('propuestas')
+		.select(`${proposalColumns}, solicitud:solicitudes!propuestas_solicitud_id_fkey(id,titulo,estado,cantidad)`)
+		.eq('tienda_id', store.id).order('fecha_creacion', { ascending: false }).order('id').range(page * 25, page * 25 + 25)
+	if (error) throw error
+	return { items: data.slice(0, 25), hasMore: data.length > 25 }
 }

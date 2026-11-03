@@ -1,8 +1,9 @@
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { guardarCategoriasTienda, obtenerCategoriasGestionTienda } from '../../services/tiendaService.js'
-import './CategoriasTienda.css'
+import { statusLabel } from '../../lib/format.js'
 
 function CategoriasTienda() {
 	const { user } = useAuth()
@@ -28,7 +29,7 @@ function CategoriasTienda() {
 				setInitialIds(result.selectedIds)
 				setUnavailableCount(result.unavailableCount)
 			})
-			.catch((loadError) => { if (active) setError(`No se pudieron cargar las categorías. Comprueba que la migración de categorías esté aplicada y que tu tienda tenga acceso. ${loadError.message}`) })
+			.catch((loadError) => { if (active) setError(`No se pudieron cargar las categorías. Comprueba que la migración de categorías esté aplicada y que tu tienda tenga acceso. ${publicError(loadError)}`) })
 			.finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
 	}, [user.id])
@@ -38,7 +39,7 @@ function CategoriasTienda() {
 		return categories.filter((category) => !term || `${category.nombre} ${category.descripcion || ''}`.toLocaleLowerCase().includes(term))
 	}, [categories, search])
 	const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds])
-	const hasChanges = selectedIds.length !== initialIds.length || selectedIds.some((id) => !initialIds.includes(id))
+	const hasChanges = unavailableCount > 0 || selectedIds.length !== initialIds.length || selectedIds.some((id) => !initialIds.includes(id))
 
 	function toggleCategory(id) {
 		setSelectedIds((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id])
@@ -67,7 +68,7 @@ function CategoriasTienda() {
 			setUnavailableCount(0)
 			setNotice('Tus categorías de atención se guardaron correctamente. Ya se usan para filtrar solicitudes y validar propuestas.')
 		} catch (saveError) {
-			setError(`No se pudieron guardar las categorías: ${saveError.message}`)
+			setError(`No se pudieron guardar las categorías: ${publicError(saveError)}`)
 		} finally { setSaving(false) }
 	}
 
@@ -78,7 +79,7 @@ function CategoriasTienda() {
 	return <section className="store-page store-categories-page">
 		<header className="categories-heading">
 			<div><p className="store-eyebrow">Configuración de tienda / Categorías</p><h1>Categorías que atiende tu tienda</h1><p className="store-lead">Elige las familias de repuestos que ofreces. Esta selección determina qué solicitudes puedes consultar y para cuáles puedes enviar propuestas.</p></div>
-			<div className={`categories-store-status${store.estado === 'aprobada' && store.activa ? ' is-approved' : ''}`}><span>{store.estado === 'aprobada' && store.activa ? 'Tienda aprobada' : `Estado: ${store.estado}`}</span><strong>{store.nombre}</strong></div>
+			<div className={`categories-store-status${store.estado === 'aprobada' && store.activa ? ' is-approved' : ''}`}><span>{store.estado === 'aprobada' && store.activa ? 'Tienda aprobada' : `Estado: ${statusLabel(store.estado)}`}</span><strong>{store.nombre}</strong></div>
 		</header>
 
 		{store.estado !== 'aprobada' || !store.activa ? <p className="categories-pending" role="status">Puedes preparar tus categorías ahora. Las solicitudes y propuestas estarán disponibles cuando la tienda esté aprobada y activa.</p> : null}
@@ -94,7 +95,7 @@ function CategoriasTienda() {
 				<span className="category-choice-check" aria-hidden="true">{selectedSet.has(category.id) ? '✓' : '+'}</span>
 				<span className="category-choice-copy"><strong>{category.nombre}</strong>{category.descripcion && <small>{category.descripcion}</small>}</span>
 			</label>)}</div>}
-			<footer className="categories-footer"><p>El cambio se aplica al guardar. Puedes volver aquí para editar tu selección más adelante.</p><button className="button" type="submit" disabled={saving || !hasChanges || categories.length === 0}>{saving ? 'Guardando…' : 'Guardar categorías'}</button></footer>
+			<footer className="categories-footer"><p>El cambio se aplica al guardar. Puedes volver aquí para editar tu selección más adelante.</p><button className="button" type="submit" disabled={saving || !hasChanges }>{saving ? 'Guardando…' : 'Guardar categorías'}</button></footer>
 		</form>
 	</section>
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { crearResena, obtenerResenaDePropuesta } from '../services/resenaService.js'
-import './ResenaTienda.css'
 
 function errorMessage(error) {
 	if (error.code === '23505') return 'Ya existe una reseña para esta propuesta. Actualiza la página para verla.'

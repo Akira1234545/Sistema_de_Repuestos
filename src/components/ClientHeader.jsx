@@ -8,19 +8,18 @@ function ClientHeader() {
 	const userLabel = profile?.nombre || user?.user_metadata?.nombre || user?.email || 'Cliente'
 
 	async function handleSignOut() {
-		await signOut()
-		navigate('/login')
+		if (await signOut()) navigate('/login')
 	}
 
 	return (
 		<header className="client-header">
-			<div className="client-search" role="search">
+			<form className="client-search" role="search" onSubmit={event => { event.preventDefault(); navigate('/promociones?q=' + encodeURIComponent(new FormData(event.currentTarget).get('q').trim())) }}>
 				<span>⌕</span>
-				<input type="search" placeholder="Buscar repuestos, marcas, modelos..." aria-label="Buscar repuestos, marcas y modelos" />
-			</div>
+				<input name="q" maxLength={160} type="search" placeholder="Buscar promociones..." aria-label="Buscar promociones" />
+			</form>
 			<div className="client-header-actions">
 				<NotificationBell key={user?.id || 'anonymous'} variant="client" />
-				<Link className="client-profile-link" to="/cliente">
+				<Link className="client-profile-link" to="/cuenta" aria-label="Mi cuenta">
 					<span className="client-profile-label">{userLabel}</span>
 					<span className="client-avatar">{userLabel.charAt(0).toUpperCase()}</span>
 				</Link>

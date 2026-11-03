@@ -1,8 +1,11 @@
+import Icon from './Icon.jsx'
+import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
-import { marcarNotificacionLeida, obtenerNotificaciones } from '../services/notificacionService.js'
-import './NotificationBell.css'
+import { marcarNotificacionLeida, marcarTodasLeidas, obtenerNotificaciones, suscribirNotificaciones } from '../services/notificacionService.js'
+import { useToast } from '../context/toastState.js'
+import { isNativeApp } from '../lib/platform.js'
 
 const typeLabels = {
 	nueva_propuesta: 'Nueva propuesta',
@@ -14,7 +17,7 @@ const typeLabels = {
 }
 
 function formatDate(value) {
-	return new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+	return new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
 function notificationPath(notification, role) {
@@ -38,6 +41,8 @@ function NotificationBell({ variant }) {
 	const [markingId, setMarkingId] = useState('')
 	const containerRef = useRef(null)
 	const requestVersion = useRef(0)
+	const toast = useToast()
+	const [pulse, setPulse] = useState(0)
 
 	const loadNotifications = useCallback(async () => {
 		const userId = user?.id
@@ -64,7 +69,8 @@ function NotificationBell({ variant }) {
 		requestVersion.current += 1
 		if (!user?.id) return undefined
 		const initialLoad = window.setTimeout(() => { void loadNotifications() }, 0)
-		const refreshInterval = window.setInterval(() => { void loadNotifications() }, 60000)
+		// Realtime delivers new rows instantly; the slow poll only reconciles read state and missed events.
+		const refreshInterval = window.setInterval(() => { void loadNotifications() }, 300000)
 		const refreshOnFocus = () => { if (document.visibilityState === 'visible') void loadNotifications() }
 		window.addEventListener('focus', refreshOnFocus)
 		return () => {
@@ -81,7 +87,7 @@ function NotificationBell({ variant }) {
 			if (!containerRef.current?.contains(event.target)) setOpen(false)
 		}
 		function closeOnEscape(event) {
-			if (event.key === 'Escape') setOpen(false)
+			if (event.key === 'Escape') { setOpen(false); containerRef.current?.querySelector('button')?.focus() }
 		}
 		document.addEventListener('pointerdown', closeOnOutsideClick)
 		document.addEventListener('keydown', closeOnEscape)
@@ -91,22 +97,42 @@ function NotificationBell({ variant }) {
 		}
 	}, [open])
 
+	useEffect(() => {
+		if (!user?.id) return undefined
+		return suscribirNotificaciones(user.id, (notification) => {
+			setNotifications((current) => current.some((item) => item.id === notification.id) ? current : [notification, ...current].slice(0, 50))
+			setLoadedForUserId(user.id)
+			setUnreadCount((current) => current + (notification.leida ? 0 : 1))
+			setPulse((value) => value + 1)
+			const to = notificationPath(notification, role)
+			toast({ title: notification.titulo, description: notification.mensaje, tone: 'info', action: to ? { label: 'Ver detalle', to } : null })
+			if (isNativeApp) void import('@capacitor/haptics').then(({ Haptics, NotificationType }) => Haptics.notification({ type: NotificationType.Success })).catch(() => {})
+		})
+	}, [role, toast, user?.id])
+
 	const visibleNotifications = loadedForUserId === user?.id ? notifications : []
 	const visibleUnreadCount = loadedForUserId === user?.id ? unreadCount : 0
 
 	async function markRead(notification) {
 		if (notification.leida || markingId) return
 		setMarkingId(notification.id)
+		requestVersion.current += 1
 		setError('')
 		try {
 			await marcarNotificacionLeida(notification.id)
 			setNotifications((current) => current.map((item) => item.id === notification.id ? { ...item, leida: true } : item))
 			setUnreadCount((current) => Math.max(0, current - 1))
 		} catch (cause) {
-			setError(`No se pudo marcar como leída: ${cause.message}`)
+			setError(`No se pudo marcar como leída: ${publicError(cause)}`)
 		} finally {
 			setMarkingId('')
 		}
+	}
+	async function markAll() {
+		setMarkingId('all'); setError(''); requestVersion.current += 1
+		try { await marcarTodasLeidas(); await loadNotifications() }
+		catch { setError('No se pudieron actualizar las notificaciones. Inténtalo de nuevo.') }
+		finally { setMarkingId('') }
 	}
 
 	return <div className={`notification-bell notification-bell-${variant}`} ref={containerRef}>
@@ -122,13 +148,14 @@ function NotificationBell({ variant }) {
 				if (nextOpen) void loadNotifications()
 			}}
 		>
-			♢
-			{visibleUnreadCount > 0 && <span className="notification-count">{visibleUnreadCount > 99 ? '99+' : visibleUnreadCount}</span>}
+			<Icon name="bell" size={22} />
+			{visibleUnreadCount > 0 && <span className="notification-count" key={pulse}>{visibleUnreadCount > 99 ? '99+' : visibleUnreadCount}</span>}
 		</button>
 		{open && <section className="notification-popover" aria-label="Notificaciones">
 			<header className="notification-popover-header">
 				<div><p>ACTIVIDAD RECIENTE</p><h2>Notificaciones</h2></div>
 				<span>{visibleUnreadCount} sin leer</span>
+				{visibleUnreadCount > 0 && <button type="button" onClick={markAll} disabled={Boolean(markingId)}>Marcar todas leídas</button>}
 			</header>
 			{error && <p className="notification-error" role="alert">{error}</p>}
 			{loading && visibleNotifications.length === 0 && !error && <p className="notification-empty" role="status">Cargando notificaciones...</p>}

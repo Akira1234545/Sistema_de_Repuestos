@@ -27,3 +27,6 @@ dist-ssr
 # Local Supabase credentials
 .env*
 !.env.example
+
+# Local agent configuration
+.claude/

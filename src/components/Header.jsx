@@ -1,38 +1,34 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
+import { panelPath } from '../lib/roles.js'
 
-function Header({ privateArea = false }) {
+function Header() {
 	const navigate = useNavigate()
-	const { user, signOut } = useAuth()
+	const { user, role, signOut } = useAuth()
+	const [scrolled, setScrolled] = useState(false)
 
-	if (privateArea) {
-		const userLabel = user?.name || user?.email || 'Cliente'
+	useEffect(() => {
+		const update = () => setScrolled(window.scrollY > 8)
+		update()
+		window.addEventListener('scroll', update, { passive: true })
+		return () => window.removeEventListener('scroll', update)
+	}, [])
 
-		function handleSignOut() {
-			signOut()
-			navigate('/login')
-		}
-
-		return (
-			<header className="private-header">
-				<Link className="private-brand" to="/"><span>R</span><strong>Repuestos</strong>Pro<small>Tu vehículo, en buenas manos</small></Link>
-				<div className="private-header-actions">
-					<Link className="profile-link" to="/cliente">{userLabel}<span className="profile-avatar">{userLabel.charAt(0).toUpperCase()}</span></Link>
-					<button className="logout-button" type="button" onClick={handleSignOut}>Cerrar sesión <span>↗</span></button>
-				</div>
-			</header>
-		)
+	async function handleSignOut() {
+		if (await signOut()) navigate('/')
 	}
 
 	return (
-		<header className="site-header">
-			<Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link>
+		<header className={`site-header${scrolled ? ' is-scrolled' : ''}`}>
+			<Link className="brand" to="/" aria-label="RepuestosPro, inicio"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link>
 			<nav className="site-nav" aria-label="Navegación principal">
-				<a href="#categorias">Categorías</a>
-				<Link to="/tiendas">Tiendas</Link>
-				<Link to="/promociones">Promociones</Link>
-				<Link to="/login">Iniciar sesión</Link>
-				<Link className="nav-register" to="/register">Registrarse <span>↗</span></Link>
+				<Link to="/#categorias">Categorías</Link>
+				<NavLink to="/tiendas">Tiendas</NavLink>
+				<NavLink to="/promociones">Promociones</NavLink>
+				{user
+					? <><NavLink to={panelPath(role)}>Mi panel</NavLink><button className="button button-secondary" type="button" onClick={handleSignOut}>Cerrar sesión</button></>
+					: <><NavLink to="/login">Iniciar sesión</NavLink><Link className="button nav-register" to="/register">Registrarse</Link></>}
 			</nav>
 		</header>
 	)

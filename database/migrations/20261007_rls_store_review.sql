@@ -43,6 +43,7 @@ DROP POLICY IF EXISTS sprint1_admin_stores_read ON public.tiendas;
 CREATE POLICY sprint1_admin_stores_read ON public.tiendas
     FOR SELECT TO authenticated USING (public.is_admin());
 
+DROP FUNCTION IF EXISTS public.sprint1_admin_review_store(uuid, public.store_status, text);
 CREATE OR REPLACE FUNCTION public.sprint1_admin_review_store(
     p_store_id uuid,
     p_action text,
@@ -59,7 +60,7 @@ DECLARE
     v_reason text := NULLIF(btrim(p_reason), '');
 BEGIN
     IF NOT public.is_admin() THEN
-        RAISE EXCEPTION 'Se requiere rol administrador';
+        RAISE EXCEPTION 'Se requiere una sesión administrativa con segundo factor';
     END IF;
     IF p_action IS NULL OR p_action NOT IN ('aprobar', 'rechazar', 'suspender') THEN
         RAISE EXCEPTION 'Acción administrativa no válida';

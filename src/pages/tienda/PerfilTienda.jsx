@@ -1,8 +1,9 @@
+import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
-import './PerfilTienda.css'
+import { statusLabel } from '../../lib/format.js'
 
 function PerfilTienda() {
 	const { user } = useAuth()
@@ -17,7 +18,7 @@ function PerfilTienda() {
 				const data = await obtenerTiendaUsuario(user.id)
 				if (active) setStore(data)
 			} catch (loadError) {
-				if (active) setError(`No se pudo cargar tu tienda: ${loadError.message}`)
+				if (active) setError(`No se pudo cargar tu tienda: ${publicError(loadError)}`)
 			} finally {
 				if (active) setLoading(false)
 			}
@@ -49,9 +50,9 @@ function PerfilTienda() {
 			</header>
 
 			<div className="profile-status-row">
-				<span className="profile-status-dot" />
+				<span className={`profile-status-dot is-${store.estado || 'pendiente'}`} aria-hidden="true" />
 				<strong>Estado de la tienda</strong>
-				<span className="profile-status-value">{store.estado || 'No registrado'}</span>
+				<span className="profile-status-value">{store.estado ? statusLabel(store.estado) : 'No registrado'}</span>
 			</div>
 
 			<section className="profile-gallery-section">

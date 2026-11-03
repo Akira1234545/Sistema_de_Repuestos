@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RepuestosPro</string>
+    <string name="title_activity_main">RepuestosPro</string>
+    <string name="package_name">com.repuestospro.app</string>
+    <string name="custom_url_scheme">com.repuestospro.app</string>
+</resources>

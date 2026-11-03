@@ -1,4 +1,7 @@
+import { catalogNames } from './catalogService.js'
 import { supabase } from './supabase.js'
+import { clearFormDrafts } from '../lib/formDrafts.js'
+import { createOnce } from './createOnce.js'
 
 const requestColumns = `
 	id,
@@ -15,17 +18,7 @@ const requestColumns = `
 	propuesta_seleccionada_id
 `
 
-async function getNamesByIds(table, ids) {
-	if (ids.length === 0) return new Map()
-
-	const { data, error } = await supabase
-		.from(table)
-		.select('id, nombre')
-		.in('id', ids)
-
-	if (error) throw error
-	return new Map(data.map((item) => [item.id, item.nombre]))
-}
+async function getNamesByIds(table, ids) { return catalogNames(table, ids) }
 
 async function enrichVehicles(vehicles) {
 	const [types, brands, models] = await Promise.all([
@@ -100,26 +93,29 @@ async function obtenerVehiclesByIds(ids) {
 	return enrichVehicles(data)
 }
 
-export async function obtenerSolicitudesUsuario(userId) {
-	const { data, error } = await supabase
-		.from('solicitudes')
-		.select(requestColumns)
-		.eq('usuario_id', userId)
-		.order('fecha_creacion', { ascending: false })
-
+async function requestPage(available, page, filters) {
+	const { data, error } = await supabase.rpc('request_page', {
+		p_available: available, p_search: filters.search || null, p_state: filters.status || null,
+		p_category: filters.category || null, p_from: filters.from || null, p_to: filters.to || null,
+		p_offset: page * 25, p_limit: 26,
+	}).select(requestColumns)
 	if (error) throw error
-	return enrichRequests(data)
+	return { items: await enrichRequests(data.slice(0, 25)), hasMore: data.length > 25 }
+}
+export async function obtenerSolicitudesUsuario(userId, page = 0, filters = {}) {
+	if (!userId) throw new Error('Inicia sesión para consultar solicitudes.')
+	return requestPage(false, page, filters)
+}
+export async function obtenerSolicitudesDisponibles(page = 0, filters = {}) {
+	return requestPage(true, page, filters)
 }
 
-export async function obtenerSolicitudesDisponibles() {
-	const { data, error } = await supabase
-		.from('solicitudes')
-		.select(requestColumns)
-		.in('estado', ['publicada', 'recibiendo_propuestas'])
-		.order('fecha_creacion', { ascending: false })
-
+export async function obtenerHistorialSolicitudes(ids) {
+	if (!ids.length) return {}
+	const { data, error } = await supabase.from('historial_solicitudes')
+		.select('id, solicitud_id, estado_anterior, estado_nuevo, fecha').in('solicitud_id', ids).order('fecha')
 	if (error) throw error
-	return enrichAvailableRequests(data)
+	return data.reduce((groups, item) => { (groups[item.solicitud_id] ||= []).push(item); return groups }, {})
 }
 
 export async function obtenerSolicitudDisponiblePorId(id) {
@@ -127,13 +123,17 @@ export async function obtenerSolicitudDisponiblePorId(id) {
 		.from('solicitudes')
 		.select(requestColumns)
 		.eq('id', id)
-		.in('estado', ['publicada', 'recibiendo_propuestas'])
 		.maybeSingle()
 
 	if (error) throw error
 	if (!data) return null
 	const [request] = await enrichAvailableRequests([data])
 	return request
+}
+
+export async function confirmarAtencion(id) {
+	const { error } = await supabase.rpc('confirmar_atencion', { p_solicitud_id: id })
+	if (error) throw error
 }
 
 export async function obtenerSolicitudPorId(id, userId) {
@@ -161,9 +161,8 @@ export async function obtenerHistorialSolicitud(id) {
 }
 
 export async function crearSolicitud(datos) {
-	const { data, error } = await supabase
-		.from('solicitudes')
-		.insert({
+	const data = await createOnce(supabase, 'solicitudes', {
+			id: datos.id,
 			usuario_id: datos.usuario_id,
 			vehiculo_id: datos.vehiculo_id,
 			categoria_id: datos.categoria_id,
@@ -171,11 +170,8 @@ export async function crearSolicitud(datos) {
 			descripcion: datos.descripcion,
 			caracteristicas: datos.caracteristicas || null,
 			cantidad: datos.cantidad,
-		})
-		.select(requestColumns)
-		.single()
-
-	if (error) throw error
+		}, requestColumns)
+	clearFormDrafts()
 	return data
 }
 
@@ -197,6 +193,7 @@ export async function actualizarSolicitud(id, userId, datos) {
 
 	if (error) throw error
 	if (!data) throw new Error('La solicitud no existe o no pertenece al usuario autenticado.')
+	clearFormDrafts()
 	return data
 }
 

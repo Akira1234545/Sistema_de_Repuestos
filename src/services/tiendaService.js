@@ -11,6 +11,7 @@ const storeColumns = `
 	longitud,
 	horario,
 	fotografias,
+	fotografias_version,
 	activa,
 	fecha_creacion,
 	estado,
@@ -28,11 +29,15 @@ export async function obtenerTiendaUsuario(userId) {
 	return data
 }
 
-export async function obtenerTiendasPublicas() {
-	const { data, error } = await supabase.from('sprint2_tiendas_publicas')
-		.select('id, nombre, descripcion, horario, fotografias').order('nombre')
+export async function obtenerTiendasPublicas(page = 0, search = '', focusId = '') {
+	let query = supabase.from('sprint2_tiendas_publicas')
+		.select('id, nombre, descripcion, horario, fotografias').order('nombre').order('id')
+	if (focusId) query = query.eq('id', focusId)
+	if (search.trim()) query = query.ilike('nombre', `%${search.trim()}%`)
+	const offset = focusId ? 0 : page * 25
+	const { data, error } = await query.range(offset, offset + 25)
 	if (error) throw error
-	return data
+	return { items: data.slice(0, 25), hasMore: data.length > 25 }
 }
 
 export async function obtenerCategoriasGestionTienda(userId) {
@@ -78,7 +83,6 @@ export async function crearTienda(userId, datos) {
 			latitud: datos.latitud === '' ? null : datos.latitud,
 			longitud: datos.longitud === '' ? null : datos.longitud,
 			horario: datos.horario || null,
-			fotografias: datos.fotografias || [],
 		})
 		.select(storeColumns)
 		.single()
@@ -115,8 +119,9 @@ function storagePathFromUrl(url) {
 }
 
 export async function subirFotografiaTienda(userId, file) {
-	const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase()
-	const path = `${userId}/${crypto.randomUUID()}-${safeName}`
+	const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.type]
+	if (!extension || file.size > 5 * 1024 * 1024) throw new Error('Selecciona fotografías JPEG, PNG o WebP de hasta 5 MB.')
+	const path = `${userId}/${crypto.randomUUID()}.${extension}`
 	const { error: uploadError } = await supabase.storage
 		.from('tiendas')
 		.upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type })
@@ -126,24 +131,28 @@ export async function subirFotografiaTienda(userId, file) {
 	return data.publicUrl
 }
 
-export async function actualizarFotografiasTienda(userId, fotografias) {
-	const { data, error } = await supabase
-		.from('tiendas')
-		.update({ fotografias })
-		.eq('usuario_id', userId)
-		.select(storeColumns)
-		.single()
+export async function actualizarFotografiasTienda(userId, fotografias, version) {
+	if (!userId) throw new Error('Inicia sesión antes de actualizar las fotos.')
+	const { data, error } = await supabase.rpc('guardar_fotos_tienda', { p_urls: fotografias, p_expected_version: version }).single()
 
 	if (error) throw error
 	return data
 }
 
-export async function eliminarFotografiaTienda(userId, fotografiaUrl, fotografiasRestantes) {
+export async function eliminarFotografiaTienda(userId, fotografiaUrl, fotografiasRestantes, version) {
+	const store = await actualizarFotografiasTienda(userId, fotografiasRestantes, version)
 	const path = storagePathFromUrl(fotografiaUrl)
 	if (path) {
-		const { error: removeError } = await supabase.storage.from('tiendas').remove([path])
-		if (removeError) throw removeError
+		await supabase.rpc('queue_failed_uploads', { p_paths: [path] })
 	}
+	return { ...store, cleanupPending: true }
+}
 
-	return actualizarFotografiasTienda(userId, fotografiasRestantes)
+export async function limpiarSubidasFallidas(urls) {
+	const paths = urls.map(storagePathFromUrl).filter(Boolean)
+	if (!paths.length) return
+	// A failed HTTP response may follow a committed photo update. The worker checks
+	// references under a shop lock before deleting; never delete uncertain uploads here.
+	const { error } = await supabase.rpc('queue_failed_uploads', { p_paths: paths })
+	if (error) throw new Error('No se pudo registrar la limpieza. Contacta con soporte antes de volver a subir fotografías.')
 }
