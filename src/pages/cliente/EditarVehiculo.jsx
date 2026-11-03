@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import { useToast } from '../../context/toastState.js'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -9,6 +10,7 @@ function EditarVehiculo() {
 	const { id } = useParams()
 	const { user } = useAuth()
 	const navigate = useNavigate()
+	const toast = useToast()
 	const [vehicle, setVehicle] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
@@ -30,7 +32,7 @@ function EditarVehiculo() {
 	async function handleSubmit(values, validationError) {
 		if (validationError) { setError(validationError); return }
 		setError(''); setSaving(true)
-		try { await actualizarVehiculo(id, user.id, values); navigate('/cliente/vehiculos') } catch (saveError) { setError(`No se pudo actualizar el vehículo: ${publicError(saveError)}`) } finally { setSaving(false) }
+		try { await actualizarVehiculo(id, user.id, values); toast({ title: 'Vehículo actualizado', tone: 'success' }); navigate('/cliente/vehiculos') } catch (saveError) { setError(`No se pudo actualizar el vehículo: ${publicError(saveError)}`) } finally { setSaving(false) }
 	}
 
 	if (loading) return <section className="vehicles-page"><p className="vehicle-message">Cargando vehículo...</p></section>

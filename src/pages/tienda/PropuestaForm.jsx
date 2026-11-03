@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useToast } from '../../context/toastState.js'
 import { crearPropuesta } from '../../services/propuestaService.js'
 import { useFormDraft } from '../../hooks/useFormDraft.js'
 import { useAuth } from '../../context/authState.js'
@@ -7,6 +8,7 @@ const emptyProposal = { precio: '', marca: '', disponibilidad: '', caracteristic
 
 function PropuestaForm({ solicitudId, onCreated }) {
 	const { user } = useAuth()
+	const toast = useToast()
 	const [form, setForm] = useFormDraft(emptyProposal)
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState('')
@@ -17,7 +19,7 @@ function PropuestaForm({ solicitudId, onCreated }) {
 			setError('Completa un precio válido, la marca y la disponibilidad.'); return
 		}
 		setSaving(true)
-		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId, userId: user.id }); onCreated() }
+		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId, userId: user.id }); toast({ title: 'Propuesta enviada', description: 'El cliente recibirá una notificación.', tone: 'success' }); onCreated() }
 		catch (saveError) { setError(saveError.message || 'No se pudo enviar la propuesta.') }
 		finally { setSaving(false) }
 	}

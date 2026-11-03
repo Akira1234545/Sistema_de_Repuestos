@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import { useToast } from '../../context/toastState.js'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -9,6 +10,7 @@ function EditarSolicitud() {
 	const { id } = useParams()
 	const { user } = useAuth()
 	const navigate = useNavigate()
+	const toast = useToast()
 	const [request, setRequest] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
@@ -42,6 +44,7 @@ function EditarSolicitud() {
 		setSaving(true)
 		try {
 			await actualizarSolicitud(id, user.id, values)
+			toast({ title: 'Solicitud actualizada', tone: 'success' })
 			navigate('/cliente/solicitudes')
 		} catch (saveError) {
 			setError(`No se pudo actualizar la solicitud: ${publicError(saveError)}`)

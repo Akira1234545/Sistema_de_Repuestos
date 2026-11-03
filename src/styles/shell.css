@@ -237,3 +237,16 @@
 .native-app.keyboard-open :is(.client-main, .store-main) { padding-bottom: 24px; }
 .native-app :is(.auth-page, .register-type-page, .admin-page, .system-maintenance-page) { padding-top: calc(var(--safe-top) + 16px); padding-bottom: calc(var(--safe-bottom) + 24px); }
 .native-app .route-message { margin-top: calc(var(--safe-top) + 8vh); }
+
+/* Pull to refresh (Android app) */
+.pull-refresh {
+  position: fixed; z-index: 90; left: 50%; top: calc(var(--safe-top) + 8px);
+  display: grid; place-items: center; width: 42px; height: 42px; margin-left: -21px;
+  border: 1px solid var(--line-strong); border-radius: 50%; color: var(--text-muted); background: var(--surface);
+  box-shadow: var(--shadow-2); opacity: var(--progress);
+  transform: translateY(calc(var(--pull) - 30px)) rotate(calc(var(--progress) * 300deg));
+  pointer-events: none;
+}
+.pull-refresh.is-armed { color: var(--amber); border-color: rgb(245 177 61 / 55%); }
+.pull-refresh.is-refreshing { opacity: 1; color: var(--amber); animation: spin .7s linear infinite; }
+.pull-refresh-icon { font-size: 20px; font-weight: 700; }

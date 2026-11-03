@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import SkeletonList from '../../components/ui/Skeleton.jsx'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js'
 import Pagination from '../../components/Pagination.jsx'
 import { useEffect, useState } from 'react'
@@ -73,7 +74,7 @@ function Solicitudes() {
 			<button className="filter-clear" type="button" onClick={clearFilters}>Limpiar filtros</button>
 		</div>
 		{historyNotice && <p className="request-history-notice" role="status">{historyNotice}</p>}
-		{loading && <p className="request-loading">Cargando tus solicitudes...</p>}
+		{loading && <SkeletonList label="Cargando tus solicitudes…" />}
 		{error && <p className="request-error" role="alert">{error}</p>}
 		{!loading && !error && requests.length === 0 && !hasFilters && <div className="request-empty"><h2>Aún no tienes solicitudes</h2><p>Crea una solicitud para encontrar el repuesto que necesitas.</p><Link className="button requests-button" to="/cliente/solicitudes/crear">Crear solicitud</Link></div>}
 		{!loading && !error && hasFilters && filtered.length === 0 && <div className="request-empty"><h2>No hay coincidencias</h2><p>Ajusta o limpia los filtros para ver tus solicitudes.</p><button className="button requests-button" type="button" onClick={clearFilters}>Limpiar filtros</button></div>}

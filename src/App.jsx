@@ -9,6 +9,7 @@ import { useAuth } from './context/authState.js'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import SystemAvailability from './components/SystemAvailability.jsx'
 import NativeShell from './components/NativeShell.jsx'
+import Toaster from './components/ui/Toaster.jsx'
 const Home = lazy(() => import('./pages/Home.jsx'))
 const Login = lazy(() => import('./pages/auth/Login.jsx'))
 const Register = lazy(() => import('./pages/auth/Register.jsx'))
@@ -66,6 +67,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthContext>
+        <Toaster>
         <NativeShell />
         <SystemAvailability>
           <Suspense fallback={<p className="route-loading" role="status">Cargando página…</p>}>
@@ -122,6 +124,7 @@ function App() {
           </Routes>
           </Suspense>
         </SystemAvailability>
+        </Toaster>
       </AuthContext>
     </BrowserRouter>
   )

@@ -1,7 +1,8 @@
-import { Suspense, useLayoutEffect, useRef } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { usePageMotion } from '../hooks/usePageMotion.js'
 import { announceRoute } from '../lib/routeIdentity.js'
+import { REFRESH_EVENT } from '../lib/events.js'
 
 function AnimatedPage() {
 	const ref = useRef(null)
@@ -11,9 +12,16 @@ function AnimatedPage() {
 }
 
 // Keeps the shell visible while a lazy page loads and animates each new page in.
+// A REFRESH_EVENT (pull to refresh in the app) remounts the page so it reloads its data.
 export default function PageOutlet() {
 	const { pathname } = useLocation()
+	const [revision, setRevision] = useState(0)
+	useEffect(() => {
+		const refresh = () => setRevision((value) => value + 1)
+		window.addEventListener(REFRESH_EVENT, refresh)
+		return () => window.removeEventListener(REFRESH_EVENT, refresh)
+	}, [])
 	return <Suspense fallback={<p className="route-loading" role="status">Cargando página…</p>}>
-		<AnimatedPage key={pathname} />
+		<AnimatedPage key={`${pathname}:${revision}`} />
 	</Suspense>
 }

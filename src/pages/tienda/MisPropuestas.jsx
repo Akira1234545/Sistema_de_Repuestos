@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import SkeletonList from '../../components/ui/Skeleton.jsx'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerMisPropuestas } from '../../services/propuestaService.js'
@@ -34,7 +35,7 @@ export default function MisPropuestas() {
 			<div><p className="store-eyebrow">Panel de tienda / Cotizaciones</p><h1>Mis propuestas</h1><p className="store-requests-lead">Consulta tus cotizaciones y sigue cada solicitud, incluso después de la selección.</p></div>
 			<Link className="button" to="/tienda/solicitudes">Buscar solicitudes</Link>
 		</div>
-		{loading && <p className="request-loading" role="status">Cargando propuestas…</p>}
+		{loading && <SkeletonList label="Cargando propuestas…" />}
 		{error && <p className="store-request-error" role="alert">{error}</p>}
 		{!loading && !error && !items.length && <div className="store-request-empty">
 			<h2>{page ? 'No hay más propuestas' : 'Aún no enviaste propuestas'}</h2>

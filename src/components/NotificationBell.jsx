@@ -3,7 +3,9 @@ import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
-import { marcarNotificacionLeida, marcarTodasLeidas, obtenerNotificaciones } from '../services/notificacionService.js'
+import { marcarNotificacionLeida, marcarTodasLeidas, obtenerNotificaciones, suscribirNotificaciones } from '../services/notificacionService.js'
+import { useToast } from '../context/toastState.js'
+import { isNativeApp } from '../lib/platform.js'
 
 const typeLabels = {
 	nueva_propuesta: 'Nueva propuesta',
@@ -39,6 +41,8 @@ function NotificationBell({ variant }) {
 	const [markingId, setMarkingId] = useState('')
 	const containerRef = useRef(null)
 	const requestVersion = useRef(0)
+	const toast = useToast()
+	const [pulse, setPulse] = useState(0)
 
 	const loadNotifications = useCallback(async () => {
 		const userId = user?.id
@@ -65,7 +69,8 @@ function NotificationBell({ variant }) {
 		requestVersion.current += 1
 		if (!user?.id) return undefined
 		const initialLoad = window.setTimeout(() => { void loadNotifications() }, 0)
-		const refreshInterval = window.setInterval(() => { void loadNotifications() }, 60000)
+		// Realtime delivers new rows instantly; the slow poll only reconciles read state and missed events.
+		const refreshInterval = window.setInterval(() => { void loadNotifications() }, 300000)
 		const refreshOnFocus = () => { if (document.visibilityState === 'visible') void loadNotifications() }
 		window.addEventListener('focus', refreshOnFocus)
 		return () => {
@@ -91,6 +96,19 @@ function NotificationBell({ variant }) {
 			document.removeEventListener('keydown', closeOnEscape)
 		}
 	}, [open])
+
+	useEffect(() => {
+		if (!user?.id) return undefined
+		return suscribirNotificaciones(user.id, (notification) => {
+			setNotifications((current) => current.some((item) => item.id === notification.id) ? current : [notification, ...current].slice(0, 50))
+			setLoadedForUserId(user.id)
+			setUnreadCount((current) => current + (notification.leida ? 0 : 1))
+			setPulse((value) => value + 1)
+			const to = notificationPath(notification, role)
+			toast({ title: notification.titulo, description: notification.mensaje, tone: 'info', action: to ? { label: 'Ver detalle', to } : null })
+			if (isNativeApp) void import('@capacitor/haptics').then(({ Haptics, NotificationType }) => Haptics.notification({ type: NotificationType.Success })).catch(() => {})
+		})
+	}, [role, toast, user?.id])
 
 	const visibleNotifications = loadedForUserId === user?.id ? notifications : []
 	const visibleUnreadCount = loadedForUserId === user?.id ? unreadCount : 0
@@ -131,7 +149,7 @@ function NotificationBell({ variant }) {
 			}}
 		>
 			<Icon name="bell" size={22} />
-			{visibleUnreadCount > 0 && <span className="notification-count">{visibleUnreadCount > 99 ? '99+' : visibleUnreadCount}</span>}
+			{visibleUnreadCount > 0 && <span className="notification-count" key={pulse}>{visibleUnreadCount > 99 ? '99+' : visibleUnreadCount}</span>}
 		</button>
 		{open && <section className="notification-popover" aria-label="Notificaciones">
 			<header className="notification-popover-header">

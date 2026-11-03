@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import { useToast } from '../../context/toastState.js'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -26,6 +27,7 @@ function mapUrl(store) {
 function PropuestasSolicitud() {
 	const { id } = useParams()
 	const { user } = useAuth()
+	const toast = useToast()
 	const [request, setRequest] = useState(null)
 	const [proposals, setProposals] = useState([])
 	const [loading, setLoading] = useState(true)
@@ -43,14 +45,14 @@ function PropuestasSolicitud() {
 	async function choose(proposal) {
 		if (!window.confirm('¿Quieres seleccionar esta propuesta? Las demás propuestas abiertas quedarán rechazadas.')) return
 		setSelectingId(proposal.id); setError('')
-		try { await seleccionarPropuesta(id, proposal.id); setRefresh((value) => value + 1) }
+		try { await seleccionarPropuesta(id, proposal.id); toast({ title: 'Propuesta seleccionada', description: 'Ya puedes ver el contacto y la ubicación de la tienda.', tone: 'success' }); setRefresh((value) => value + 1) }
 		catch (selectError) { setError(`No se pudo seleccionar la propuesta: ${publicError(selectError)}`) }
 		finally { setSelectingId('') }
 	}
 	async function complete() {
 		if (!window.confirm('¿Confirmas que la tienda atendió tu solicitud? Después podrás dejar tu reseña.')) return
 		setSelectingId('attention'); setError('')
-		try { await confirmarAtencion(id); setRefresh((value) => value + 1) }
+		try { await confirmarAtencion(id); toast({ title: 'Atención confirmada', description: 'Cuéntanos cómo te fue dejando tu reseña.', tone: 'success' }); setRefresh((value) => value + 1) }
 		catch (cause) { setError(`No se pudo confirmar la atención: ${publicError(cause)}`) }
 		finally { setSelectingId('') }
 	}

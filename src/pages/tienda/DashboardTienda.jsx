@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
 import { useAuth } from '../../context/authState.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
+import { obtenerResumenTienda } from '../../services/dashboardService.js'
+import StatStrip from '../../components/ui/StatStrip.jsx'
 
 const actions = [
 	{ to: '/tienda/solicitudes', icon: 'requests', title: 'Solicitudes disponibles', text: 'Revisa las solicitudes de repuestos de tus categorías.' },
@@ -24,11 +26,21 @@ function storeNotice(store) {
 function DashboardTienda() {
 	const { user } = useAuth()
 	const [store, setStore] = useState(undefined)
+	const [stats, setStats] = useState(null)
+	const [statsLoading, setStatsLoading] = useState(true)
 	useEffect(() => {
 		let active = true
 		obtenerTiendaUsuario(user.id).then((data) => { if (active) setStore(data) }).catch(() => { if (active) setStore(null) })
+		obtenerResumenTienda().then((data) => { if (active) setStats(data) }).catch(() => {}).finally(() => { if (active) setStatsLoading(false) })
 		return () => { active = false }
 	}, [user.id])
+	const statItems = [
+		{ label: 'Solicitudes sin responder', value: stats?.solicitudes_nuevas, to: '/tienda/solicitudes', highlight: Number(stats?.solicitudes_nuevas) > 0 },
+		{ label: 'Propuestas en espera', value: stats?.propuestas_enviadas, to: '/tienda/propuestas' },
+		{ label: 'Propuestas seleccionadas', value: stats?.propuestas_seleccionadas, to: '/tienda/propuestas' },
+		{ label: 'Promociones vigentes', value: stats?.promociones_activas, to: '/tienda/promociones' },
+		{ label: 'Calificación', value: stats?.calificacion, decimals: 1, suffix: ' / 5', hint: stats ? `${stats.resenas} ${Number(stats.resenas) === 1 ? 'reseña' : 'reseñas'}` : '', to: '/tienda/resenas' },
+	]
 	const notice = store === undefined ? null : storeNotice(store)
 
 	return (
@@ -39,6 +51,7 @@ function DashboardTienda() {
 				<p className="store-lead">Responde solicitudes, publica promociones y mantén tu tienda al día desde un solo lugar.</p>
 				{store?.estado === 'aprobada' && store.activa && <span className="admin-status admin-status-aprobada store-hero-status">Tienda aprobada y visible</span>}
 			</div>
+			<StatStrip items={statItems} loading={statsLoading} />
 			{notice && <div className={notice.tone === 'info' ? 'store-request-message store-notice' : 'request-history-notice store-notice'} role="status">
 				<span>{notice.text}</span>
 				{notice.action && <Link className="button button-secondary" to={notice.action.to}>{notice.action.label}</Link>}

@@ -6,6 +6,8 @@ WITH required(name) AS (
         ('admin_user_page'),
         ('get_dashboard_stats'),
         ('update_my_profile'),
+        ('client_dashboard_stats'),
+        ('store_dashboard_stats'),
         ('sprint3_admin_set_user_active'),
         ('sprint3_admin_get_system_settings'),
         ('guardar_configuracion_segura'),

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import SkeletonList from '../components/ui/Skeleton.jsx'
 import { Link, useLocation } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import Pagination from '../components/Pagination.jsx'
@@ -54,7 +55,7 @@ export default function TiendasPublicas() {
 			</header>
 			<label>Buscar por nombre<input type="search" maxLength={160} value={search} placeholder="Nombre de la tienda" onChange={event => { setPage(0); setSearch(event.target.value) }} /></label>
 			{focusId && <p><Link className="text-button" to="/tiendas">Ver todas las tiendas →</Link></p>}
-			{loading && <p className="request-loading" role="status">Cargando tiendas…</p>}
+			{loading && <SkeletonList variant="grid" label="Cargando tiendas…" />}
 			{error && <p className="public-stores-error" role="alert">{error}</p>}
 			{reviewError && <p className="request-history-notice" role="status">{reviewError}</p>}
 			{!loading && !error && !stores.length && <div className="promo-state"><h2>No hay tiendas que coincidan</h2><p>Prueba con otro nombre o vuelve más tarde.</p></div>}

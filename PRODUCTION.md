@@ -37,11 +37,15 @@ Advertencias del asesor que se mantienen a propósito: las vistas `SECURITY DEFI
 
 Aplicada el 3 de noviembre de 2026. Cada tabla principal tiene una sola política permisiva de lectura (antes, una para el administrador y otra para el propietario, ambas evaluadas en cada fila), con el mismo acceso resultante. Se eliminaron 11 índices de una columna ya cubiertos por índices compuestos o únicos.
 
+## Tiempo real y paneles (20261114)
+
+Aplicada el 3 de noviembre de 2026. La tabla `notificaciones` se publica en Supabase Realtime (respeta RLS: cada cuenta solo recibe sus filas). Nuevas RPC `client_dashboard_stats` y `store_dashboard_stats` con las métricas de cada panel, limitadas a la cuenta que consulta.
+
 ## Base nueva y actualización
 
 1. Crear un proyecto de staging y respaldar cualquier base existente antes de migrar.
 2. Solo en una base vacía, ejecutar `BD_Sistema_Repuestos.sql` una vez.
-3. Aplicar los archivos de `database/migrations` en orden lexicográfico. Incluye `20261006_sprint1a_helpers.sql`, antes de Sprint 2, y todas las correcciones desde `20261027_production_security.sql` hasta `20261113_query_performance.sql`.
+3. Aplicar los archivos de `database/migrations` en orden lexicográfico. Incluye `20261006_sprint1a_helpers.sql`, antes de Sprint 2, y todas las correcciones desde `20261027_production_security.sql` hasta `20261114_realtime_and_dashboards.sql`.
 4. En una instalación existente, registrar qué migraciones ya se aplicaron y ejecutar únicamente las pendientes. No volver a ejecutar el SQL base ni todas las migraciones antiguas indiscriminadamente.
 5. Ejecutar `database/preflight_production.sql` como propietario para inspeccionar restricciones pendientes, RLS y categorías repetidas. No modifica datos. Revisar y corregir datos antiguos antes de validar restricciones `NOT VALID`; las migraciones conservan registros históricos y aplican los límites a nuevas escrituras.
 6. Ejecutar `database/preflight_rpc.sql` como propietario. Debe devolver `installed = true` para cada RPC; comparar `actual_arguments` con las firmas de las migraciones. La prueba local valida nombres y parámetros del código contra el SQL del repositorio, pero no confirma qué migraciones están instaladas en el proyecto remoto.

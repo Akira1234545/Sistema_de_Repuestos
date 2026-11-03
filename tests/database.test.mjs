@@ -126,6 +126,9 @@ test('clean installation, authorization, request lifecycle and public projection
     assert.equal((await query(`SELECT update_my_profile('Ana','Pérez','+591 70000000') AS ok`))[0].ok, true)
     await assert.rejects(() => query(`SELECT update_my_profile('','Pérez',NULL)`), /obligatorios/)
     await assert.rejects(() => query('SELECT get_dashboard_stats()'), /administrador/)
+    const clientStats = (await query('SELECT * FROM client_dashboard_stats()'))[0]
+    assert.equal(Number(clientStats.vehiculos), 1, 'client dashboard counts only own vehicles')
+    await assert.rejects(() => query('SELECT * FROM store_dashboard_stats()'), /Cuenta no disponible/)
     await assert.rejects(() => query('SELECT claim_storage_cleanup(1)'), /permission denied/, 'cleanup queue is server-only')
     await actor('', 'anon')
     assert.equal((await query('SELECT id FROM resenas_publicas')).length, 1)

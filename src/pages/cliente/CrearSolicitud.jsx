@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import { useToast } from '../../context/toastState.js'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -45,13 +46,14 @@ function CrearSolicitud() {
 	const [params] = useSearchParams()
 	const { user } = useAuth()
 	const navigate = useNavigate()
+	const toast = useToast()
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState('')
 
 	async function handleSubmit(values, validationError) {
 		if (validationError) { setError(validationError); return }
 		setError(''); setSaving(true)
-		try { await crearSolicitud({ ...values, usuario_id: user.id }); navigate('/cliente/solicitudes') } catch (saveError) { setError(`No se pudo crear la solicitud: ${publicError(saveError)}`) } finally { setSaving(false) }
+		try { await crearSolicitud({ ...values, usuario_id: user.id }); toast({ title: 'Solicitud publicada', description: 'Te avisaremos en cuanto una tienda envíe su propuesta.', tone: 'success' }); navigate('/cliente/solicitudes') } catch (saveError) { setError(`No se pudo crear la solicitud: ${publicError(saveError)}`) } finally { setSaving(false) }
 	}
 
 	return <section className="requests-page"><div className="request-form"><div className="request-form-header"><p className="requests-eyebrow">Panel de cliente / Nueva solicitud</p><h1>Encuentra el repuesto que necesitas</h1><p className="request-form-lead">Cuéntanos qué buscas y prepara tu solicitud para las tiendas.</p></div><SolicitudForm initialValues={{ ...initialForm, id: crypto.randomUUID(), categoria_id: params.get('categoria') || '', userId: user.id }} onSubmit={handleSubmit} saving={saving} error={error} /></div></section>

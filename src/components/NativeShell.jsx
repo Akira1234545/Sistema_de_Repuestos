@@ -9,6 +9,7 @@ import { useAuth } from '../context/authState.js'
 import { isNativeApp } from '../lib/platform.js'
 import { panelPath } from '../lib/roles.js'
 import { supabase } from '../services/supabase.js'
+import PullToRefresh from './PullToRefresh.jsx'
 
 // Screens where the Android back button leaves the app instead of navigating back.
 const ROOT_PATHS = new Set(['/', '/login', '/cliente', '/tienda', '/admin'])
@@ -99,7 +100,10 @@ function NativeBridge() {
 		if (pathname === '/') navigate(user && role ? panelPath(role) : '/login', { replace: true })
 	}, [loading, navigate, pathname, role, user])
 
-	return offline ? <p className="native-offline" role="status">Sin conexión. Revisa tu red; los cambios no se guardarán hasta que vuelvas a conectarte.</p> : null
+	return <>
+		<PullToRefresh />
+		{offline && <p className="native-offline" role="status">Sin conexión. Revisa tu red; los cambios no se guardarán hasta que vuelvas a conectarte.</p>}
+	</>
 }
 
 export default function NativeShell() {

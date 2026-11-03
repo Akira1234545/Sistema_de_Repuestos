@@ -1,4 +1,5 @@
 import { boliviaDateTimeInput } from '../../lib/format.js'
+import { useToast } from '../../context/toastState.js'
 import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -13,6 +14,7 @@ function GestionPromocion() {
 	const { id } = useParams()
 	const { user } = useAuth()
 	const navigate = useNavigate()
+	const toast = useToast()
 	const [form, setForm] = useState(() => ({ ...blank, id: crypto.randomUUID() }))
 	const [categories, setCategories] = useState([])
 	const [store, setStore] = useState(null)
@@ -42,6 +44,7 @@ function GestionPromocion() {
 		try {
 			if (id) await actualizarPromocion(id, form)
 			else await crearPromocion(store.id, form)
+			toast({ title: id ? 'Promoción actualizada' : 'Promoción publicada', tone: 'success' })
 			navigate('/tienda/promociones')
 		} catch (cause) { setError(`No se pudo guardar la promoción: ${publicError(cause)}`) }
 		finally { setSaving(false) }

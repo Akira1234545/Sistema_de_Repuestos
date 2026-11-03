@@ -16,6 +16,9 @@ La app Android (`android/`) es un proyecto nativo de Android Studio generado con
 - **Sesión**: los tokens se renuevan solo con la app en primer plano.
 - **Sin conexión**: aviso fijo cuando no hay red.
 - **Teclado**: la barra inferior se oculta mientras se escribe.
+- **Deslizar para recargar**: arrastra hacia abajo desde el inicio de cualquier página para volver a cargar sus datos.
+- **Notificaciones al instante** por Supabase Realtime, con aviso flotante y vibración.
+- **Compartir promociones** con la hoja de compartir de Android (define `VITE_PUBLIC_SITE_URL` para incluir el enlace web).
 - **Vibración ligera** al navegar y al pulsar acciones principales.
 - **Barras del sistema y bordes**: diseño de borde a borde con márgenes seguros (`--safe-area-inset-*`).
 - **Pantalla de inicio** e iconos adaptativos con la marca (`assets/`, generados con `npm run android:assets`).

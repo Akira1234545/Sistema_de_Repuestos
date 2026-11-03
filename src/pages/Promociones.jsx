@@ -1,4 +1,5 @@
 import Pagination from '../components/Pagination.jsx'
+import SkeletonList from '../components/ui/Skeleton.jsx'
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js'
 import { publicError } from '../lib/errors.js'
 import { useEffect, useState } from 'react'
@@ -28,7 +29,7 @@ function Promociones() {
 		return () => { active = false }
 	}, [page, query])
 	return <section className="promo-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">RepuestosPro / Ofertas</p><h1>Promociones disponibles</h1><p>Ofertas activas dentro de su periodo de vigencia.</p><Link to={role === 'tienda' ? '/tienda' : '/cliente'}>Volver al panel</Link></div>{role === 'tienda' && <Link className="button promo-button" to="/tienda/promociones">Administrar mis promociones</Link>}</header>
-		{loading && <p className="promo-state">Cargando promociones…</p>}{error && <p className="promo-error" role="alert">{error}</p>}{!loading && !error && !items.length && <div className="promo-state"><h2>No hay promociones vigentes</h2><p>Vuelve a consultar más adelante.</p></div>}
+		{loading && <SkeletonList variant="grid" count={6} label="Cargando promociones…" />}{error && <p className="promo-error" role="alert">{error}</p>}{!loading && !error && !items.length && <div className="promo-state"><h2>No hay promociones vigentes</h2><p>Vuelve a consultar más adelante.</p></div>}
 		<label>Buscar promociones<input type="search" value={search} maxLength={160} onChange={event => { setPage(0); setParams(event.target.value ? { q: event.target.value } : {}, { replace: true }) }} /></label>
 		{!loading && !error && items.length > 0 && filtered.length === 0 && <p role="status">No hay promociones que coincidan con tu búsqueda.</p>}
 		{!loading && !error && filtered.length > 0 && <div className="promo-grid">{filtered.map((item) => <PromoCard item={item} key={item.id} />)}</div>}
