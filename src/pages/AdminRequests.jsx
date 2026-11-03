@@ -2,6 +2,7 @@ import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerSolicitudesAdministracion } from '../services/adminService.js'
 import { statusLabel } from '../lib/format.js'
+import Select from '../components/ui/Select.jsx'
 
 const requestStatuses = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada', 'atendida', 'cerrada']
 const pageSize = 25
@@ -73,8 +74,8 @@ function AdminRequests() {
 		</div>
 		{error && <p className="admin-alert" role="alert">{error}</p>}
 		<div className="admin-request-filters">
-			<label>Estado<select name="estado" value={filter.estado} onChange={updateFilter}><option value="">Todos los estados</option>{requestStatuses.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}</select></label>
-			<label>Categoría<select name="categoriaId" value={filter.categoriaId} onChange={updateFilter}><option value="">Todas las categorías</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
+			<label>Estado<Select ariaLabel="Estado" name="estado" value={filter.estado} onChange={updateFilter} options={[{ value: '', label: 'Todos los estados' }, ...requestStatuses.map((status) => ({ value: status, label: statusLabel(status) }))]} /></label>
+			<label>Categoría<Select ariaLabel="Categoría" name="categoriaId" value={filter.categoriaId} onChange={updateFilter} options={[{ value: '', label: 'Todas las categorías' }, ...categories.map((category) => ({ value: category.id, label: category.nombre }))]} /></label>
 			<label>Desde<input type="date" name="fechaDesde" value={filter.fechaDesde} onChange={updateFilter} /></label>
 			<label>Hasta<input type="date" name="fechaHasta" value={filter.fechaHasta} onChange={updateFilter} /></label>
 			<label className="admin-request-search">Buscar por título<input name="buscar" value={filter.buscar} onChange={updateFilter} placeholder="Título de la solicitud" /></label>

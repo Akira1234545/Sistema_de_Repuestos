@@ -2,6 +2,7 @@ import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerPromocionesAdministracion, obtenerTiendasConPromocionesAdministracion } from '../services/adminService.js'
 import { statusLabel } from '../lib/format.js'
+import Select from '../components/ui/Select.jsx'
 
 const pageSize = 25
 const promotionStatuses = ['activa', 'pausada', 'finalizada']
@@ -106,9 +107,9 @@ function AdminPromociones() {
 		{optionsError && <p className="admin-alert" role="alert">{optionsError}</p>}
 		{error && <p className="admin-alert" role="alert">{error}</p>}
 		<div className="admin-promotion-filters">
-			<label>Tienda<select name="tiendaId" value={filters.tiendaId} onChange={updateFilter} disabled={optionsLoading}><option value="">Todas las tiendas</option>{stores.map((store) => <option key={store.id} value={store.id}>{store.nombre}</option>)}</select></label>
-			<label>Categoría<select name="categoriaId" value={filters.categoriaId} onChange={updateFilter} disabled={optionsLoading}><option value="">Todas las categorías</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
-			<label>Estado<select name="estado" value={filters.estado} onChange={updateFilter}><option value="">Todos los estados</option>{promotionStatuses.map((status) => <option key={status} value={status}>{status}</option>)}</select></label>
+			<label>Tienda<Select ariaLabel="Tienda" name="tiendaId" value={filters.tiendaId} onChange={updateFilter} disabled={optionsLoading} options={[{ value: '', label: 'Todas las tiendas' }, ...stores.map((store) => ({ value: store.id, label: store.nombre }))]} /></label>
+			<label>Categoría<Select ariaLabel="Categoría" name="categoriaId" value={filters.categoriaId} onChange={updateFilter} disabled={optionsLoading} options={[{ value: '', label: 'Todas las categorías' }, ...categories.map((category) => ({ value: category.id, label: category.nombre }))]} /></label>
+			<label>Estado<Select ariaLabel="Estado" name="estado" value={filters.estado} onChange={updateFilter} options={[{ value: '', label: 'Todos los estados' }, ...promotionStatuses.map((status) => ({ value: status, label: statusLabel(status) }))]} /></label>
 			<label>Inicio desde<input name="fechaDesde" type="date" value={filters.fechaDesde} onChange={updateFilter} /></label>
 			<label>Inicio hasta<input name="fechaHasta" type="date" value={filters.fechaHasta} onChange={updateFilter} /></label>
 			<label className="admin-promotion-search">Buscar por título<input name="buscar" value={search} onChange={updateFilter} placeholder="Título de la promoción" /></label>

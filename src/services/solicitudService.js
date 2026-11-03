@@ -209,3 +209,11 @@ export async function cerrarSolicitud(id, userId) {
 	if (!data) throw new Error('La solicitud ya no está abierta o no pertenece a tu cuenta.')
 	return data
 }
+
+// Active proposals per request (withdrawn ones excluded), for the badges in the request list.
+export async function contarPropuestas(ids) {
+	if (!ids.length) return {}
+	const { data, error } = await supabase.from('propuestas').select('solicitud_id').in('solicitud_id', ids).neq('estado', 'retirada')
+	if (error) throw error
+	return data.reduce((counts, item) => { counts[item.solicitud_id] = (counts[item.solicitud_id] || 0) + 1; return counts }, {})
+}

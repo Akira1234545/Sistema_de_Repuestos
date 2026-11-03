@@ -7,6 +7,21 @@ import PublicReviews from '../components/PublicReviews.jsx'
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js'
 import { obtenerResenasPublicasDeTiendas } from '../services/resenaService.js'
 import { obtenerTiendasPublicas } from '../services/tiendaService.js'
+import Icon from '../components/Icon.jsx'
+import ViewSwitcher from '../components/ui/ViewSwitcher.jsx'
+import { useViewMode } from '../hooks/useViewMode.js'
+
+const VIEWS = [
+	{ value: 'compacta', label: 'Vista compacta', icon: 'list' },
+	{ value: 'tarjetas', label: 'Vista con fotos', icon: 'categories' },
+]
+
+function StoreRating({ summary, error }) {
+	if (error) return <span>Reseñas no disponibles</span>
+	const total = Number(summary?.total || 0)
+	if (!total) return <span>Sin reseñas</span>
+	return <span><b className="store-row-star">★ {Number(summary.promedio).toFixed(1)}</b> · {total} {total === 1 ? 'reseña' : 'reseñas'}</span>
+}
 
 // `embedded` renders the catalogue inside a signed-in panel instead of the public page shell.
 export default function TiendasPublicas({ embedded = false }) {
@@ -22,6 +37,8 @@ export default function TiendasPublicas({ embedded = false }) {
 	const [hasMore, setHasMore] = useState(false)
 	const [search, setSearch] = useState('')
 	const query = useDebouncedValue(search)
+	const [view, setView] = useViewMode('tiendas', VIEWS.map((item) => item.value), 'compacta')
+	const [expanded, setExpanded] = useState('')
 
 	useEffect(() => {
 		let active = true
@@ -48,16 +65,35 @@ export default function TiendasPublicas({ embedded = false }) {
 	const content = <>
 			<header className="public-stores-heading">
 				<p className="eyebrow">RepuestosPro · Tiendas aprobadas</p>
-				<h1>Encuentra tu tienda de repuestos</h1>
-				<p>Consulta perfiles y reseñas. El teléfono se comparte en promociones y la ubicación al seleccionar una propuesta.</p>
+				<h1>{embedded ? 'Tiendas' : 'Encuentra tu tienda de repuestos'}</h1>
+				{!embedded && <p>Consulta perfiles y reseñas. El teléfono se comparte en promociones y la ubicación al seleccionar una propuesta.</p>}
 			</header>
-			<label>Buscar por nombre<input type="search" maxLength={160} value={search} placeholder="Nombre de la tienda" onChange={event => { setPage(0); setSearch(event.target.value) }} /></label>
+			<div className="list-toolbar">
+				<label className="list-search"><Icon name="search" size={18} /><input type="search" maxLength={160} value={search} placeholder="Buscar tienda" aria-label="Buscar tienda por nombre" onChange={event => { setPage(0); setSearch(event.target.value) }} /></label>
+				<ViewSwitcher value={view} onChange={setView} options={VIEWS} />
+			</div>
 			{focusId && <p><Link className="text-button" to={pathname}>Ver todas las tiendas →</Link></p>}
 			{loading && <SkeletonList variant="grid" label="Cargando tiendas…" />}
 			{error && <p className="public-stores-error" role="alert">{error}</p>}
 			{reviewError && <p className="request-history-notice" role="status">{reviewError}</p>}
 			{!loading && !error && !stores.length && <div className="promo-state"><h2>No hay tiendas que coincidan</h2><p>Prueba con otro nombre o vuelve más tarde.</p></div>}
-			{!loading && !error && stores.length > 0 && <div className="public-stores-grid">{stores.map(store => <article className="public-store-card" id={store.id} key={store.id}>
+			{!loading && !error && stores.length > 0 && view === 'compacta' && <div className="store-rows">{stores.map(store => {
+				const open = expanded === store.id || focusId === store.id
+				return <article className={`store-row${open ? ' is-expanded' : ''}`} id={store.id} key={store.id}>
+					<button type="button" className="store-row-summary" aria-expanded={open} onClick={() => setExpanded(open ? '' : store.id)}>
+						<span className="store-row-thumb">{store.fotografias?.[0] ? <img src={store.fotografias[0]} alt="" loading="lazy" /> : store.nombre?.charAt(0)?.toUpperCase() || 'R'}</span>
+						<span className="store-row-text"><strong>{store.nombre}</strong><span><StoreRating summary={summaries[store.id]} error={reviewError} />{store.horario ? ` · ${store.horario}` : ''}</span></span>
+						<span className="icon-action" aria-hidden="true"><Icon name={open ? 'x' : 'eye'} size={18} /></span>
+					</button>
+					{open && <div className="store-row-detail">
+						{store.fotografias?.length > 0 && <div className="store-row-photos">{store.fotografias.slice(0, 4).map((url) => <img key={url} src={url} alt={`Fotografía de ${store.nombre}`} loading="lazy" />)}</div>}
+						<p>{store.descripcion || 'Tienda de repuestos.'}</p>
+						{store.horario && <small>Horario: {store.horario}</small>}
+						<PublicReviews key={`${store.id}-${(reviewsByStore[store.id] || []).length}`} storeId={store.id} storeName={store.nombre} initial={reviewsByStore[store.id] || []} summary={summaries[store.id]} error={reviewError} />
+					</div>}
+				</article>
+			})}</div>}
+			{!loading && !error && stores.length > 0 && view === 'tarjetas' && <div className="public-stores-grid">{stores.map(store => <article className="public-store-card" id={store.id} key={store.id}>
 				{store.fotografias?.[0] ? <img src={store.fotografias[0]} width="640" height="360" loading="lazy" alt={`Fotografía de ${store.nombre}`} /> : <div className="public-store-placeholder" aria-hidden="true">{store.nombre?.charAt(0)?.toUpperCase() || 'R'}</div>}
 				<div className="public-store-copy">
 					<p className="public-store-label">Tienda aprobada</p>

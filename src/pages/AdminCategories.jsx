@@ -1,6 +1,7 @@
 import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { guardarCategoriaAdministracion, obtenerCategoriasAdministracion } from '../services/adminService.js'
+import Select from '../components/ui/Select.jsx'
 
 const emptyForm = { id: '', nombre: '', descripcion: '', categoria_padre_id: '', activo: true }
 
@@ -99,10 +100,10 @@ function AdminCategories() {
 			<h3>{form.id ? 'Editar categoría' : 'Crear categoría'}</h3>
 			<div className="admin-category-fields">
 				<label>Nombre<input name="nombre" value={form.nombre} onChange={updateField} maxLength="100" required /></label>
-				<label>Categoría padre<select name="categoria_padre_id" value={form.categoria_padre_id} onChange={updateField}>
-					<option value="">Sin categoría padre</option>
-					{categories.filter((category) => category.activo && category.id !== form.id).map((category) => <option key={category.id} value={category.id}>{category.categoria_padre_nombre ? `${category.categoria_padre_nombre} / ` : ''}{category.nombre}</option>)}
-				</select></label>
+				<label>Categoría padre<Select ariaLabel="Categoría padre" name="categoria_padre_id" value={form.categoria_padre_id} onChange={updateField} options={[
+					{ value: '', label: 'Sin categoría padre' },
+					...categories.filter((category) => category.activo && category.id !== form.id).map((category) => ({ value: category.id, label: `${category.categoria_padre_nombre ? `${category.categoria_padre_nombre} / ` : ''}${category.nombre}` })),
+				]} /></label>
 				<label className="admin-category-description">Descripción<textarea name="descripcion" value={form.descripcion} onChange={updateField} maxLength="5000" rows="3" /></label>
 			</div>
 			<label className="admin-maintenance-toggle"><input type="checkbox" name="activo" checked={form.activo} onChange={updateField} /> Categoría activa</label>

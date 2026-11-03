@@ -12,6 +12,7 @@ import AdminReportes from './AdminReportes.jsx'
 import { obtenerResumenAdministracion } from '../services/adminService.js'
 import CountUp from '../components/ui/CountUp.jsx'
 import { statusLabel } from '../lib/format.js'
+import Select from '../components/ui/Select.jsx'
 
 const statLabels = [
 	['total_usuarios', 'Cuentas registradas'],
@@ -128,7 +129,7 @@ function AdminAccess() {
 		{section === 'tiendas' && <>
 		<h2 className="admin-section-title">Revisión de tiendas</h2>
 		{error && <p className="admin-alert" role="alert">{error}</p>}{notice && <p className="admin-notice" role="status">{notice}</p>}
-		<div className="admin-filters"><label>Estado<select value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))}><option value="">Todos</option>{statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}</select></label><label>Buscar<input value={filter.search} onChange={(event) => setFilter((current) => ({ ...current, search: event.target.value }))} placeholder="Tienda, teléfono o dirección" /></label><button type="button" className="button button-secondary" onClick={loadStores} disabled={loading}>Actualizar</button></div>
+		<div className="admin-filters"><label>Estado<Select ariaLabel="Estado" value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))} options={[{ value: '', label: 'Todos' }, ...statuses.map((status) => ({ value: status, label: statusLabels[status] }))]} /></label><label>Buscar<input value={filter.search} onChange={(event) => setFilter((current) => ({ ...current, search: event.target.value }))} placeholder="Tienda, teléfono o dirección" /></label><button type="button" className="button button-secondary" onClick={loadStores} disabled={loading}>Actualizar</button></div>
 		{loading ? <p role="status">Cargando tiendas…</p> : visibleStores.length === 0 ? <section className="admin-empty"><h2>No hay tiendas para mostrar</h2><p>Prueba con otro estado o término de búsqueda.</p></section> : <div className="admin-store-list">{visibleStores.map((store) => <article className="admin-store-card" key={store.id}>
 			<div className="admin-store-top"><div><span className={`admin-status admin-status-${store.estado}`}>{statusLabel(store.estado)}</span><h2>{store.nombre}</h2><small>Registro: {formatDate(store.fecha_creacion)}</small></div><strong>{store.activa ? 'Activa' : 'Inactiva'}</strong></div>
 			<p>{store.descripcion || 'Sin descripción.'}</p><dl><div><dt>Teléfono</dt><dd>{store.telefono || 'No registrado'}</dd></div><div><dt>Dirección</dt><dd>{store.direccion || 'No registrada'}</dd></div><div><dt>Horario</dt><dd>{store.horario || 'No registrado'}</dd></div><div><dt>Ubicación</dt><dd>{store.latitud != null && store.longitud != null ? `${store.latitud}, ${store.longitud}` : 'No registrada'}</dd></div></dl>
