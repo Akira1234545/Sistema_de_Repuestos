@@ -9,7 +9,7 @@ const quickActions = [
 	{ icon: 'requests', title: 'Nueva solicitud', text: 'Cuenta qué repuesto necesitas y recibe propuestas.', to: '/cliente/solicitudes/crear' },
 	{ icon: 'vehicle', title: 'Mis vehículos', text: 'Administra los vehículos que tienes registrados.', to: '/cliente/vehiculos' },
 	{ icon: 'promotion', title: 'Promociones', text: 'Consulta descuentos activos de las tiendas.', to: '/promociones' },
-	{ icon: 'store', title: 'Tiendas', text: 'Conoce las tiendas aprobadas y sus reseñas.', to: '/tiendas' },
+	{ icon: 'store', title: 'Tiendas', text: 'Conoce las tiendas aprobadas y sus reseñas.', to: '/cliente/tiendas' },
 ]
 
 function greeting() {

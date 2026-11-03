@@ -101,6 +101,7 @@ function App() {
                 <Route path="solicitudes/editar/:id" element={<EditarSolicitud />} />
                 <Route path="solicitudes/:id/propuestas" element={<PropuestasSolicitud />} />
                 <Route path="favoritos" element={<Favoritos />} />
+                <Route path="tiendas" element={<TiendasPublicas embedded />} />
               </Route>
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['tienda']} />}>

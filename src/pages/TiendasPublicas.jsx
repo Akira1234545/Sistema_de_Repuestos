@@ -8,8 +8,9 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue.js'
 import { obtenerResenasPublicasDeTiendas } from '../services/resenaService.js'
 import { obtenerTiendasPublicas } from '../services/tiendaService.js'
 
-export default function TiendasPublicas() {
-	const { hash } = useLocation()
+// `embedded` renders the catalogue inside a signed-in panel instead of the public page shell.
+export default function TiendasPublicas({ embedded = false }) {
+	const { hash, pathname } = useLocation()
 	const focusId = /^#[0-9a-f-]{36}$/i.test(hash) ? hash.slice(1) : ''
 	const [stores, setStores] = useState([])
 	const [reviewsByStore, setReviewsByStore] = useState({})
@@ -44,17 +45,14 @@ export default function TiendasPublicas() {
 		return () => { active = false; clearTimeout(timer) }
 	}, [page, query, focusId])
 
-	return <div className="public-home">
-		<a className="skip-link" href="#contenido">Ir al contenido</a>
-		<Header />
-		<main className="public-stores-page" id="contenido" tabIndex={-1}>
+	const content = <>
 			<header className="public-stores-heading">
 				<p className="eyebrow">RepuestosPro · Tiendas aprobadas</p>
 				<h1>Encuentra tu tienda de repuestos</h1>
 				<p>Consulta perfiles y reseñas. El teléfono se comparte en promociones y la ubicación al seleccionar una propuesta.</p>
 			</header>
 			<label>Buscar por nombre<input type="search" maxLength={160} value={search} placeholder="Nombre de la tienda" onChange={event => { setPage(0); setSearch(event.target.value) }} /></label>
-			{focusId && <p><Link className="text-button" to="/tiendas">Ver todas las tiendas →</Link></p>}
+			{focusId && <p><Link className="text-button" to={pathname}>Ver todas las tiendas →</Link></p>}
 			{loading && <SkeletonList variant="grid" label="Cargando tiendas…" />}
 			{error && <p className="public-stores-error" role="alert">{error}</p>}
 			{reviewError && <p className="request-history-notice" role="status">{reviewError}</p>}
@@ -70,6 +68,11 @@ export default function TiendasPublicas() {
 				</div>
 			</article>)}</div>}
 			{!focusId && <Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} />}
-		</main>
+	</>
+	if (embedded) return <section className="public-stores-page is-embedded">{content}</section>
+	return <div className="public-home">
+		<a className="skip-link" href="#contenido">Ir al contenido</a>
+		<Header />
+		<main className="public-stores-page" id="contenido" tabIndex={-1}>{content}</main>
 	</div>
 }

@@ -209,6 +209,12 @@
     min-height: 56px; padding: 6px 4px; scroll-snap-align: start;
     font-size: 10.5px; text-align: center; line-height: 1.15;
   }
+  .client-navigation-link { flex: 1 1 0; min-width: 0; padding-inline: 1px; font-size: 10px; letter-spacing: -.01em; }
+  .is-desktop-only { display: none; }
+  /* Fade whichever edge hides more sections (flags set by useBottomBar). */
+  .store-navigation[data-more-end="true"] { -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent); }
+  .store-navigation[data-more-start="true"] { -webkit-mask-image: linear-gradient(to left, #000 82%, transparent); mask-image: linear-gradient(to left, #000 82%, transparent); }
+  .store-navigation[data-more-start="true"][data-more-end="true"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent); }
   .client-navigation-link.active::before, .store-navigation-link.active::before { left: 25%; right: 25%; top: -7px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
   .client-header, .store-header { min-height: calc(60px + var(--safe-top)); padding: var(--safe-top) 16px 0; }
   .client-profile-label, .store-profile-label { display: none; }

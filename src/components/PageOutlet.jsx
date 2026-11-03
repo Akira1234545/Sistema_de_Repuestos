@@ -7,7 +7,13 @@ import { REFRESH_EVENT } from '../lib/events.js'
 function AnimatedPage() {
 	const ref = useRef(null)
 	usePageMotion(ref)
-	useLayoutEffect(() => { announceRoute() }, [])
+	useLayoutEffect(() => {
+		const page = ref.current
+		if (!page || announceRoute(page)) return undefined
+		const observer = new MutationObserver(() => { if (announceRoute(page)) observer.disconnect() })
+		observer.observe(page, { childList: true, subtree: true })
+		return () => observer.disconnect()
+	}, [])
 	return <div className="page-transition" ref={ref}><Outlet /></div>
 }
 

@@ -280,8 +280,8 @@ input[type="search"]::-webkit-search-cancel-button { filter: invert(.7); }
 a.stat-tile:hover { border-color: rgb(245 177 61 / 45%); transform: translateY(-2px); background: var(--surface); }
 .stat-tile strong { display: flex; align-items: baseline; gap: 4px; font: 800 clamp(30px, 3vw, 40px)/1 var(--font-display); font-stretch: 115%; font-variant-numeric: tabular-nums; }
 .stat-tile strong small { color: var(--text-muted); font: 600 14px var(--font-body); }
-.stat-tile span { color: var(--text-muted); font-size: var(--fs-sm); }
-.stat-tile em { color: var(--text-muted); font-size: var(--fs-xs); font-style: normal; }
+.stat-tile > span { color: var(--text-muted); font-size: var(--fs-sm); }
+.stat-tile > em { color: var(--text-muted); font-size: var(--fs-xs); font-style: normal; }
 .stat-tile.is-highlight, .admin-report-card.is-highlight { border-color: rgb(245 177 61 / 55%); background: linear-gradient(160deg, rgb(245 177 61 / 14%), var(--bg-raised) 70%); }
 .stat-tile.is-highlight strong, .admin-report-card.is-highlight strong { color: var(--amber); }
 .stat-tile.is-highlight::after { content: ''; position: absolute; top: 16px; right: 16px; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 0 var(--amber-glow); animation: beacon 2s var(--ease-out) infinite; }

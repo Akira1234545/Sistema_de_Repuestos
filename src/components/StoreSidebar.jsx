@@ -1,6 +1,8 @@
 import Icon from './Icon.jsx'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useRef } from 'react'
 import { useAuth } from '../context/authState.js'
+import { useBottomBar } from '../hooks/useBottomBar.js'
 
 const storeNavigation = [
 	{ label: 'Resumen', icon: 'home', to: '/tienda', end: true },
@@ -11,12 +13,14 @@ const storeNavigation = [
 	{ label: 'Mi tienda', icon: 'store', to: '/tienda/perfil' },
 	{ label: 'Categorías', icon: 'categories', to: '/tienda/categorias' },
 	{ label: 'Favoritos', icon: 'heart', to: '/tienda/favoritos' },
-	{ label: 'Mi cuenta', icon: 'user', to: '/cuenta' },
+	{ label: 'Mi cuenta', icon: 'user', to: '/cuenta', desktopOnly: true },
 ]
 
 function StoreSidebar() {
 	const navigate = useNavigate()
 	const { signOut } = useAuth()
+	const navRef = useRef(null)
+	useBottomBar(navRef)
 
 	async function handleSignOut() {
 		if (await signOut()) navigate('/login')
@@ -29,9 +33,9 @@ function StoreSidebar() {
 				<span className="store-sidebar-mark">Tienda</span>
 				<p>Administra tu presencia en RepuestosPro.</p>
 			</div>
-			<nav className="store-navigation" aria-label="Secciones de tienda">
+			<nav className="store-navigation" ref={navRef} aria-label="Secciones de tienda">
 				{storeNavigation.map((item) => (
-					<NavLink className="store-navigation-link" to={item.to} end={item.end} key={item.label}>
+					<NavLink className={`store-navigation-link${item.desktopOnly ? ' is-desktop-only' : ''}`} to={item.to} end={item.end} key={item.label}>
 						<span className="store-navigation-icon"><Icon name={item.icon} /></span>
 						<span>{item.label}</span>
 					</NavLink>
