@@ -27,3 +27,11 @@ test('favorite lookups batch duplicates and isolate accounts', async () => {
   const failing = createBatchLookup(async () => { throw new Error('offline') })
   await assert.rejects(failing('one', 'a'), /offline/)
 })
+
+test('password checks mirror the Supabase policy and name what is missing', async () => {
+  const { passwordIssue } = await import('../src/lib/password.js')
+  assert.equal(passwordIssue('Corta1!'), 'Usa al menos 12 caracteres.')
+  assert.equal(passwordIssue('solominusculas1!'), 'Añade al menos una mayúscula.')
+  assert.equal(passwordIssue('SinNumerosNiSimbolos'), 'Añade al menos un número y un símbolo.')
+  assert.equal(passwordIssue('Repuestos2026!'), '')
+})

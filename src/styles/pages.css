@@ -357,3 +357,5 @@
 .store-dashboard .store-hero { margin-bottom: 20px; }
 .store-notice { display: flex !important; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
 .store-action-card .quick-icon { margin: 4px 0 0; }
+.account-field-wide { grid-column: 1 / -1; }
+.auth-hint { margin-top: -6px; color: var(--text-muted); font-size: var(--fs-xs); }

@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import { PASSWORD_HINT, passwordIssue } from '../../lib/password.js'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
@@ -24,6 +25,12 @@ function Register() {
 		const formData = new FormData(event.currentTarget)
 		const password = formData.get('password')
 		const confirmPassword = formData.get('confirmPassword')
+		const issue = passwordIssue(password)
+		if (issue) {
+			setError(issue)
+			setLoading(false)
+			return
+		}
 		if (password !== confirmPassword) {
 			setError('Las contraseñas no coinciden.')
 			setLoading(false)
@@ -64,7 +71,8 @@ function Register() {
 				<label>Apellido<input name="apellido" type="text" maxLength="100" autoComplete="family-name" required placeholder="Tu apellido" /></label></div>
 				<label>Teléfono <small>Opcional</small><input name="telefono" type="tel" autoComplete="tel" maxLength="20" placeholder="+591 70000000" /></label>
 				<label>Correo electrónico<input name="email" type="email" autoComplete="email" required placeholder="tu@correo.com" /></label>
-				<label>Contraseña<input name="password" type="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 12 caracteres" /></label>
+				<label>Contraseña<input name="password" type="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 12 caracteres" aria-describedby="register-password-hint" /></label>
+				<p id="register-password-hint" className="auth-hint">{PASSWORD_HINT}</p>
 				<label>Confirmar contraseña<input name="confirmPassword" type="password" required minLength="12" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				{message && <p className="auth-message" role="status">{message}</p>}
