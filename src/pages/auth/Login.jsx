@@ -6,7 +6,7 @@ import { supabase } from '../../services/supabase.js'
 function Login() {
 	const navigate = useNavigate()
 	const location = useLocation()
-	const [error, setError] = useState('')
+	const [error, setError] = useState(location.state?.authLinkError || '')
 	const [loading, setLoading] = useState(false)
 
 	async function handleSubmit(event) {

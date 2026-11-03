@@ -19,6 +19,10 @@ Aplicación React, Vite y Supabase para solicitudes de repuestos, propuestas de 
 - `npm run preview`: vista previa de la compilación.
 - `npm audit --audit-level=high`: revisión de dependencias.
 
+## App Android
+
+El proyecto incluye una app Android nativa (Capacitor) en `android/`. Ver [MOBILE.md](MOBILE.md) para compilarla, probarla y publicarla.
+
 ## Publicación
 
 Consultar [la guía de producción](PRODUCTION.md) para migraciones, Auth, MFA administrativo, limpieza de fotografías, pruebas pendientes y hosting. Las pruebas locales no reemplazan la aceptación en staging con Supabase real y navegador.

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../services/supabase.js'
 import { useAuth } from '../../context/authState.js'
+import { authRedirectUrl } from '../../lib/platform.js'
 
 export default function AccountRecovery({ reset = false, confirmation = false }) {
   const { user, loading, signOut } = useAuth()
@@ -25,13 +26,13 @@ export default function AccountRecovery({ reset = false, confirmation = false })
       } else if (confirmation) {
         const { error: cause } = await supabase.auth.resend({
           type: 'signup', email: values.get('email').trim(),
-          options: { emailRedirectTo: `${window.location.origin}/login` },
+          options: { emailRedirectTo: authRedirectUrl('/login') },
         })
         if (cause) throw new Error('No se pudo enviar el correo. Espera un momento e inténtalo de nuevo.')
         setMessage('Si la cuenta requiere confirmación, recibirás un correo con las instrucciones.')
       } else {
         const { error: cause } = await supabase.auth.resetPasswordForEmail(values.get('email').trim(), {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: authRedirectUrl('/reset-password'),
         })
         if (cause) throw new Error('No se pudo enviar el enlace. Espera un momento e inténtalo de nuevo.')
         setMessage('Si el correo está registrado, recibirás un enlace para recuperar tu cuenta.')

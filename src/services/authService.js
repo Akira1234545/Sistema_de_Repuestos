@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js'
+import { authRedirectUrl } from '../lib/platform.js'
 
 const validRoles = new Set(['cliente', 'tienda', 'administrador', 'superAdministrador'])
 
@@ -21,5 +22,5 @@ export async function actualizarMiPerfil({ nombre, apellido, telefono }) {
 
 export async function registrarCuenta({ email, password, nombre, apellido, telefono, role }) {
 	if (!['cliente', 'tienda'].includes(role)) throw new Error('El registro público solo admite cuentas de cliente o tienda.')
-	return supabase.auth.signUp({ email, password, options: { data: { nombre, apellido, telefono, role } } })
+	return supabase.auth.signUp({ email, password, options: { data: { nombre, apellido, telefono, role }, emailRedirectTo: authRedirectUrl('/login') } })
 }

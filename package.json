@@ -13,9 +13,19 @@
     "test": "node --test tests/*.test.mjs",
     "check:production": "node scripts/check-production.mjs",
     "build:production": "npm run check:production && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android:sync": "vite build && cap sync android",
+    "android:open": "cap open android",
+    "android:assets": "node scripts/generate-app-assets.mjs && capacitor-assets generate --android --iconBackgroundColor \"#f5b13d\" --splashBackgroundColor \"#0b0d11\" --splashBackgroundColorDark \"#0b0d11\""
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.2",
     "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/inter": "^5.3.0",
     "@supabase/supabase-js": "^2.117.0",
@@ -25,6 +35,8 @@
     "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.0",
     "@electric-sql/pglite": "^0.5.11",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.18",

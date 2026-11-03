@@ -21,7 +21,7 @@
 .site-header {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  min-height: var(--header-h); padding: 0 var(--gutter);
+  min-height: calc(var(--header-h) + var(--safe-top)); padding: var(--safe-top) var(--gutter) 0;
   border-bottom: 1px solid transparent;
   background: rgb(11 13 17 / 55%);
   backdrop-filter: blur(16px) saturate(140%);
@@ -43,7 +43,7 @@
 .client-layout, .store-layout {
   display: grid;
   grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-  grid-template-rows: var(--header-h) 1fr;
+  grid-template-rows: calc(var(--header-h) + var(--safe-top)) 1fr;
   grid-template-areas: "side head" "side main";
   min-height: 100vh;
   background:
@@ -54,7 +54,7 @@
   grid-area: side;
   position: sticky; top: 0;
   display: flex; flex-direction: column; gap: 24px;
-  height: 100vh; padding: 22px 16px;
+  height: 100vh; padding: calc(22px + var(--safe-top)) 16px 22px;
   overflow-y: auto;
   border-right: 1px solid var(--line);
   background: linear-gradient(180deg, var(--bg-raised), var(--bg));
@@ -92,7 +92,7 @@
   grid-area: head;
   position: sticky; top: 0; z-index: 40;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 0 var(--gutter);
+  padding: var(--safe-top) var(--gutter) 0;
   border-bottom: 1px solid var(--line);
   background: rgb(11 13 17 / 78%);
   backdrop-filter: blur(14px) saturate(140%);
@@ -196,7 +196,7 @@
   .client-layout, .store-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; grid-template-areas: "head" "main"; }
   .client-sidebar, .store-sidebar {
     position: fixed; inset: auto 0 0 0; z-index: 45; top: auto;
-    height: auto; padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    height: auto; padding: 6px 8px calc(6px + var(--safe-bottom));
     flex-direction: row; overflow: visible;
     border-right: 0; border-top: 1px solid var(--line);
     background: rgb(16 19 26 / 92%); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -210,10 +210,10 @@
     font-size: 10.5px; text-align: center; line-height: 1.15;
   }
   .client-navigation-link.active::before, .store-navigation-link.active::before { left: 25%; right: 25%; top: -7px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
-  .client-header, .store-header { min-height: 60px; padding: 0 16px; }
+  .client-header, .store-header { min-height: calc(60px + var(--safe-top)); padding: var(--safe-top) 16px 0; }
   .client-profile-label, .store-profile-label { display: none; }
   .client-profile-link, .store-profile-link { padding: 3px; }
-  .client-main, .store-main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .client-main, .store-main { padding-bottom: calc(80px + var(--safe-bottom)); }
 }
 @media (max-width: 760px) {
   .site-header { flex-wrap: wrap; gap: 10px; padding-block: 12px; }
@@ -221,3 +221,19 @@
   .site-nav a:not(.button):not(.nav-register) { padding: 6px 10px; white-space: nowrap; }
   .site-nav .nav-register { margin-left: auto; }
 }
+
+/* ---------- Android app (Capacitor) ---------- */
+.native-offline {
+  position: fixed; inset: auto 12px calc(84px + var(--safe-bottom)) 12px; z-index: 80;
+  padding: 12px 16px; border: 1px solid rgb(242 198 109 / 40%); border-radius: var(--r-md);
+  color: #f6dca4; background: rgb(33 28 18 / 96%); box-shadow: var(--shadow-2); font-size: var(--fs-sm);
+}
+.native-app body { overscroll-behavior-y: none; }
+.native-app :is(.client-navigation-link, .store-navigation-link, .button, .admin-tabs button, .brand) { -webkit-user-select: none; user-select: none; }
+.native-app :is(.quick-card, .store-action-card, .promo-card, .public-store-card, .vehicle-card, .favorite-card):hover { transform: none; }
+.native-app :is(.quick-card, .store-action-card, .promo-card, .vehicle-card, .favorite-card, .category-item):active { transform: scale(.985); }
+.native-app .button:active:not(:disabled) { transform: scale(.97); }
+.native-app.keyboard-open :is(.client-sidebar, .store-sidebar, .native-offline) { display: none; }
+.native-app.keyboard-open :is(.client-main, .store-main) { padding-bottom: 24px; }
+.native-app :is(.auth-page, .register-type-page, .admin-page, .system-maintenance-page) { padding-top: calc(var(--safe-top) + 16px); padding-bottom: calc(var(--safe-bottom) + 24px); }
+.native-app .route-message { margin-top: calc(var(--safe-top) + 8vh); }
