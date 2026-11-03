@@ -1,7 +1,6 @@
-import { Outlet } from 'react-router-dom'
 import ClientHeader from '../components/ClientHeader.jsx'
 import ClientSidebar from '../components/ClientSidebar.jsx'
-import './ClienteLayout.css'
+import PageOutlet from '../components/PageOutlet.jsx'
 import { useAuth } from '../context/authState.js'
 
 function ClienteLayout() {
@@ -13,7 +12,7 @@ function ClienteLayout() {
 			<ClientSidebar />
 			<main className="client-main" id="contenido-cliente" tabIndex={-1}>
 				{profileError && <p role="alert" className="request-error">{profileError}</p>}
-				<Outlet />
+				<PageOutlet />
 			</main>
 		</div>
 	)

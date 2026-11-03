@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { cambiarEstadoPromocion, obtenerPromocionesDeMiTienda } from '../../services/promocionService.js'
-import '../Promociones.css'
 
 function money(value) { return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(value)) }
 function date(value) { return new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'medium' }).format(new Date(value)) }

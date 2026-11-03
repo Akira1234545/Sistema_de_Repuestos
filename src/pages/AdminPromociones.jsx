@@ -1,7 +1,6 @@
 import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerPromocionesAdministracion, obtenerTiendasConPromocionesAdministracion } from '../services/adminService.js'
-import './AdminPromociones.css'
 
 const pageSize = 25
 const promotionStatuses = ['activa', 'pausada', 'finalizada']

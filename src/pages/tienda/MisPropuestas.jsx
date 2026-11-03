@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerMisPropuestas } from '../../services/propuestaService.js'
 import Pagination from '../../components/Pagination.jsx'
-import './SolicitudesTienda.css'
 
 export default function MisPropuestas() {
   const { user } = useAuth()

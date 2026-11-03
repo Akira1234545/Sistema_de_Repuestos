@@ -4,7 +4,6 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import FavoriteToggle from '../components/FavoriteToggle.jsx'
 import { obtenerPromocion } from '../services/promocionService.js'
-import './Promociones.css'
 
 
 

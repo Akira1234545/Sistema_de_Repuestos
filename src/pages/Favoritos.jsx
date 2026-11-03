@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import { obtenerFavoritosUsuario, quitarFavorito } from '../services/favoritoService.js'
-import './Promociones.css'
 
 const itemIdField = { tienda: 'tienda_id', solicitud: 'solicitud_id', promocion: 'promocion_id' }
 const itemType = { tienda: 'Tiendas', solicitud: 'Solicitudes', promocion: 'Promociones' }

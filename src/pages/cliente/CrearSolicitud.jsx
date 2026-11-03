@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { crearSolicitud, obtenerCategoriasActivas, obtenerVehiculosUsuario } from '../../services/solicitudService.js'
-import './Solicitudes.css'
 import { useFormDraft } from '../../hooks/useFormDraft.js'
 
 const initialForm = { vehiculo_id: '', categoria_id: '', titulo: '', descripcion: '', caracteristicas: '', cantidad: '1' }

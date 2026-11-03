@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import { cerrarSolicitud, obtenerHistorialSolicitud, obtenerHistorialSolicitudes, obtenerSolicitudesUsuario } from '../../services/solicitudService.js'
-import './Solicitudes.css'
 
 const statuses = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada', 'atendida', 'cerrada']
 function formatDate(value) { return new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) }

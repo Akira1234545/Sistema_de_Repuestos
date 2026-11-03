@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { crearVehiculo } from '../../services/vehiculoService.js'
 import { VehicleForm } from './VehicleForm.jsx'
-import './Vehiculos.css'
 
 function CrearVehiculo() {
 	const { user } = useAuth()

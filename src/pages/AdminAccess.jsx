@@ -9,7 +9,6 @@ import AdminCategories from './AdminCategories.jsx'
 import AdminRequests from './AdminRequests.jsx'
 import AdminPromociones from './AdminPromociones.jsx'
 import AdminReportes from './AdminReportes.jsx'
-import './AdminAccess.css'
 
 const statuses = ['pendiente', 'aprobada', 'rechazada', 'suspendida']
 const columns = 'id, nombre, descripcion, telefono, direccion, latitud, longitud, horario, fotografias, activa, estado, motivo_estado, fecha_creacion, usuario_id'

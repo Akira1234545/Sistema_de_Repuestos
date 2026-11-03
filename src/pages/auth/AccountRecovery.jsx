@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../services/supabase.js'
 import { useAuth } from '../../context/authState.js'
-import './Auth.css'
 
 export default function AccountRecovery({ reset = false, confirmation = false }) {
   const { user, loading, signOut } = useAuth()

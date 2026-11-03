@@ -6,7 +6,6 @@ import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import { obtenerMiPropuesta, retirarPropuesta } from '../../services/propuestaService.js'
 import { obtenerSolicitudDisponiblePorId } from '../../services/solicitudService.js'
 import PropuestaForm from './PropuestaForm.jsx'
-import './SolicitudesTienda.css'
 
 function formatDate(value) { return new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) }
 

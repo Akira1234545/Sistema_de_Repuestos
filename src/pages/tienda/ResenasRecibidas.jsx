@@ -3,8 +3,6 @@ import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenerResenasRecibidas } from '../../services/resenaService.js'
-import './TiendaPages.css'
-import './ResenasRecibidas.css'
 
 function Stars({ rating }) {
 	return <span className="received-review-stars" role="img" aria-label={`${rating} de 5 estrellas`}>

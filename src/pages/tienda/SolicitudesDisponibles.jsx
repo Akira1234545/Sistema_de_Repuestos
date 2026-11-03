@@ -6,7 +6,6 @@ import { useAuth } from '../../context/authState.js'
 import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import { obtenerCategoriasActivas, obtenerSolicitudesDisponibles } from '../../services/solicitudService.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
-import './SolicitudesTienda.css'
 
 function formatDate(value) { return new Intl.DateTimeFormat('es', { timeZone: 'America/La_Paz', dateStyle: 'medium' }).format(new Date(value)) }
 function vehicleLabel(vehicle) { return vehicle ? [vehicle.tipoNombre, vehicle.marcaNombre, vehicle.modeloNombre, vehicle.anio].filter(Boolean).join(' ') : 'Vehículo no disponible' }

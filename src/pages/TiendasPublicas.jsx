@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { obtenerResenasPublicasDeTiendas } from '../services/resenaService.js'
 import { obtenerTiendasPublicas } from '../services/tiendaService.js'
 import PublicReviews from '../components/PublicReviews.jsx'
-import './TiendasPublicas.css'
 
 export default function TiendasPublicas() {
   const { hash } = useLocation()

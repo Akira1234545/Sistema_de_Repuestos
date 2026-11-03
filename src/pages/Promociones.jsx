@@ -6,7 +6,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import FavoriteToggle from '../components/FavoriteToggle.jsx'
 import { obtenerPromocionesDisponibles } from '../services/promocionService.js'
-import './Promociones.css'
 
 function money(value) { return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(value)) }
 function PromoCard({ item }) {

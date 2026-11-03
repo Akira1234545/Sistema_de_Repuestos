@@ -2,7 +2,6 @@ import { publicError } from '../lib/errors.js'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerReportesActividadAdministracion } from '../services/adminService.js'
-import './AdminReportes.css'
 
 const timeZone = 'America/La_Paz'
 const dateFormatter = new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeZone })

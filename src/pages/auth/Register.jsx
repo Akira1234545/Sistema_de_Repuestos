@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
 import { registrarCuenta } from '../../services/authService.js'
-import './Auth.css'
 
 function Register() {
 	const [searchParams] = useSearchParams()

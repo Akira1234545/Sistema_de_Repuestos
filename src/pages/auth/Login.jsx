@@ -2,7 +2,6 @@ import { publicError } from '../../lib/errors.js'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
-import './Auth.css'
 
 function Login() {
 	const navigate = useNavigate()

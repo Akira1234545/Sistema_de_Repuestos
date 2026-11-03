@@ -6,7 +6,6 @@ import { useAuth } from '../../context/authState.js'
 import { obtenerCategoriasActivas } from '../../services/solicitudService.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
 import { actualizarPromocion, crearPromocion, obtenerPromocion } from '../../services/promocionService.js'
-import '../Promociones.css'
 
 const blank = { categoria_id: '', titulo: '', descripcion: '', marca: '', precio_anterior: '', precio_oferta: '', caracteristicas: '', fecha_inicio: '', fecha_fin: '' }
 const localDateInput = boliviaDateTimeInput

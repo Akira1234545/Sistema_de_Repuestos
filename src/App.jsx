@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Link, Outlet, Route, Routes, useLocation, useSearchParams } from 'react-router-dom'
-import './App.css'
-import ClienteLayout from './layouts/ClienteLayout.jsx'
-import TiendaLayout from './layouts/TiendaLayout.jsx'
+import { announceRoute } from './lib/routeIdentity.js'
+import { ADMIN_ROLES } from './lib/roles.js'
+const ClienteLayout = lazy(() => import('./layouts/ClienteLayout.jsx'))
+const TiendaLayout = lazy(() => import('./layouts/TiendaLayout.jsx'))
 import AuthContext from './context/AuthContext.jsx'
 import { useAuth } from './context/authState.js'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
@@ -37,12 +38,16 @@ const TiendasPublicas = lazy(() => import('./pages/TiendasPublicas.jsx'))
 const AccountRecovery = lazy(() => import('./pages/auth/AccountRecovery.jsx'))
 
 function RouteIdentity() {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   useEffect(() => {
-    const heading = document.querySelector('h1')
-    if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); document.title = `${heading.textContent} | RepuestosPro` }
-  }, [pathname])
-  return <Outlet key={pathname} />
+    if (hash) {
+      document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView()
+      return
+    }
+    window.scrollTo(0, 0)
+    announceRoute()
+  }, [pathname, hash])
+  return <Outlet />
 }
 
 function RegisterRoute() {
@@ -60,7 +65,7 @@ function App() {
     <BrowserRouter>
       <AuthContext>
         <SystemAvailability>
-          <Suspense fallback={<p className="route-message" role="status">Cargando página…</p>}>
+          <Suspense fallback={<p className="route-loading" role="status">Cargando página…</p>}>
           <Routes>
             <Route element={<RouteIdentity />}>
             <Route path="/" element={<Home />} />
@@ -70,7 +75,7 @@ function App() {
             <Route path="/resend-confirmation" element={<AccountRecovery confirmation />} />
             <Route path="/reset-password" element={<AccountRecovery reset />} />
             <Route path="/register" element={<RegisterRoute />} />
-            <Route element={<ProtectedRoute allowedRoles={['administrador', 'superAdministrador']} />}>
+            <Route element={<ProtectedRoute allowedRoles={ADMIN_ROLES} />}>
               <Route path="/admin" element={<AdminAccess />} />
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['cliente', 'tienda']} />}>

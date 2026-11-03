@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerSolicitudPorId, actualizarSolicitud } from '../../services/solicitudService.js'
 import { SolicitudForm } from './CrearSolicitud.jsx'
-import './Solicitudes.css'
 
 function EditarSolicitud() {
 	const { id } = useParams()

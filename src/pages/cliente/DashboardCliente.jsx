@@ -1,7 +1,6 @@
 import Icon from '../../components/Icon.jsx'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
-import './DashboardCliente.css'
 
 const quickActions = [
 	{ icon: 'vehicle', title: 'Mis vehículos', text: 'Administra los vehículos que tienes registrados.', to: '/cliente/vehiculos' },

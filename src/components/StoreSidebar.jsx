@@ -1,30 +1,34 @@
 import Icon from './Icon.jsx'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/authState.js'
 
 const storeNavigation = [
-    { label: 'Mis propuestas', icon: 'proposal', to: '/tienda/propuestas' },
 	{ label: 'Resumen', icon: 'home', to: '/tienda', end: true },
-	{ label: 'Mi tienda', icon: 'store', to: '/tienda/perfil' },
-	{ label: 'Categorías que atiendo', icon: 'categories', to: '/tienda/categorias' },
-	{ label: 'Solicitudes disponibles', icon: 'requests', to: '/tienda/solicitudes' },
+	{ label: 'Solicitudes', icon: 'requests', to: '/tienda/solicitudes' },
+	{ label: 'Mis propuestas', icon: 'proposal', to: '/tienda/propuestas' },
 	{ label: 'Promociones', icon: 'promotion', to: '/tienda/promociones' },
-	{ label: 'Reseñas recibidas', icon: 'star', to: '/tienda/resenas' },
+	{ label: 'Reseñas', icon: 'star', to: '/tienda/resenas' },
+	{ label: 'Mi tienda', icon: 'store', to: '/tienda/perfil' },
+	{ label: 'Categorías', icon: 'categories', to: '/tienda/categorias' },
 	{ label: 'Favoritos', icon: 'heart', to: '/tienda/favoritos' },
-	{ label: 'Editar información', icon: 'edit', to: '/tienda/editar' },
 ]
 
 function StoreSidebar() {
+	const navigate = useNavigate()
+	const { signOut } = useAuth()
+
+	async function handleSignOut() {
+		if (await signOut()) navigate('/login')
+	}
+
 	return (
 		<aside className="store-sidebar" aria-label="Menú de tienda">
-			<Link className="store-brand" to="/tienda">
-				<span>R</span>
-				<strong>Repuestos</strong> Pro
-			</Link>
+			<Link className="store-brand" to="/tienda"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link>
 			<div className="store-sidebar-intro">
-				<span className="store-sidebar-mark">TIENDA</span>
-				<p>Administra tu presencia<br />en RepuestosPro.</p>
+				<span className="store-sidebar-mark">Tienda</span>
+				<p>Administra tu presencia en RepuestosPro.</p>
 			</div>
-			<nav className="store-navigation">
+			<nav className="store-navigation" aria-label="Secciones de tienda">
 				{storeNavigation.map((item) => (
 					<NavLink className="store-navigation-link" to={item.to} end={item.end} key={item.label}>
 						<span className="store-navigation-icon"><Icon name={item.icon} /></span>
@@ -33,8 +37,9 @@ function StoreSidebar() {
 				))}
 			</nav>
 			<div className="store-sidebar-footer">
-				<span>ESPACIO DE TIENDA</span>
-				<p>Gestión de<br />tu tienda</p>
+				<span>Espacio de tienda</span>
+				<Link className="client-sidebar-logout" to="/tienda/editar">Editar información</Link>
+				<button className="client-sidebar-logout" type="button" onClick={handleSignOut}>Cerrar sesión</button>
 			</div>
 		</aside>
 	)

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { guardarCategoriasTienda, obtenerCategoriasGestionTienda } from '../../services/tiendaService.js'
-import './CategoriasTienda.css'
 
 function CategoriasTienda() {
 	const { user } = useAuth()

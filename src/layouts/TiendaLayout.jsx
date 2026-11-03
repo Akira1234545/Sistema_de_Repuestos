@@ -1,7 +1,6 @@
-import { Outlet } from 'react-router-dom'
 import StoreHeader from '../components/StoreHeader.jsx'
 import StoreSidebar from '../components/StoreSidebar.jsx'
-import './TiendaLayout.css'
+import PageOutlet from '../components/PageOutlet.jsx'
 import { useAuth } from '../context/authState.js'
 
 function TiendaLayout() {
@@ -13,7 +12,7 @@ function TiendaLayout() {
 			<StoreSidebar />
 			<main className="store-main" id="contenido-tienda" tabIndex={-1}>
 				{profileError && <p role="alert" className="store-error">{profileError}</p>}
-				<Outlet />
+				<PageOutlet />
 			</main>
 		</div>
 	)

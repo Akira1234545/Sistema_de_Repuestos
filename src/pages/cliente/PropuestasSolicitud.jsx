@@ -6,8 +6,6 @@ import FavoriteToggle from '../../components/FavoriteToggle.jsx'
 import ResenaTienda from '../../components/ResenaTienda.jsx'
 import { obtenerPropuestasDeSolicitud, seleccionarPropuesta } from '../../services/propuestaService.js'
 import { confirmarAtencion, obtenerSolicitudPorId } from '../../services/solicitudService.js'
-import './Solicitudes.css'
-import './Propuestas.css'
 
 const statusLabels = { enviada: 'Enviada', aceptada: 'Seleccionada', rechazada: 'No seleccionada', retirada: 'Retirada' }
 function money(value) { return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(value)) }

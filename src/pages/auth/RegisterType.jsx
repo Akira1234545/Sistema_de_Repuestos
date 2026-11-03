@@ -1,6 +1,5 @@
 import Icon from '../../components/Icon.jsx'
 import { Link, useNavigate } from 'react-router-dom'
-import './RegisterType.css'
 
 function RegisterType() {
 	const navigate = useNavigate()

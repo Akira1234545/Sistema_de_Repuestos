@@ -11,8 +11,6 @@ import {
 	subirFotografiaTienda,
 	limpiarSubidasFallidas,
 } from '../../services/tiendaService.js'
-import './TiendaPages.css'
-import './StoreLocation.css'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 const emptyForm = { nombre: '', descripcion: '', telefono: '', direccion: '', latitud: '', longitud: '', horaApertura: '', horaCierre: '' }

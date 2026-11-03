@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import { marcarNotificacionLeida, marcarTodasLeidas, obtenerNotificaciones } from '../services/notificacionService.js'
-import './NotificationBell.css'
 
 const typeLabels = {
 	nueva_propuesta: 'Nueva propuesta',

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
-import './PerfilTienda.css'
 
 function PerfilTienda() {
 	const { user } = useAuth()
