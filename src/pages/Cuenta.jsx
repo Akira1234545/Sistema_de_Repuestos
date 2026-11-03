@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/authState.js'
 import { publicError } from '../lib/errors.js'
+import { PASSWORD_HINT, passwordIssue } from '../lib/password.js'
 import { actualizarMiPerfil } from '../services/authService.js'
 import { supabase } from '../services/supabase.js'
 
@@ -41,29 +42,46 @@ function ProfileForm() {
 	</form>
 }
 
+// Supabase requires the current password for this change and, when the session is
+// older than 24 hours, a one-time code it emails to the user (reauthentication).
 function PasswordForm() {
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState('')
 	const [notice, setNotice] = useState('')
+	const [needsCode, setNeedsCode] = useState(false)
 
 	async function submit(event) {
 		event.preventDefault()
 		const formElement = event.currentTarget
 		const values = new FormData(formElement)
+		const currentPassword = String(values.get('current') || '')
 		const password = String(values.get('password') || '')
+		const nonce = String(values.get('code') || '').trim()
 		setError(''); setNotice('')
-		if (password.length < 12) { setError('Usa al menos 12 caracteres.'); return }
+		if (!currentPassword) { setError('Escribe tu contraseña actual.'); return }
+		const issue = passwordIssue(password)
+		if (issue) { setError(issue); return }
 		if (password !== values.get('confirmation')) { setError('Las contraseñas no coinciden.'); return }
+		if (needsCode && !nonce) { setError('Escribe el código que te enviamos por correo.'); return }
 		setSaving(true)
 		try {
-			const { error: cause } = await supabase.auth.updateUser({ password })
+			const { error: cause } = await supabase.auth.updateUser({ password, current_password: currentPassword, ...(nonce ? { nonce } : {}) })
 			if (cause) throw cause
 			formElement.reset()
+			setNeedsCode(false)
 			setNotice('Contraseña actualizada. Úsala la próxima vez que inicies sesión.')
 		} catch (cause) {
+			if (cause?.code === 'reauthentication_needed') {
+				const { error: sendError } = await supabase.auth.reauthenticate()
+				if (sendError) { setError(`No se pudo enviar el código de verificación: ${publicError(sendError)}`); return }
+				setNeedsCode(true)
+				setNotice('Por seguridad te enviamos un código a tu correo. Escríbelo abajo y vuelve a pulsar «Actualizar contraseña».')
+				return
+			}
 			setError(cause?.code === 'same_password' ? 'La nueva contraseña debe ser diferente de la actual.'
-				: cause?.code === 'weak_password' ? 'La contraseña es demasiado débil. Combina letras, números y símbolos.'
-				: cause?.code === 'reauthentication_needed' ? 'Por seguridad, vuelve a iniciar sesión antes de cambiar la contraseña.'
+				: cause?.code === 'weak_password' ? 'La contraseña es demasiado débil. Combina mayúsculas, minúsculas, números y símbolos.'
+				: cause?.code === 'current_password_mismatch' || cause?.code === 'current_password_required' ? 'La contraseña actual no es correcta.'
+				: cause?.code === 'reauthentication_not_valid' ? 'El código no es válido o ya venció. Revisa tu correo e inténtalo de nuevo.'
 				: `No se pudo cambiar la contraseña: ${publicError(cause)}`)
 		} finally { setSaving(false) }
 	}
@@ -73,8 +91,11 @@ function PasswordForm() {
 		{error && <p className="store-error" role="alert">{error}</p>}
 		{notice && <p className="store-success" role="status">{notice}</p>}
 		<div className="store-form-grid">
+			<label className="account-field-wide">Contraseña actual<input name="current" type="password" autoComplete="current-password" required /></label>
 			<label>Nueva contraseña<input name="password" type="password" minLength={12} autoComplete="new-password" required /></label>
 			<label>Repite la contraseña<input name="confirmation" type="password" minLength={12} autoComplete="new-password" required /></label>
+			<p className="account-field-wide store-request-date">{PASSWORD_HINT}</p>
+			{needsCode && <label className="account-field-wide">Código de verificación<input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={10} required /></label>}
 		</div>
 		<div className="store-form-actions"><button className="button button-secondary" type="submit" disabled={saving}>{saving ? 'Actualizando…' : 'Actualizar contraseña'}</button></div>
 	</form>

@@ -4,6 +4,8 @@ export function publicError(error) {
   if (error?.code === '42501') return 'Tu cuenta no puede realizar esta operación.'
   if (error?.code === 'PGRST202') return 'Supabase no encuentra esta operación. Verifica que la migración correspondiente esté aplicada y actualiza el esquema de la API.'
   if (error?.code === 'invalid_credentials') return 'Correo o contraseña incorrectos.'
+  if (error?.code === 'weak_password') return 'La contraseña es demasiado débil. Usa al menos 12 caracteres con mayúsculas, minúsculas, números y símbolos.'
+  if (error?.code === 'same_password') return 'La nueva contraseña debe ser diferente de la actual.'
   if (error?.code === 'email_not_confirmed') return 'Confirma tu correo antes de iniciar sesión.'
   if (error?.status === 429) return 'Espera un momento antes de volver a intentarlo.'
   const message = String(error?.message || '')
