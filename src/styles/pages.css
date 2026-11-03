@@ -96,7 +96,7 @@
 .store-request-date { color: var(--text-muted); font-size: var(--fs-xs); }
 .store-request-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .store-requests-count { padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--text-soft); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
-.store-request-message:not(:empty) { padding: 12px 16px; border: 1px solid rgb(127 178 229 / 30%); border-left: 3px solid var(--steel); border-radius: var(--r-sm); background: var(--steel-wash); color: #cfe3f7; }
+.store-request-message:not(:empty) { padding: 12px 16px; border: 1px solid rgb(127 178 229 / 30%); border-radius: var(--r-sm); background: var(--steel-wash); color: #cfe3f7; }
 .store-request-message.request-loading-state { border: 0; background: none; }
 .vehicle-card { align-content: start; }
 .vehicle-card-actions { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }

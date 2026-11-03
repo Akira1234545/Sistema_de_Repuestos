@@ -168,7 +168,7 @@
 .notification-popover-header button { min-height: 32px; padding: 0 10px; font-size: var(--fs-xs); }
 .notification-list { flex: 1; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
 .notification-item { display: flex; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.notification-item-unread { background: linear-gradient(90deg, var(--amber-wash), transparent 70%); box-shadow: inset 3px 0 var(--amber); }
+.notification-item-unread { background: linear-gradient(90deg, var(--amber-wash), transparent 70%); }
 .notification-item-mark { color: var(--amber); line-height: 1.4; }
 .notification-item-content { display: grid; gap: 4px; min-width: 0; }
 .notification-item-content strong { font-size: var(--fs-sm); }
