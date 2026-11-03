@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useAuth } from '../context/authState.js'
 import { publicError } from '../lib/errors.js'
 import { PASSWORD_HINT, passwordIssue } from '../lib/password.js'
+import { ROLE_LABELS } from '../lib/roles.js'
 import { actualizarMiPerfil } from '../services/authService.js'
 import { supabase } from '../services/supabase.js'
 
-const roleLabels = { cliente: 'Cliente', tienda: 'Tienda', administrador: 'Administrador', superAdministrador: 'Superadministrador' }
 
 function ProfileForm() {
 	const { profile, retryProfile } = useAuth()
@@ -108,7 +108,7 @@ export default function Cuenta() {
 		<header className="profile-hero">
 			<div className="account-identity">
 				<span className="client-avatar account-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
-				<div><span className="profile-eyebrow">Mi cuenta · {roleLabels[role] || 'Usuario'}</span><h1>{fullName}</h1><p>{user?.email}</p></div>
+				<div><span className="profile-eyebrow">Mi cuenta · {ROLE_LABELS[role] || 'Usuario'}</span><h1>{fullName}</h1><p>{user?.email}</p></div>
 			</div>
 		</header>
 		{profile ? <ProfileForm key={profile.id} /> : <p className="request-loading" role="status">Cargando tus datos…</p>}

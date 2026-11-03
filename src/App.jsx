@@ -48,7 +48,12 @@ function RouteIdentity() {
       return
     }
     window.scrollTo(0, 0)
-    announceRoute()
+    // Lazy pages render their heading after this effect; wait for it instead of keeping the previous title.
+    const main = document.getElementById('root') || document.body
+    if (announceRoute(main)) return
+    const observer = new MutationObserver(() => { if (announceRoute(main)) observer.disconnect() })
+    observer.observe(main, { childList: true, subtree: true })
+    return () => observer.disconnect()
   }, [pathname, hash])
   return <Outlet />
 }

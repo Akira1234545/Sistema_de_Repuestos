@@ -235,6 +235,12 @@
   color: #f6dca4; background: rgb(33 28 18 / 96%); box-shadow: var(--shadow-2); font-size: var(--fs-sm);
 }
 .native-app body { overscroll-behavior-y: none; }
+/* Edge-to-edge: keep scrolled content from showing through the transparent status bar. */
+.native-app body::before {
+  content: ''; position: fixed; inset: 0 0 auto 0; z-index: 85; height: var(--safe-top);
+  background: rgb(11 13 17 / 94%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); pointer-events: none;
+}
+.native-app .admin-tabs { top: calc(var(--safe-top) + 8px); background: rgb(21 25 34); }
 .native-app :is(.client-navigation-link, .store-navigation-link, .button, .admin-tabs button, .brand) { -webkit-user-select: none; user-select: none; }
 .native-app :is(.quick-card, .store-action-card, .promo-card, .public-store-card, .vehicle-card, .favorite-card):hover { transform: none; }
 .native-app :is(.quick-card, .store-action-card, .promo-card, .vehicle-card, .favorite-card, .category-item):active { transform: scale(.985); }

@@ -1,6 +1,7 @@
 import Pagination from '../components/Pagination.jsx'
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js'
 import { publicError } from '../lib/errors.js'
+import { ROLE_LABELS } from '../lib/roles.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/authState.js'
 import { cambiarEstadoUsuario, obtenerUsuariosAdministracion } from '../services/adminService.js'
@@ -79,7 +80,7 @@ function AdminUsers() {
 				return <article className="admin-user-card" key={account.id}>
 					<div className="admin-user-details">
 						<div className="admin-user-title"><div><h3>{account.nombre} {account.apellido}</h3><p>{account.correo || 'Correo no disponible'}</p></div><span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span></div>
-						<dl><div><dt>Rol</dt><dd>{account.rol}</dd></div><div><dt>Teléfono</dt><dd>{account.telefono || 'No registrado'}</dd></div><div><dt>Registro</dt><dd>{formatDate(account.fecha_creacion)}</dd></div></dl>
+						<dl><div><dt>Rol</dt><dd>{ROLE_LABELS[account.rol] || account.rol}</dd></div><div><dt>Teléfono</dt><dd>{account.telefono || 'No registrado'}</dd></div><div><dt>Registro</dt><dd>{formatDate(account.fecha_creacion)}</dd></div></dl>
 					</div>
 					<button className={`button ${account.activo ? 'button-danger' : 'button-primary'}`} type="button" onClick={() => { void toggleActive(account) }} disabled={Boolean(busyId) || cannotChange}>
 						{busyId === account.id ? 'Guardando…' : account.activo ? 'Desactivar cuenta' : 'Activar cuenta'}
