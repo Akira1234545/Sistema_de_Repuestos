@@ -83,11 +83,10 @@ function AdminUsers() {
 				return <article className="compact-row admin-user-row" key={account.id}>
 					<span className="admin-user-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
 					<span className="compact-row-text">
-						<strong>{fullName}</strong>
+						<strong>{fullName} <span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span></strong>
 						<span>{account.correo || 'Correo no disponible'}</span>
 						<span>{ROLE_LABELS[account.rol] || account.rol}{account.telefono ? ` · ${account.telefono}` : ''} · {formatDate(account.fecha_creacion)}</span>
 					</span>
-					<span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span>
 					<button className={`icon-action${account.activo ? ' is-danger' : ''}`} type="button" onClick={() => { void toggleActive(account) }} disabled={Boolean(busyId) || cannotChange}
 						aria-label={lockReason || `${account.activo ? 'Desactivar' : 'Activar'} la cuenta de ${fullName}`} title={lockReason || (account.activo ? 'Desactivar cuenta' : 'Activar cuenta')}>
 						{busyId === account.id ? '…' : <Icon name={cannotChange ? 'lock' : 'power'} size={18} />}

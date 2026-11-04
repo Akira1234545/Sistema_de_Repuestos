@@ -2,6 +2,7 @@ import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { guardarCategoriaAdministracion, obtenerCategoriasAdministracion } from '../services/adminService.js'
 import Select from '../components/ui/Select.jsx'
+import Icon from '../components/Icon.jsx'
 
 const emptyForm = { id: '', nombre: '', descripcion: '', categoria_padre_id: '', activo: true }
 
@@ -9,6 +10,7 @@ function AdminCategories() {
 	const [categories, setCategories] = useState([])
 	const [form, setForm] = useState(emptyForm)
 	const [search, setSearch] = useState('')
+	const [formOpen, setFormOpen] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState('')
@@ -38,6 +40,20 @@ function AdminCategories() {
 			category.nombre, category.descripcion, category.categoria_padre_nombre, category.activo ? 'activa' : 'inactiva',
 		].some((value) => String(value || '').toLocaleLowerCase().includes(term)))
 	}, [categories, search])
+
+	// Without a search, main categories act as folders so 60+ entries stay scannable on a phone.
+	const grouped = useMemo(() => {
+		if (search.trim()) return null
+		const parents = categories.filter((category) => !category.categoria_padre_id)
+		return parents.map((parent) => ({ parent, children: categories.filter((category) => category.categoria_padre_id === parent.id) }))
+	}, [categories, search])
+	function renderCard(category) {
+		return <article className="admin-category-card" key={category.id}>
+			<div className="admin-category-card-heading"><div><span className={`admin-user-state${category.activo ? ' is-active' : ''}`}>{category.activo ? 'Activa' : 'Inactiva'}</span><h3>{category.nombre}</h3></div><small>{category.categoria_padre_nombre ? `Subcategoría de ${category.categoria_padre_nombre}` : 'Categoría principal'}</small></div>
+			<p>{category.descripcion || 'Sin descripción.'}</p>
+			<div className="admin-actions"><button type="button" className="icon-action" onClick={() => editCategory(category)} disabled={saving} aria-label={`Editar ${category.nombre}`} title="Editar"><Icon name="edit" size={18} /></button><button type="button" className={`icon-action${category.activo ? ' is-danger' : ''}`} onClick={() => { void toggleCategory(category) }} disabled={saving} aria-label={`${category.activo ? 'Desactivar' : 'Activar'} ${category.nombre}`} title={category.activo ? 'Desactivar' : 'Activar'}><Icon name="power" size={18} /></button></div>
+			</article>
+	}
 
 	function editCategory(category) {
 		setForm({
@@ -96,8 +112,9 @@ function AdminCategories() {
 		</div>
 		{error && <p className="admin-alert" role="alert">{error}</p>}
 		{notice && <p className="admin-notice" role="status">{notice}</p>}
+		<details className="admin-filter-panel admin-category-create" open={formOpen || Boolean(form.id)} onToggle={(event) => setFormOpen(event.currentTarget.open)}>
+		<summary><Icon name={form.id ? 'edit' : 'plus'} size={16} /> {form.id ? `Editando: ${form.nombre || 'categoría'}` : 'Nueva categoría'}</summary>
 		<form id="admin-category-form" className="admin-category-form" onSubmit={saveCategory}>
-			<h3>{form.id ? 'Editar categoría' : 'Crear categoría'}</h3>
 			<div className="admin-category-fields">
 				<label>Nombre<input name="nombre" value={form.nombre} onChange={updateField} maxLength="100" required /></label>
 				<label>Categoría padre<Select ariaLabel="Categoría padre" name="categoria_padre_id" value={form.categoria_padre_id} onChange={updateField} options={[
@@ -109,14 +126,16 @@ function AdminCategories() {
 			<label className="admin-maintenance-toggle"><input type="checkbox" name="activo" checked={form.activo} onChange={updateField} /> Categoría activa</label>
 			<div className="admin-actions"><button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Guardando…' : form.id ? 'Guardar cambios' : 'Crear categoría'}</button>{form.id && <button className="button button-secondary" type="button" onClick={() => { setForm(emptyForm); setError(''); setNotice('') }} disabled={saving}>Cancelar edición</button>}</div>
 		</form>
-		<label className="admin-user-search">Buscar categoría<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nombre, descripción, padre o estado" /></label>
+		</details>
+		<div className="list-toolbar"><label className="list-search"><Icon name="search" size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar categoría" aria-label="Buscar por nombre, descripción, padre o estado" /></label></div>
 		{loading ? <p role="status">Cargando categorías…</p> : visibleCategories.length === 0
 			? <section className="admin-empty"><h3>No hay categorías para mostrar</h3><p>Crea una categoría o cambia la búsqueda.</p></section>
-			: <div className="admin-category-list">{visibleCategories.map((category) => <article className="admin-category-card" key={category.id}>
-				<div className="admin-category-card-heading"><div><span className={`admin-user-state${category.activo ? ' is-active' : ''}`}>{category.activo ? 'Activa' : 'Inactiva'}</span><h3>{category.nombre}</h3></div><small>{category.categoria_padre_nombre ? `Subcategoría de ${category.categoria_padre_nombre}` : 'Categoría principal'}</small></div>
-				<p>{category.descripcion || 'Sin descripción.'}</p>
-				<div className="admin-actions"><button type="button" className="button button-secondary" onClick={() => editCategory(category)} disabled={saving}>Editar</button><button type="button" className={`button ${category.activo ? 'button-danger' : 'button-primary'}`} onClick={() => { void toggleCategory(category) }} disabled={saving}>{category.activo ? 'Desactivar' : 'Activar'}</button></div>
-			</article>)}</div>}
+			: grouped
+				? <div className="admin-category-groups">{grouped.map(({ parent, children }) => <details className="admin-category-group" key={parent.id}>
+					<summary><span className="request-card-chevron" aria-hidden="true"><Icon name="chevron" size={16} /></span><strong>{parent.nombre}</strong><span className="admin-category-count">{children.length} {children.length === 1 ? 'subcategoría' : 'subcategorías'}</span>{!parent.activo && <span className="admin-user-state">Inactiva</span>}</summary>
+					<div className="admin-category-list">{[parent, ...children].map((category) => renderCard(category))}</div>
+				</details>)}</div>
+				: <div className="admin-category-list">{visibleCategories.map((category) => renderCard(category))}</div>}
 	</section>
 }
 

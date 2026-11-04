@@ -200,3 +200,33 @@
   .admin-category-card .admin-actions { gap: 6px; }
   .admin-category-card .admin-actions .button { min-height: 34px; padding: 0 10px; font-size: var(--fs-xs); }
 }
+
+.admin-category-create .admin-category-form { margin: 0; border: 0; border-radius: 0; background: none; }
+.admin-category-create .admin-category-form h3 { display: none; }
+.admin-category-card .admin-actions { flex-wrap: nowrap; }
+.admin-user-row .compact-row-text strong { display: flex; align-items: center; gap: 8px; }
+.admin-user-row .compact-row-text strong .admin-user-state { flex-shrink: 0; font-size: 10px; }
+@media (max-width: 640px) {
+  .admin-user-row { flex-wrap: nowrap; }
+  .admin-user-row .compact-row-text { flex-basis: auto; }
+  .admin-user-row .icon-action { margin-left: 0; }
+  .admin-category-card-heading { flex-direction: column; gap: 2px; }
+  .admin-category-card-heading > div { display: flex; flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: 8px; }
+  .admin-category-card-heading .admin-user-state { font-size: 10px; }
+  .admin-category-card-heading h3 { margin: 0; }
+  .admin-request-summary time, .admin-promotion-dates { display: none; }
+  .admin-request-summary h3, .admin-promotion-summary h3 { margin: 4px 0 2px; font-size: var(--fs-md); }
+  .admin-request-card > summary, .admin-promotion-card > summary { padding: 12px 14px; }
+  .admin-promotion-summary { gap: 6px; }
+  .admin-promotion-price { display: flex; align-items: baseline; gap: 8px; text-align: left; }
+}
+
+.admin-category-groups { display: grid; gap: 8px; }
+.admin-category-group { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
+.admin-category-group > summary { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; cursor: pointer; list-style: none; }
+.admin-category-group > summary::-webkit-details-marker { display: none; }
+.admin-category-group > summary strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-category-group[open] > summary { border-bottom: 1px solid var(--line); }
+.admin-category-group[open] > summary .request-card-chevron { transform: rotate(90deg); color: var(--amber); }
+.admin-category-count { color: var(--text-muted); font-size: var(--fs-xs); white-space: nowrap; }
+.admin-category-group > .admin-category-list { padding: 10px; }
