@@ -9,6 +9,7 @@ import Icon from '../../components/Icon.jsx'
 
 const proposalLabels = { enviada: 'Enviada', aceptada: 'Seleccionada', rechazada: 'No seleccionada', retirada: 'Retirada' }
 const label = statusLabel
+const shortDate = (value) => new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', day: 'numeric', month: 'short' }).format(new Date(value))
 
 export default function MisPropuestas() {
 	const { user } = useAuth()
@@ -46,7 +47,7 @@ export default function MisPropuestas() {
 		{!loading && !error && items.length > 0 && <div className="compact-rows">{items.map(item => <Link key={item.id} className="compact-row" to={`/tienda/solicitudes/${item.solicitud_id}`}>
 			<span className="compact-row-text">
 				<strong>{item.solicitud?.titulo || 'Solicitud no disponible'}</strong>
-				<span>{item.solicitud?.estado ? `Solicitud: ${label(item.solicitud.estado)}` : 'Solicitud'}</span>
+				<span>{[item.solicitud?.cantidad && `x${item.solicitud.cantidad}`, `Enviada ${shortDate(item.fecha_creacion)}`].filter(Boolean).join(' · ')}</span>
 			</span>
 			<span className="compact-row-end">
 				<strong className="compact-row-price">{money(item.precio)}</strong>

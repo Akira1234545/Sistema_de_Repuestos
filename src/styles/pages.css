@@ -510,4 +510,22 @@ a.compact-row:hover { border-color: var(--line-strong); }
   .requests-page-compact :is(.requests-eyebrow, .store-eyebrow, .promo-eyebrow), .vehicles-heading .vehicles-eyebrow { display: none; }
   .requests-page-compact .requests-heading .button, .vehicles-heading .button { flex-shrink: 0; min-height: 42px; padding: 0 16px; }
 }
+@media (max-width: 640px) {
+  /* Reviews and categories: the bottom bar already says where you are. */
+  :is(.received-reviews-page, .store-categories-page) .store-eyebrow, .received-reviews-page :is(.store-lead, .received-reviews-back, .received-reviews-store) { display: none; }
+  :is(.received-reviews-page .store-page-heading, .categories-heading) { gap: 10px; margin-bottom: 4px; }
+  :is(.received-reviews-page .store-page-heading, .categories-heading) h1 { font-size: 30px; }
+  .received-reviews-summary { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .received-reviews-stat { gap: 0; padding: 14px; }
+  .received-reviews-stat-icon, .received-reviews-stat-note { display: none !important; }
+  .received-reviews-stat strong { font-size: 26px; }
+  .received-reviews-stat small { letter-spacing: .06em; }
+  .store-request-detail .store-eyebrow { display: none; }
+  .store-request-detail-card { padding: 4px 14px; }
+  .store-detail-section { padding: 16px 0; gap: 10px; }
+  .store-detail-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .store-detail-grid div { padding: 10px 12px; }
+  .store-detail-grid strong { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+  .categories-store-status { display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; width: fit-content; }
+}
 @media (max-width: 640px) { .public-stores-page.is-embedded .public-stores-heading .eyebrow { display: none; } }

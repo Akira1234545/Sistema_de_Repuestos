@@ -230,3 +230,28 @@
 .admin-category-group[open] > summary .request-card-chevron { transform: rotate(90deg); color: var(--amber); }
 .admin-category-count { color: var(--text-muted); font-size: var(--fs-xs); white-space: nowrap; }
 .admin-category-group > .admin-category-list { padding: 10px; }
+
+@media (max-width: 640px) {
+  /* Phone: the heading shrinks to brand + title + actions so each section starts on the first screen. */
+  .admin-page { padding-top: 12px; }
+  .admin-heading { align-items: center; gap: 10px 12px; padding: 14px 16px; margin-bottom: 12px; border-radius: var(--r-lg); }
+  .admin-heading > div:first-child { flex: 1 1 100%; }
+  /* "Volver al inicio" already links home, so the brand mark goes too. */
+  .admin-heading :is(.eyebrow, .admin-brand), .admin-heading p:not(.eyebrow) { display: none; }
+  .admin-heading h1 { font-size: 24px; line-height: 1.1; }
+  .admin-header-actions { flex: 1 1 100%; flex-wrap: nowrap; gap: 8px; }
+  .admin-header-actions .button { flex: 1; min-height: 38px; padding: 0 12px; font-size: var(--fs-sm); }
+  .admin-overview { margin-bottom: 12px; }
+  .admin-overview .admin-report-card { padding: 10px 14px; }
+  .admin-overview .admin-report-card-value { font-size: 24px; }
+  .admin-tabs { margin-bottom: 14px; }
+  .admin-section-heading { gap: 10px; padding-bottom: 12px; margin-bottom: 12px; }
+  .admin-section-heading .admin-kicker, .admin-section-heading p:not(.admin-kicker) { display: none; }
+  .admin-section-heading { flex-wrap: nowrap; align-items: center; }
+  .admin-section-heading h2 { font-size: 22px; }
+  .admin-section-heading .button { flex-shrink: 0; min-height: 36px; padding: 0 12px; font-size: var(--fs-sm); }
+  .admin-report-period { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; }
+  .admin-report-period label { min-width: 0; font-size: var(--fs-sm); }
+  .admin-page .admin-report-period label input[type=date] { width: 100%; min-width: 0; padding-inline: 8px 4px; font-size: 13px; }
+  .admin-report-period .button { min-height: 40px; padding: 0 12px; }
+}
