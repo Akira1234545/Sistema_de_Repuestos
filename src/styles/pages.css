@@ -502,3 +502,12 @@ a.compact-row:hover { border-color: var(--line-strong); }
   .categories-footer { margin: 0 -14px -14px; padding: 10px 14px; bottom: calc(72px + var(--safe-bottom)); }
   .categories-footer .button { width: 100%; }
 }
+@media (max-width: 640px) {
+  /* Compact list pages: title and primary action share one row; the breadcrumb is redundant with the bottom bar. */
+  .requests-page-compact .requests-heading, .vehicles-heading { flex-direction: row !important; flex-wrap: nowrap; align-items: center !important; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .requests-page-compact .requests-heading h1, .vehicles-heading h1 { font-size: 30px; }
+  .requests-page-compact .requests-heading > div, .vehicles-heading > div { min-width: 0; }
+  .requests-page-compact :is(.requests-eyebrow, .store-eyebrow, .promo-eyebrow), .vehicles-heading .vehicles-eyebrow { display: none; }
+  .requests-page-compact .requests-heading .button, .vehicles-heading .button { flex-shrink: 0; min-height: 42px; padding: 0 16px; }
+}
+@media (max-width: 640px) { .public-stores-page.is-embedded .public-stores-heading .eyebrow { display: none; } }
