@@ -11,8 +11,29 @@ const paths = {
   edit: 'm15 5 4 4M4 20l4-1L21 6l-4-4L4 15ZM13 20h8',
   proposal: 'M5 19 19 5M5 5h14v14',
   user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0',
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  close: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM9 9l6 6M15 9l-6 6',
+  x: 'M6 6l12 12M18 6 6 18',
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4',
+  filter: 'M4 5h16l-6 7v6l-4 2v-8Z',
+  compact: 'M4 5h16v5H4ZM4 14h16v5H4Z',
+  detail: 'M4 4h16v9H4ZM4 17h10M4 20h7',
+  list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+  trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+  camera: 'M4 8h3l2-3h6l2 3h3v11H4ZM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+  logout: 'M15 4h4v16h-4M10 17l5-5-5-5M15 12H3',
+  chevron: 'm9 6 6 6-6 6',
+  plus: 'M12 5v14M5 12h14',
+  phone: 'M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a1 1 0 0 1-1 1A17 17 0 0 1 4 5a1 1 0 0 1 1-1Z',
+  pin: 'M12 21s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12ZM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+  lock: 'M6 11h12v10H6ZM8 11V7a4 4 0 0 1 8 0v4',
+  pause: 'M8 5v14M16 5v14',
+  power: 'M12 3v9M6.3 6.3a8 8 0 1 0 11.4 0',
+  refresh: 'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7',
+  play: 'M7 4v16l13-8Z',
+  flag: 'M5 21V4M5 4h11l-2 4 2 4H5',
 }
 
-export default function Icon({ name, size = 20 }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={paths[name] || paths.requests} /></svg>
+export default function Icon({ name, size = 20, filled = false }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={paths[name] || paths.requests} /></svg>
 }

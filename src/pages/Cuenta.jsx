@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Icon from '../components/Icon.jsx'
 import { useAuth } from '../context/authState.js'
 import { publicError } from '../lib/errors.js'
 import { PASSWORD_HINT, passwordIssue } from '../lib/password.js'
+import { ROLE_LABELS } from '../lib/roles.js'
 import { actualizarMiPerfil } from '../services/authService.js'
 import { supabase } from '../services/supabase.js'
 
-const roleLabels = { cliente: 'Cliente', tienda: 'Tienda', administrador: 'Administrador', superAdministrador: 'Superadministrador' }
 
 function ProfileForm() {
 	const { profile, retryProfile } = useAuth()
@@ -101,6 +103,21 @@ function PasswordForm() {
 	</form>
 }
 
+function SignOutCard() {
+	const { signOut } = useAuth()
+	const navigate = useNavigate()
+	const [leaving, setLeaving] = useState(false)
+	async function leave() {
+		setLeaving(true)
+		if (await signOut()) navigate('/login', { replace: true })
+		else setLeaving(false)
+	}
+	return <div className="store-form-card account-signout">
+		<div><p className="store-label">Sesión</p><h2>Cerrar sesión en este dispositivo</h2></div>
+		<button type="button" className="button button-secondary account-signout-button" onClick={leave} disabled={leaving}><Icon name="logout" size={18} /> {leaving ? 'Cerrando sesión…' : 'Cerrar sesión'}</button>
+	</div>
+}
+
 export default function Cuenta() {
 	const { user, profile, role } = useAuth()
 	const fullName = [profile?.nombre, profile?.apellido].filter(Boolean).join(' ') || 'Tu cuenta'
@@ -108,10 +125,11 @@ export default function Cuenta() {
 		<header className="profile-hero">
 			<div className="account-identity">
 				<span className="client-avatar account-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
-				<div><span className="profile-eyebrow">Mi cuenta · {roleLabels[role] || 'Usuario'}</span><h1>{fullName}</h1><p>{user?.email}</p></div>
+				<div><span className="profile-eyebrow">Mi cuenta · {ROLE_LABELS[role] || 'Usuario'}</span><h1>{fullName}</h1><p>{user?.email}</p></div>
 			</div>
 		</header>
 		{profile ? <ProfileForm key={profile.id} /> : <p className="request-loading" role="status">Cargando tus datos…</p>}
 		<PasswordForm />
+		<SignOutCard />
 	</section>
 }

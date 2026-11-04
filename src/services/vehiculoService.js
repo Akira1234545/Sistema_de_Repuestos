@@ -2,8 +2,9 @@ import { catalogNames } from './catalogService.js'
 import { supabase } from './supabase.js'
 import { clearFormDrafts } from '../lib/formDrafts.js'
 import { createOnce } from './createOnce.js'
+import { compressImage } from '../lib/images.js'
 
-const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion'
+const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fotos, fecha_creacion'
 
 async function getNamesByIds(table, ids) { return catalogNames(table, ids) }
 
@@ -107,5 +108,67 @@ export async function actualizarVehiculo(id, userId, datos) {
 	if (error) throw error
 	if (!data) throw new Error('El vehículo no existe o no pertenece al usuario autenticado.')
 	clearFormDrafts()
+	return data
+}
+
+// Requests per vehicle: a vehicle with requests keeps its identity (type, brand, model, year).
+export async function contarSolicitudesPorVehiculo(ids) {
+	if (!ids.length) return {}
+	const { data, error } = await supabase.from('solicitudes').select('vehiculo_id').in('vehiculo_id', ids)
+	if (error) throw error
+	return data.reduce((counts, item) => { counts[item.vehiculo_id] = (counts[item.vehiculo_id] || 0) + 1; return counts }, {})
+}
+
+export async function actualizarNotasVehiculo(id, userId, descripcion) {
+	const { data, error } = await supabase.from('vehiculos').update({ descripcion: descripcion?.trim() || null })
+		.eq('id', id).eq('usuario_id', userId).select(vehicleColumns).maybeSingle()
+	if (error) throw error
+	if (!data) throw new Error('El vehículo no existe o no pertenece al usuario autenticado.')
+	return data
+}
+
+export async function eliminarVehiculo(id, userId, fotos = []) {
+	const { data, error } = await supabase.from('vehiculos').delete().eq('id', id).eq('usuario_id', userId).select('id')
+	if (error) throw error
+	if (!data?.length) throw new Error('No se puede eliminar: el vehículo tiene solicitudes o ya no existe.')
+	await borrarFotosStorage(fotos)
+}
+
+const PHOTO_MARKER = '/storage/v1/object/public/vehiculos/'
+function photoPath(url) {
+	const index = String(url).indexOf(PHOTO_MARKER)
+	return index === -1 ? null : decodeURIComponent(url.slice(index + PHOTO_MARKER.length))
+}
+async function borrarFotosStorage(urls) {
+	const paths = urls.map(photoPath).filter(Boolean)
+	if (paths.length) await supabase.storage.from('vehiculos').remove(paths).catch(() => {})
+}
+
+// Compresses and uploads one photo, then saves the new list; rolls the file back if saving fails.
+export async function agregarFotoVehiculo(vehicle, userId, file) {
+	if ((vehicle.fotos || []).length >= 4) throw new Error('Puedes guardar hasta 4 fotos por vehículo.')
+	const blob = await compressImage(file)
+	const path = `${userId}/${crypto.randomUUID()}.webp`
+	const { error: uploadError } = await supabase.storage.from('vehiculos').upload(path, blob, { contentType: 'image/webp', upsert: false })
+	if (uploadError) throw uploadError
+	const url = supabase.storage.from('vehiculos').getPublicUrl(path).data.publicUrl
+	try {
+		return await guardarFotosVehiculo(vehicle.id, userId, [...(vehicle.fotos || []), url])
+	} catch (saveError) {
+		await borrarFotosStorage([url])
+		throw saveError
+	}
+}
+
+export async function quitarFotoVehiculo(vehicle, userId, url) {
+	const updated = await guardarFotosVehiculo(vehicle.id, userId, (vehicle.fotos || []).filter((item) => item !== url))
+	await borrarFotosStorage([url])
+	return updated
+}
+
+async function guardarFotosVehiculo(id, userId, fotos) {
+	const { data, error } = await supabase.from('vehiculos').update({ fotos }).eq('id', id).eq('usuario_id', userId).select(vehicleColumns).maybeSingle()
+	if (error) throw error
+	if (!data) throw new Error('El vehículo no existe o no pertenece al usuario autenticado.')
 	return data
 }

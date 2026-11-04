@@ -1,7 +1,7 @@
 import { publicError } from '../../lib/errors.js'
 import { useToast } from '../../context/toastState.js'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import { actualizarVehiculo, obtenerVehiculoPorId } from '../../services/vehiculoService.js'
 import { VehicleForm } from './VehicleForm.jsx'
@@ -32,12 +32,13 @@ function EditarVehiculo() {
 	async function handleSubmit(values, validationError) {
 		if (validationError) { setError(validationError); return }
 		setError(''); setSaving(true)
-		try { await actualizarVehiculo(id, user.id, values); toast({ title: 'Vehículo actualizado', tone: 'success' }); navigate('/cliente/vehiculos') } catch (saveError) { setError(`No se pudo actualizar el vehículo: ${publicError(saveError)}`) } finally { setSaving(false) }
+		try { await actualizarVehiculo(id, user.id, values); toast({ title: 'Vehículo actualizado', tone: 'success' }); navigate(`/cliente/vehiculos/${id}`) } catch (saveError) { setError(`No se pudo actualizar el vehículo: ${publicError(saveError)}`) } finally { setSaving(false) }
 	}
 
 	if (loading) return <section className="vehicles-page"><p className="vehicle-message">Cargando vehículo...</p></section>
 	if (!vehicle) return <section className="vehicles-page"><p className="vehicle-error" role="alert">{error}</p></section>
-	if (vehicle.hasRequests) return <section className="vehicles-page"><h1>Conservamos los datos de este vehículo</h1><p>Ya tiene solicitudes vinculadas. Registra otro vehículo para corregir sus datos sin alterar cotizaciones o historial.</p><Link className="button" to="/cliente/vehiculos/crear">Registrar otro vehículo</Link><p><Link to="/cliente/vehiculos">Volver a mis vehículos</Link></p></section>
+	// With requests, the identity is fixed; notes and photos are edited on the detail page.
+	if (vehicle.hasRequests) return <Navigate to={`/cliente/vehiculos/${id}`} replace />
 
 	return <section className="vehicles-page"><div className="vehicle-form"><div className="vehicle-form-header"><p className="vehicles-eyebrow">Panel de cliente / Editar vehículo</p><h1>Actualiza tu vehículo</h1><p className="vehicle-form-lead">Modifica los datos que necesitas mantener al día.</p></div><VehicleForm key={id} initialValues={{ tipo_vehiculo_id: vehicle.tipo_vehiculo_id, marca_id: vehicle.marca_id, modelo_id: vehicle.modelo_id, anio: String(vehicle.anio), descripcion: vehicle.descripcion || '' }} onSubmit={handleSubmit} saving={saving} error={error} submitLabel="Guardar cambios" /></div></section>
 }

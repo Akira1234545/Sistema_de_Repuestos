@@ -41,6 +41,10 @@ Aplicada el 3 de noviembre de 2026. Cada tabla principal tiene una sola polític
 
 Aplicada el 3 de noviembre de 2026. La tabla `notificaciones` se publica en Supabase Realtime (respeta RLS: cada cuenta solo recibe sus filas). Nuevas RPC `client_dashboard_stats` y `store_dashboard_stats` con las métricas de cada panel, limitadas a la cuenta que consulta.
 
+## Fotos de vehículos (20261115)
+
+Aplicada el 3 de noviembre de 2026. Columna `vehiculos.fotos` (máximo 4) y bucket público `vehiculos` de Storage (3 MB, JPG/PNG/WebP). Cada cliente solo sube y borra en su carpeta (`<uid>/`), y un trigger exige que las URL apunten a esa carpeta. Con solicitudes vinculadas, el tipo, la marca, el modelo y el año siguen bloqueados; las notas y las fotos se pueden editar.
+
 ## Base nueva y actualización
 
 1. Crear un proyecto de staging y respaldar cualquier base existente antes de migrar.

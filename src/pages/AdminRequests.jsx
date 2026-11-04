@@ -2,6 +2,8 @@ import { publicError } from '../lib/errors.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerSolicitudesAdministracion } from '../services/adminService.js'
 import { statusLabel } from '../lib/format.js'
+import Select from '../components/ui/Select.jsx'
+import Icon from '../components/Icon.jsx'
 
 const requestStatuses = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada', 'atendida', 'cerrada']
 const pageSize = 25
@@ -72,13 +74,15 @@ function AdminRequests() {
 			<button type="button" className="button button-secondary" onClick={() => { void loadRequests() }} disabled={loading}>Actualizar</button>
 		</div>
 		{error && <p className="admin-alert" role="alert">{error}</p>}
+		<div className="list-toolbar"><label className="list-search"><Icon name="search" size={18} /><input type="search" name="buscar" value={filter.buscar} onChange={updateFilter} placeholder="Buscar solicitud" aria-label="Buscar por título de la solicitud" /></label></div>
+		<details className="admin-filter-panel"><summary><Icon name="filter" size={16} /> Filtros{[filter.estado, filter.categoriaId, filter.fechaDesde, filter.fechaHasta].filter(Boolean).length ? ` (${[filter.estado, filter.categoriaId, filter.fechaDesde, filter.fechaHasta].filter(Boolean).length})` : ''}</summary>
 		<div className="admin-request-filters">
-			<label>Estado<select name="estado" value={filter.estado} onChange={updateFilter}><option value="">Todos los estados</option>{requestStatuses.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}</select></label>
-			<label>Categoría<select name="categoriaId" value={filter.categoriaId} onChange={updateFilter}><option value="">Todas las categorías</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
+			<label>Estado<Select ariaLabel="Estado" name="estado" value={filter.estado} onChange={updateFilter} options={[{ value: '', label: 'Todos los estados' }, ...requestStatuses.map((status) => ({ value: status, label: statusLabel(status) }))]} /></label>
+			<label>Categoría<Select ariaLabel="Categoría" name="categoriaId" value={filter.categoriaId} onChange={updateFilter} options={[{ value: '', label: 'Todas las categorías' }, ...categories.map((category) => ({ value: category.id, label: category.nombre }))]} /></label>
 			<label>Desde<input type="date" name="fechaDesde" value={filter.fechaDesde} onChange={updateFilter} /></label>
 			<label>Hasta<input type="date" name="fechaHasta" value={filter.fechaHasta} onChange={updateFilter} /></label>
-			<label className="admin-request-search">Buscar por título<input name="buscar" value={filter.buscar} onChange={updateFilter} placeholder="Título de la solicitud" /></label>
 		</div>
+		</details>
 		{loading ? <p role="status">Cargando solicitudes…</p> : requests.length === 0
 			? <section className="admin-empty"><h3>No hay solicitudes para mostrar</h3><p>Prueba otros filtros o fechas.</p></section>
 			: <>

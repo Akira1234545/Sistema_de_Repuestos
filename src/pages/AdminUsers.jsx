@@ -1,6 +1,8 @@
 import Pagination from '../components/Pagination.jsx'
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js'
 import { publicError } from '../lib/errors.js'
+import { ROLE_LABELS } from '../lib/roles.js'
+import Icon from '../components/Icon.jsx'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/authState.js'
 import { cambiarEstadoUsuario, obtenerUsuariosAdministracion } from '../services/adminService.js'
@@ -69,23 +71,26 @@ function AdminUsers() {
 		</div>
 		{error && <p className="admin-alert" role="alert">{error}</p>}
 		{notice && <p className="admin-notice" role="status">{notice}</p>}
-		<label className="admin-user-search">Buscar usuario<input value={filter} onChange={(event) => { setPage(0); setFilter(event.target.value) }} placeholder="Nombre, correo, teléfono, rol o ID" /></label>
+		<div className="list-toolbar"><label className="list-search"><Icon name="search" size={18} /><input type="search" value={filter} onChange={(event) => { setPage(0); setFilter(event.target.value) }} placeholder="Buscar usuario" aria-label="Buscar por nombre, correo, teléfono, rol o ID" /></label></div>
 		{loading ? <p role="status">Cargando usuarios…</p> : visibleUsers.length === 0
 			? <section className="admin-empty"><h3>No hay usuarios para mostrar</h3><p>Prueba otra búsqueda.</p></section>
-			: <div className="admin-user-list">{visibleUsers.map((account) => {
+			: <div className="admin-user-list compact-rows">{visibleUsers.map((account) => {
 				const isSelf = account.id === user?.id
 				const protectedSuperAdmin = account.rol === 'superAdministrador' && role !== 'superAdministrador'
 				const cannotChange = isSelf || protectedSuperAdmin
-				return <article className="admin-user-card" key={account.id}>
-					<div className="admin-user-details">
-						<div className="admin-user-title"><div><h3>{account.nombre} {account.apellido}</h3><p>{account.correo || 'Correo no disponible'}</p></div><span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span></div>
-						<dl><div><dt>Rol</dt><dd>{account.rol}</dd></div><div><dt>Teléfono</dt><dd>{account.telefono || 'No registrado'}</dd></div><div><dt>Registro</dt><dd>{formatDate(account.fecha_creacion)}</dd></div></dl>
-					</div>
-					<button className={`button ${account.activo ? 'button-danger' : 'button-primary'}`} type="button" onClick={() => { void toggleActive(account) }} disabled={Boolean(busyId) || cannotChange}>
-						{busyId === account.id ? 'Guardando…' : account.activo ? 'Desactivar cuenta' : 'Activar cuenta'}
+				const lockReason = isSelf ? 'No puedes cambiar el estado de tu propia cuenta' : protectedSuperAdmin ? 'Solo un superadministrador puede cambiar esta cuenta' : ''
+				const fullName = `${account.nombre || ''} ${account.apellido || ''}`.trim() || 'Sin nombre'
+				return <article className="compact-row admin-user-row" key={account.id}>
+					<span className="admin-user-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
+					<span className="compact-row-text">
+						<strong>{fullName} <span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span></strong>
+						<span>{account.correo || 'Correo no disponible'}</span>
+						<span>{ROLE_LABELS[account.rol] || account.rol}{account.telefono ? ` · ${account.telefono}` : ''} · {formatDate(account.fecha_creacion)}</span>
+					</span>
+					<button className={`icon-action${account.activo ? ' is-danger' : ''}`} type="button" onClick={() => { void toggleActive(account) }} disabled={Boolean(busyId) || cannotChange}
+						aria-label={lockReason || `${account.activo ? 'Desactivar' : 'Activar'} la cuenta de ${fullName}`} title={lockReason || (account.activo ? 'Desactivar cuenta' : 'Activar cuenta')}>
+						{busyId === account.id ? '…' : <Icon name={cannotChange ? 'lock' : 'power'} size={18} />}
 					</button>
-					{isSelf && <small className="admin-user-hint">No puedes cambiar el estado de tu propia cuenta.</small>}
-					{protectedSuperAdmin && <small className="admin-user-hint">Solo un superadministrador puede cambiar esta cuenta.</small>}
 				</article>
 			})}</div>}
 		<Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} />

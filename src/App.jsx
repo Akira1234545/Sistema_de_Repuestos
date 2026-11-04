@@ -18,6 +18,7 @@ const DashboardCliente = lazy(() => import('./pages/cliente/DashboardCliente.jsx
 const Vehiculos = lazy(() => import('./pages/cliente/Vehiculos.jsx'))
 const CrearVehiculo = lazy(() => import('./pages/cliente/CrearVehiculo.jsx'))
 const EditarVehiculo = lazy(() => import('./pages/cliente/EditarVehiculo.jsx'))
+const DetalleVehiculo = lazy(() => import('./pages/cliente/DetalleVehiculo.jsx'))
 const Solicitudes = lazy(() => import('./pages/cliente/Solicitudes.jsx'))
 const CrearSolicitud = lazy(() => import('./pages/cliente/CrearSolicitud.jsx'))
 const EditarSolicitud = lazy(() => import('./pages/cliente/EditarSolicitud.jsx'))
@@ -48,7 +49,12 @@ function RouteIdentity() {
       return
     }
     window.scrollTo(0, 0)
-    announceRoute()
+    // Lazy pages render their heading after this effect; wait for it instead of keeping the previous title.
+    const main = document.getElementById('root') || document.body
+    if (announceRoute(main)) return
+    const observer = new MutationObserver(() => { if (announceRoute(main)) observer.disconnect() })
+    observer.observe(main, { childList: true, subtree: true })
+    return () => observer.disconnect()
   }, [pathname, hash])
   return <Outlet />
 }
@@ -96,6 +102,7 @@ function App() {
                 <Route path="vehiculos" element={<Vehiculos />} />
                 <Route path="vehiculos/crear" element={<CrearVehiculo />} />
                 <Route path="vehiculos/editar/:id" element={<EditarVehiculo />} />
+                <Route path="vehiculos/:id" element={<DetalleVehiculo />} />
                 <Route path="solicitudes" element={<Solicitudes />} />
                 <Route path="solicitudes/crear" element={<CrearSolicitud />} />
                 <Route path="solicitudes/editar/:id" element={<EditarSolicitud />} />

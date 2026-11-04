@@ -5,6 +5,7 @@ import { useAuth } from '../../context/authState.js'
 import { obtenerMisPropuestas } from '../../services/propuestaService.js'
 import Pagination from '../../components/Pagination.jsx'
 import { money, statusLabel } from '../../lib/format.js'
+import Icon from '../../components/Icon.jsx'
 
 const proposalLabels = { enviada: 'Enviada', aceptada: 'Seleccionada', rechazada: 'No seleccionada', retirada: 'Retirada' }
 const label = statusLabel
@@ -30,10 +31,10 @@ export default function MisPropuestas() {
 		return () => { active = false; clearTimeout(timer) }
 	}, [user.id, page])
 
-	return <section className="store-requests-page">
-		<div className="store-requests-heading">
-			<div><p className="store-eyebrow">Panel de tienda / Cotizaciones</p><h1>Mis propuestas</h1><p className="store-requests-lead">Consulta tus cotizaciones y sigue cada solicitud, incluso después de la selección.</p></div>
-			<Link className="button" to="/tienda/solicitudes">Buscar solicitudes</Link>
+	return <section className="store-requests-page requests-page-compact">
+		<div className="requests-heading">
+			<div><p className="store-eyebrow">Panel de tienda / Cotizaciones</p><h1>Mis propuestas</h1></div>
+			<Link className="button" to="/tienda/solicitudes"><Icon name="search" size={18} /> Buscar</Link>
 		</div>
 		{loading && <SkeletonList label="Cargando propuestas…" />}
 		{error && <p className="store-request-error" role="alert">{error}</p>}
@@ -42,20 +43,17 @@ export default function MisPropuestas() {
 			<p>Revisa las solicitudes disponibles para tus categorías y envía tu primera cotización.</p>
 			<Link className="button" to="/tienda/solicitudes">Ver solicitudes disponibles</Link>
 		</div>}
-		{!loading && !error && items.length > 0 && <div className="store-request-list">{items.map(item => <article key={item.id} className="store-request-card my-proposal-card">
-			<div className="store-request-top">
-				<div>
-					<span className="store-request-number">Solicitud{item.solicitud?.estado ? ` · ${label(item.solicitud.estado)}` : ''}</span>
-					<h2>{item.solicitud?.titulo || 'Solicitud no disponible'}</h2>
-				</div>
+		{!loading && !error && items.length > 0 && <div className="compact-rows">{items.map(item => <Link key={item.id} className="compact-row" to={`/tienda/solicitudes/${item.solicitud_id}`}>
+			<span className="compact-row-text">
+				<strong>{item.solicitud?.titulo || 'Solicitud no disponible'}</strong>
+				<span>{item.solicitud?.estado ? `Solicitud: ${label(item.solicitud.estado)}` : 'Solicitud'}</span>
+			</span>
+			<span className="compact-row-end">
+				<strong className="compact-row-price">{money(item.precio)}</strong>
 				<span className={`proposal-status proposal-status-${item.estado}`}>{proposalLabels[item.estado] || label(item.estado)}</span>
-			</div>
-			<strong className="proposal-price">{money(item.precio)}</strong>
-			<div className="store-request-footer">
-				<span className="store-request-date">Precio total por la cantidad solicitada</span>
-				<Link className="store-request-link" to={`/tienda/solicitudes/${item.solicitud_id}`}>Ver seguimiento →</Link>
-			</div>
-		</article>)}</div>}
+			</span>
+			<span className="request-card-chevron" aria-hidden="true"><Icon name="chevron" size={16} /></span>
+		</Link>)}</div>}
 		<Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} />
 	</section>
 }

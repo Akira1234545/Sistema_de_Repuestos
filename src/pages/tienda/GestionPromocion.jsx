@@ -7,6 +7,7 @@ import { useAuth } from '../../context/authState.js'
 import { obtenerCategoriasActivas } from '../../services/solicitudService.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
 import { actualizarPromocion, crearPromocion, obtenerPromocion } from '../../services/promocionService.js'
+import Select from '../../components/ui/Select.jsx'
 
 const blank = { categoria_id: '', titulo: '', descripcion: '', marca: '', precio_anterior: '', precio_oferta: '', caracteristicas: '', fecha_inicio: '', fecha_fin: '' }
 const localDateInput = boliviaDateTimeInput
@@ -55,7 +56,7 @@ function GestionPromocion() {
 		{store && !canManagePromotions && <p className="promo-state" role="status">La gestión de promociones requiere una tienda activa y aprobada. Estado actual: {statusLabel(store.estado)}{store.activa ? '' : ' (inactiva)'}.</p>}
 		{store && canManagePromotions && (!id || form.categoria_id) && <form className="promo-form" onSubmit={submit}><div className="promo-form-grid">
 			<label>Título<input name="titulo" value={form.titulo} onChange={update} maxLength="160" required /></label>
-			<label>Categoría<select name="categoria_id" value={form.categoria_id} onChange={update} required><option value="">Selecciona una categoría</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
+			<label>Categoría<Select ariaLabel="Categoría" name="categoria_id" value={form.categoria_id} onChange={update} required placeholder="Selecciona una categoría" options={categories.map((item) => ({ value: item.id, label: item.nombre }))} /></label>
 			<label>Marca<input name="marca" value={form.marca} onChange={update} maxLength="100" /></label>
 			<label>Precio anterior<input name="precio_anterior" type="number" min="0" step="0.01" value={form.precio_anterior} onChange={update} required /></label>
 			<label>Precio de oferta<input name="precio_oferta" type="number" min="0" step="0.01" value={form.precio_oferta} onChange={update} required /></label>

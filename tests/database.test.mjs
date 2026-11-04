@@ -81,7 +81,12 @@ test('clean installation, authorization, request lifecycle and public projection
     assert.equal((await query("SELECT id FROM request_page(false,'Dos repuestos')")).length, 1)
     await assert.rejects(() => query('SELECT id FROM request_page(true)'), /disponible/)
     await assert.rejects(() => query(`UPDATE solicitudes SET cantidad=3 WHERE id='${id.request}'`), /recibió propuestas/)
-    await assert.rejects(() => query(`UPDATE vehiculos SET anio=2021 WHERE id='${id.vehicle}'`), /historial/)
+    await assert.rejects(() => query(`UPDATE vehiculos SET anio=2021 WHERE id='${id.vehicle}'`), /no se pueden cambiar/)
+    await query(`UPDATE vehiculos SET descripcion='Color rojo' WHERE id='${id.vehicle}'`)
+    const ownPhoto = `https://example.supabase.co/storage/v1/object/public/vehiculos/${id.customer}/${id.vehicle}.webp`
+    await query(`UPDATE vehiculos SET fotos=ARRAY['${ownPhoto}'] WHERE id='${id.vehicle}'`)
+    await assert.rejects(() => query(`UPDATE vehiculos SET fotos=ARRAY['https://evil.example/x.webp'] WHERE id='${id.vehicle}'`), /desde la aplicación/)
+    await assert.rejects(() => query(`UPDATE vehiculos SET fotos=ARRAY['${ownPhoto}','${ownPhoto}','${ownPhoto}','${ownPhoto}','${ownPhoto}'] WHERE id='${id.vehicle}'`), /vehicle_photos_limit/)
     await assert.rejects(() => query(`INSERT INTO solicitudes(usuario_id,vehiculo_id,categoria_id,titulo,descripcion) VALUES ('${id.customer}','${id.vehicle}','${id.category}','','')`), /request_text_valid/)
     await assert.rejects(() => query('SELECT sprint3_admin_list_users()'), /administrador/)
     await actor(id.other)
