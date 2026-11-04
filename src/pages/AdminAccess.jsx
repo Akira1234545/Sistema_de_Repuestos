@@ -11,6 +11,7 @@ import AdminPromociones from './AdminPromociones.jsx'
 import AdminReportes from './AdminReportes.jsx'
 import { obtenerResumenAdministracion } from '../services/adminService.js'
 import CountUp from '../components/ui/CountUp.jsx'
+import Icon from '../components/Icon.jsx'
 import { statusLabel } from '../lib/format.js'
 import Select from '../components/ui/Select.jsx'
 
@@ -67,6 +68,7 @@ function AdminAccess() {
 	const [section, setSection] = useState('tiendas')
 	const [filter, setFilter] = useState({ status: 'pendiente', search: '' })
 	const [reasons, setReasons] = useState({})
+	const [openStore, setOpenStore] = useState('')
 
 	const loadStores = useCallback(async () => {
 		setLoading(true)
@@ -129,13 +131,24 @@ function AdminAccess() {
 		{section === 'tiendas' && <>
 		<h2 className="admin-section-title">Revisión de tiendas</h2>
 		{error && <p className="admin-alert" role="alert">{error}</p>}{notice && <p className="admin-notice" role="status">{notice}</p>}
-		<div className="admin-filters"><label>Estado<Select ariaLabel="Estado" value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))} options={[{ value: '', label: 'Todos' }, ...statuses.map((status) => ({ value: status, label: statusLabels[status] }))]} /></label><label>Buscar<input value={filter.search} onChange={(event) => setFilter((current) => ({ ...current, search: event.target.value }))} placeholder="Tienda, teléfono o dirección" /></label><button type="button" className="button button-secondary" onClick={loadStores} disabled={loading}>Actualizar</button></div>
-		{loading ? <p role="status">Cargando tiendas…</p> : visibleStores.length === 0 ? <section className="admin-empty"><h2>No hay tiendas para mostrar</h2><p>Prueba con otro estado o término de búsqueda.</p></section> : <div className="admin-store-list">{visibleStores.map((store) => <article className="admin-store-card" key={store.id}>
-			<div className="admin-store-top"><div><span className={`admin-status admin-status-${store.estado}`}>{statusLabel(store.estado)}</span><h2>{store.nombre}</h2><small>Registro: {formatDate(store.fecha_creacion)}</small></div><strong>{store.activa ? 'Activa' : 'Inactiva'}</strong></div>
+		<div className="list-toolbar">
+			<label className="list-search"><Icon name="search" size={18} /><input type="search" value={filter.search} onChange={(event) => setFilter((current) => ({ ...current, search: event.target.value }))} placeholder="Buscar tienda" aria-label="Buscar por tienda, teléfono o dirección" /></label>
+			<Select className="list-toolbar-select" ariaLabel="Estado" value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))} options={[{ value: '', label: 'Todas' }, ...statuses.map((status) => ({ value: status, label: statusLabels[status] }))]} />
+			<button type="button" className="icon-action" onClick={loadStores} disabled={loading} aria-label="Actualizar" title="Actualizar"><Icon name="refresh" size={18} /></button>
+		</div>
+		{loading ? <p role="status">Cargando tiendas…</p> : visibleStores.length === 0 ? <section className="admin-empty"><h2>No hay tiendas para mostrar</h2><p>Prueba con otro estado o término de búsqueda.</p></section> : <div className="admin-store-list compact-rows">{visibleStores.map((store) => <article className={`admin-store-card admin-store-row${openStore === store.id ? ' is-expanded' : ''}`} key={store.id}>
+			<button type="button" className="admin-store-summary" aria-expanded={openStore === store.id} onClick={() => setOpenStore((current) => current === store.id ? '' : store.id)}>
+				<span className="admin-user-avatar" aria-hidden="true">{store.fotografias?.[0] ? <img src={store.fotografias[0]} alt="" loading="lazy" /> : store.nombre?.charAt(0)?.toUpperCase()}</span>
+				<span className="compact-row-text"><strong>{store.nombre}</strong><span>{store.activa ? 'Activa' : 'Inactiva'} · {formatDate(store.fecha_creacion)}</span></span>
+				<span className={`admin-status admin-status-${store.estado}`}>{statusLabel(store.estado)}</span>
+				<span className="request-card-chevron" aria-hidden="true"><Icon name="chevron" size={16} /></span>
+			</button>
+			{openStore === store.id && <div className="admin-store-body">
 			<p>{store.descripcion || 'Sin descripción.'}</p><dl><div><dt>Teléfono</dt><dd>{store.telefono || 'No registrado'}</dd></div><div><dt>Dirección</dt><dd>{store.direccion || 'No registrada'}</dd></div><div><dt>Horario</dt><dd>{store.horario || 'No registrado'}</dd></div><div><dt>Ubicación</dt><dd>{store.latitud != null && store.longitud != null ? `${store.latitud}, ${store.longitud}` : 'No registrada'}</dd></div></dl>
 			{store.motivo_estado && <p className="admin-reason"><strong>Último motivo:</strong> {store.motivo_estado}</p>}
 			<label className="admin-reason-field">Motivo (obligatorio para rechazo o suspensión)<textarea value={reasons[store.id] || ''} onChange={(event) => setReasons((current) => ({ ...current, [store.id]: event.target.value }))} rows="2" maxLength="500" /></label>
 			<div className="admin-actions">{store.estado !== 'aprobada' && <button className="button button-primary" type="button" onClick={() => review(store, 'aprobar')} disabled={Boolean(busyId)}>{busyId === store.id ? 'Guardando…' : store.estado === 'suspendida' ? 'Reactivar' : 'Aprobar'}</button>}{store.estado !== 'rechazada' && <button className="button button-secondary" type="button" onClick={() => review(store, 'rechazar')} disabled={Boolean(busyId)}>Rechazar</button>}{store.estado !== 'suspendida' && <button className="button button-danger" type="button" onClick={() => review(store, 'suspender')} disabled={Boolean(busyId)}>Suspender</button>}</div>
+			</div>}
 		</article>)}</div>}
 		</>}
 	</main>

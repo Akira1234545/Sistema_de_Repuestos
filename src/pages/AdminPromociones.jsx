@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerPromocionesAdministracion, obtenerTiendasConPromocionesAdministracion } from '../services/adminService.js'
 import { statusLabel } from '../lib/format.js'
 import Select from '../components/ui/Select.jsx'
+import Icon from '../components/Icon.jsx'
 
 const pageSize = 25
 const promotionStatuses = ['activa', 'pausada', 'finalizada']
@@ -106,14 +107,16 @@ function AdminPromociones() {
 		</div>
 		{optionsError && <p className="admin-alert" role="alert">{optionsError}</p>}
 		{error && <p className="admin-alert" role="alert">{error}</p>}
+		<div className="list-toolbar"><label className="list-search"><Icon name="search" size={18} /><input type="search" name="buscar" value={search} onChange={updateFilter} placeholder="Buscar promoción" aria-label="Buscar por título de la promoción" /></label></div>
+		<details className="admin-filter-panel"><summary><Icon name="filter" size={16} /> Filtros</summary>
 		<div className="admin-promotion-filters">
 			<label>Tienda<Select ariaLabel="Tienda" name="tiendaId" value={filters.tiendaId} onChange={updateFilter} disabled={optionsLoading} options={[{ value: '', label: 'Todas las tiendas' }, ...stores.map((store) => ({ value: store.id, label: store.nombre }))]} /></label>
 			<label>Categoría<Select ariaLabel="Categoría" name="categoriaId" value={filters.categoriaId} onChange={updateFilter} disabled={optionsLoading} options={[{ value: '', label: 'Todas las categorías' }, ...categories.map((category) => ({ value: category.id, label: category.nombre }))]} /></label>
 			<label>Estado<Select ariaLabel="Estado" name="estado" value={filters.estado} onChange={updateFilter} options={[{ value: '', label: 'Todos los estados' }, ...promotionStatuses.map((status) => ({ value: status, label: statusLabel(status) }))]} /></label>
 			<label>Inicio desde<input name="fechaDesde" type="date" value={filters.fechaDesde} onChange={updateFilter} /></label>
 			<label>Inicio hasta<input name="fechaHasta" type="date" value={filters.fechaHasta} onChange={updateFilter} /></label>
-			<label className="admin-promotion-search">Buscar por título<input name="buscar" value={search} onChange={updateFilter} placeholder="Título de la promoción" /></label>
 		</div>
+		</details>
 		{loading ? <p role="status">Cargando promociones…</p> : promotions.length === 0
 			? <section className="admin-empty"><h3>No hay promociones para mostrar</h3><p>Prueba con otros filtros o fechas.</p></section>
 			: <>
@@ -131,7 +134,7 @@ function AdminPromociones() {
 							<div><dt>Tienda</dt><dd>{promotion.tienda_nombre}</dd></div>
 							<div><dt>Categoría</dt><dd>{promotion.categoria_nombre}</dd></div>
 							<div><dt>Marca</dt><dd>{promotion.marca || 'No especificada'}</dd></div>
-							<div><dt>Estado</dt><dd>{promotion.estado}</dd></div>
+							<div><dt>Estado</dt><dd>{statusLabel(promotion.estado)}</dd></div>
 							<div><dt>Precio anterior</dt><dd>{currency.format(Number(promotion.precio_anterior))}</dd></div>
 							<div><dt>Precio de oferta</dt><dd>{currency.format(Number(promotion.precio_oferta))}</dd></div>
 							<div><dt>Descuento</dt><dd>{Number(promotion.porcentaje_descuento || 0).toFixed(2)}%</dd></div>

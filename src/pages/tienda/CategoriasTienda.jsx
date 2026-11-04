@@ -93,7 +93,7 @@ function CategoriasTienda() {
 			{categories.length === 0 ? <div className="categories-empty"><h2>No hay categorías activas</h2><p>El administrador debe revisar el catálogo `categorias_repuesto` en Supabase. No se agregaron categorías ficticias.</p></div> : visibleCategories.length === 0 ? <div className="categories-empty"><h2>No hay coincidencias</h2><p>Prueba con otro término de búsqueda.</p></div> : <div className="categories-grid">{visibleCategories.map((category) => <label className={`category-choice${selectedSet.has(category.id) ? ' is-selected' : ''}`} key={category.id}>
 				<input type="checkbox" checked={selectedSet.has(category.id)} onChange={() => toggleCategory(category.id)} />
 				<span className="category-choice-check" aria-hidden="true">{selectedSet.has(category.id) ? '✓' : '+'}</span>
-				<span className="category-choice-copy"><strong>{category.nombre}</strong>{category.descripcion && <small>{category.descripcion}</small>}</span>
+				<span className="category-choice-copy" title={category.descripcion || undefined}><strong>{category.nombre}</strong>{category.descripcion && <small>{category.descripcion}</small>}</span>
 			</label>)}</div>}
 			<footer className="categories-footer"><p>El cambio se aplica al guardar. Puedes volver aquí para editar tu selección más adelante.</p><button className="button" type="submit" disabled={saving || !hasChanges }>{saving ? 'Guardando…' : 'Guardar categorías'}</button></footer>
 		</form>

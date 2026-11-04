@@ -27,6 +27,11 @@ const paths = {
   phone: 'M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a1 1 0 0 1-1 1A17 17 0 0 1 4 5a1 1 0 0 1 1-1Z',
   pin: 'M12 21s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12ZM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
   lock: 'M6 11h12v10H6ZM8 11V7a4 4 0 0 1 8 0v4',
+  pause: 'M8 5v14M16 5v14',
+  power: 'M12 3v9M6.3 6.3a8 8 0 1 0 11.4 0',
+  refresh: 'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7',
+  play: 'M7 4v16l13-8Z',
+  flag: 'M5 21V4M5 4h11l-2 4 2 4H5',
 }
 
 export default function Icon({ name, size = 20, filled = false }) {
