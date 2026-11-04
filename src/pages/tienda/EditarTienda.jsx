@@ -12,7 +12,8 @@ import {
 	limpiarSubidasFallidas,
 } from '../../services/tiendaService.js'
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+// Photos are compressed to WebP before upload, so phone originals well above the 5 MB bucket limit are fine.
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024
 const emptyForm = { nombre: '', descripcion: '', telefono: '', direccion: '', latitud: '', longitud: '', horaApertura: '', horaCierre: '' }
 
 function parseHorario(horario) {
@@ -85,7 +86,7 @@ function EditarTienda() {
 		if (invalidFile) {
 			setSelectedFiles([])
 			setPreviews([])
-			setError('Solo se permiten imágenes de hasta 5 MB cada una.')
+			setError('Solo se permiten imágenes JPG, PNG o WebP de hasta 20 MB cada una.')
 			return
 		}
 		setSelectedFiles(files)
@@ -175,7 +176,7 @@ function EditarTienda() {
 						<label>Hora de cierre<input name="horaCierre" type="time" value={form.horaCierre} onChange={updateField} /><small>Ejemplo: 12:30</small></label>
 					</div>
 					<div className="store-photo-section">
-						<div><p className="store-label">Fotografías de la tienda</p><small>Selecciona imágenes de hasta 5 MB cada una.</small></div>
+						<div><p className="store-label">Fotografías de la tienda</p><small>Imágenes de hasta 20 MB; se optimizan antes de subirlas.</small></div>
 						<input type="file" accept="image/*" multiple onChange={handleFileChange} />
 						{previews.length > 0 && <div className="store-photo-grid">{previews.map((preview) => <img src={preview} alt="Vista previa" key={preview} />)}</div>}
 						{existingPhotos.length > 0 ? <div className="store-photo-grid">{existingPhotos.map((photo) => <div className="store-photo-item" key={photo}><img src={photo} alt="Fotografía de la tienda" /><button type="button" onClick={() => handleRemovePhoto(photo)} disabled={removingPhoto === photo}>{removingPhoto === photo ? 'Eliminando...' : 'Eliminar'}</button></div>)}</div> : <p className="store-photo-empty">No hay fotografías registradas.</p>}

@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js'
+import { compressImage } from '../lib/images.js'
 
 const storeColumns = `
 	id,
@@ -119,12 +120,13 @@ function storagePathFromUrl(url) {
 }
 
 export async function subirFotografiaTienda(userId, file) {
-	const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.type]
-	if (!extension || file.size > 5 * 1024 * 1024) throw new Error('Selecciona fotografías JPEG, PNG o WebP de hasta 5 MB.')
-	const path = `${userId}/${crypto.randomUUID()}.${extension}`
+	if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Selecciona fotografías JPEG, PNG o WebP.')
+	const blob = await compressImage(file)
+	if (blob.size > 5 * 1024 * 1024) throw new Error('La fotografía sigue pesando más de 5 MB. Prueba con otra.')
+	const path = `${userId}/${crypto.randomUUID()}.webp`
 	const { error: uploadError } = await supabase.storage
 		.from('tiendas')
-		.upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type })
+		.upload(path, blob, { cacheControl: '3600', upsert: false, contentType: 'image/webp' })
 
 	if (uploadError) throw uploadError
 	const { data } = supabase.storage.from('tiendas').getPublicUrl(path)
@@ -142,9 +144,13 @@ export async function actualizarFotografiasTienda(userId, fotografias, version) 
 export async function eliminarFotografiaTienda(userId, fotografiaUrl, fotografiasRestantes, version) {
 	const store = await actualizarFotografiasTienda(userId, fotografiasRestantes, version)
 	const path = storagePathFromUrl(fotografiaUrl)
-	if (path) {
-		await supabase.rpc('queue_failed_uploads', { p_paths: [path] })
-	}
+	if (!path) return { ...store, cleanupPending: false }
+	// The versioned update above already detached the photo, so no session can re-attach it:
+	// remove the file now and leave the queued job only as a fallback when that fails.
+	// Storage reports a delete blocked by policy as success with no removed objects.
+	const { data: removed, error } = await supabase.storage.from('tiendas').remove([path])
+	if (!error && removed?.length) return { ...store, cleanupPending: false }
+	await supabase.rpc('queue_failed_uploads', { p_paths: [path] })
 	return { ...store, cleanupPending: true }
 }
 
