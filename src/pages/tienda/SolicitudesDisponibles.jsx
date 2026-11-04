@@ -60,7 +60,7 @@ function SolicitudesDisponibles() {
 		{(!store || store.estado !== 'aprobada' || !store.activa) && !loading && <p className="store-request-message" role="status">{!store ? 'Completa el perfil de tu tienda y espera su aprobación para consultar solicitudes.' : `Tu tienda está ${statusLabel(store.estado).toLowerCase()}${store.activa ? '' : ' e inactiva'}. Solo las tiendas activas y aprobadas ven las solicitudes de sus categorías.`}</p>}
 
 		<div className="list-toolbar">
-			<label className="list-search"><Icon name="search" size={18} /><input name="search" type="search" value={filters.search} onChange={update} placeholder="Buscar solicitudes" aria-label="Buscar por título, vehículo o descripción" /></label>
+			<label className="list-search"><Icon name="search" size={18} /><input name="search" type="search" value={filters.search} onChange={update} placeholder="Buscar" aria-label="Buscar por título, vehículo o descripción" /></label>
 			<button type="button" className={`icon-action list-filter-toggle${filtersOpen ? ' is-on' : ''}`} aria-expanded={filtersOpen} aria-controls="store-request-filters" aria-label="Filtros" title="Filtros" onClick={() => setFiltersOpen((value) => !value)}>
 				<Icon name="filter" size={18} />{extraFilters > 0 && <span className="icon-badge">{extraFilters}</span>}
 			</button>

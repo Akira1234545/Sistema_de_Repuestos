@@ -120,7 +120,7 @@ function Solicitudes() {
 		<div className="requests-heading"><div><p className="requests-eyebrow">Panel de cliente / Solicitudes</p><h1>Mis solicitudes</h1></div><Link className="button requests-button" to="/cliente/solicitudes/crear"><Icon name="plus" size={18} /> Nueva</Link></div>
 
 		<div className="list-toolbar">
-			<label className="list-search"><Icon name="search" size={18} /><input name="search" type="search" value={filters.search} onChange={updateFilter} placeholder="Buscar solicitudes" aria-label="Buscar por título, vehículo o categoría" /></label>
+			<label className="list-search"><Icon name="search" size={18} /><input name="search" type="search" value={filters.search} onChange={updateFilter} placeholder="Buscar" aria-label="Buscar por título, vehículo o categoría" /></label>
 			<button type="button" className={`icon-action list-filter-toggle${filtersOpen ? ' is-on' : ''}`} aria-expanded={filtersOpen} aria-controls="request-filters" aria-label="Filtros" title="Filtros" onClick={() => setFiltersOpen((value) => !value)}>
 				<Icon name="filter" size={18} />{extraFilters > 0 && <span className="icon-badge">{extraFilters}</span>}
 			</button>
