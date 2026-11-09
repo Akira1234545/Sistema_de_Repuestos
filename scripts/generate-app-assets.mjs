@@ -1,28 +1,70 @@
-// Renders the RepuestosPro mark into the source images @capacitor/assets expects.
-// Usage: node scripts/generate-app-assets.mjs && npx capacitor-assets generate --android
+// Genera los PNG de Android (iconos y splash) y las fuentes de assets/ a partir del logo DriveFix
+// de branding/drivefix/. Los SVG se leen sin los metadatos C2PA.
+// Uso: npm run android:assets
+//
+// Los iconos adaptativos (Android 8+) y el icono temático (Android 13+) son vectores en
+// android/app/src/main/res/drawable*/ y mipmap-anydpi-v26/: este script no los toca.
+// Los PNG que escribe son para Android 7 (iconos sin capas), el splash anterior a Android 12
+// y las imágenes de origen para Google Play.
 import sharp from 'sharp'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 
-const BG = '#0b0d11'
-const letter = 'M20 48V16h14.5c7 0 11.5 4 11.5 10 0 4.6-2.6 7.9-6.8 9.2L47 48h-8.6l-7.2-12H28v12zm8-18.6h6c3 0 4.6-1.4 4.6-3.6S37 23 34 23h-6z'
-const gradient = '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd27a"/><stop offset=".6" stop-color="#f5b13d"/><stop offset="1" stop-color="#c9861b"/></linearGradient></defs>'
+const BRAND = 'branding/drivefix'
+const RES = 'android/app/src/main/res'
+const INK = '#0E1726'
 
-// Full icon: amber tile with the R, used for legacy launchers.
-const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${gradient}<rect width="64" height="64" rx="15" fill="url(#g)"/><path d="${letter}" fill="#1a1306"/></svg>`
-// Adaptive icon layers: the launcher crops to its own shape, so keep the R inside the safe zone.
-const foreground = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108"><g transform="translate(26 26)"><path d="${letter}" fill="#1a1306"/></g></svg>`
-const background = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">${gradient}<rect width="108" height="108" fill="url(#g)"/></svg>`
-// Splash: mark and wordmark centred on the app background.
-const splash = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732">${gradient}<rect width="2732" height="2732" fill="${BG}"/>
-  <g transform="translate(1166 1066) scale(6.25)"><rect width="64" height="64" rx="15" fill="url(#g)"/><path d="${letter}" fill="#1a1306"/></g>
-  <text x="1366" y="1590" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="120" font-weight="800" fill="#eef1f5">Repuestos<tspan fill="#f5b13d">Pro</tspan></text></svg>`
+// Quita el bloque <metadata> (manifiesto C2PA) y su espacio de nombres.
+const clean = (svg) => svg
+	.replace(/<metadata>[\s\S]*?<\/metadata>/g, '')
+	.replace(/\s+xmlns:c2pa="[^"]*"/g, '')
+const load = async (file) => clean(await readFile(`${BRAND}/${file}`, 'utf8'))
 
-await mkdir('assets', { recursive: true })
-// Rasterise at the target size: density scales the SVG's own viewBox width to `size` pixels.
-const render = (svg, viewBox, size, file) => sharp(Buffer.from(svg), { density: 72 * size / viewBox }).resize(size, size).png().toFile(`assets/${file}`)
-await render(icon, 64, 1024, 'icon-only.png')
-await render(foreground, 108, 1024, 'icon-foreground.png')
-await render(background, 108, 1024, 'icon-background.png')
-await render(splash, 2732, 2732, 'splash.png')
-await render(splash, 2732, 2732, 'splash-dark.png')
-console.log('Assets written to assets/')
+const isotipo = await load('drivefix-isotipo.svg') // cuadro de tinta redondeado (64×64)
+const icon1024 = await load('android/icono-1024.svg') // cuadro de tinta sin redondear
+const foreground = await load('android/ic_launcher_foreground.svg') // capa frontal de 108×108
+const splash = await load('android/splash-2732.svg') // chevrones centrados sobre tinta
+
+// Icono redondo: círculo de tinta y los chevrones de la capa frontal (ya dentro de la zona segura).
+const chevrons = foreground.match(/<g[\s\S]*<\/g>/)[0]
+const round = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108"><circle cx="54" cy="54" r="54" fill="${INK}"/>${chevrons}</svg>`
+const background = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108"><rect width="108" height="108" fill="${INK}"/></svg>`
+
+const viewBoxWidth = (svg) => Number(svg.match(/viewBox="0 0 (\d+(?:\.\d+)?)/)[1])
+// Rasteriza a `size` px: density escala el ancho del viewBox del SVG.
+const raster = (svg, size) => sharp(Buffer.from(svg), { density: 72 * size / viewBoxWidth(svg) }).resize(size, size)
+const write = async (pipeline, file) => {
+	await mkdir(file.slice(0, file.lastIndexOf('/')), { recursive: true })
+	await pipeline.png().toFile(file)
+}
+
+// Fuentes (Google Play y capacitor-assets, si se vuelve a usar).
+await write(raster(icon1024, 1024), 'assets/icon-only.png')
+await write(raster(foreground, 1024), 'assets/icon-foreground.png')
+await write(raster(background, 1024), 'assets/icon-background.png')
+await write(raster(splash, 2732), 'assets/splash.png')
+await write(raster(splash, 2732), 'assets/splash-dark.png')
+
+// Iconos por densidad (48 dp).
+const densities = { ldpi: 36, mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 }
+for (const [density, size] of Object.entries(densities)) {
+	const dir = `${RES}/mipmap-${density}`
+	await write(raster(isotipo, size), `${dir}/ic_launcher.png`)
+	await write(raster(round, size), `${dir}/ic_launcher_round.png`)
+	await write(raster(foreground, size), `${dir}/ic_launcher_foreground.png`)
+	await write(raster(background, size), `${dir}/ic_launcher_background.png`)
+}
+
+// Splash anterior a Android 12 y del plugin SplashScreen: el lienzo de 2732 recortado al centro.
+const portrait = { ldpi: [240, 320], mdpi: [320, 480], hdpi: [480, 800], xhdpi: [720, 1280], xxhdpi: [960, 1600], xxxhdpi: [1280, 1920] }
+const splashPng = (width, height) => sharp(Buffer.from(splash), { density: 72 * Math.max(width, height) / viewBoxWidth(splash) })
+	.resize(width, height, { fit: 'cover', position: 'centre' })
+const splashTargets = [['drawable', 320, 480], ['drawable-night', 320, 240]]
+for (const [density, [w, h]] of Object.entries(portrait)) {
+	for (const night of ['', '-night']) {
+		splashTargets.push([`drawable-port${night}-${density}`, w, h])
+		splashTargets.push([`drawable-land${night}-${density}`, h, w])
+	}
+}
+for (const [dir, width, height] of splashTargets) await write(splashPng(width, height), `${RES}/${dir}/splash.png`)
+
+console.log(`DriveFix: ${5 + Object.keys(densities).length * 4 + splashTargets.length} PNG escritos en assets/ y ${RES}/`)

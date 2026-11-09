@@ -2,7 +2,7 @@
 
 La app Android (`android/`) es un proyecto nativo de Android Studio generado con Capacitor 8. Empaqueta la misma aplicación React y usa el mismo proyecto Supabase, con sus reglas de seguridad, sin duplicar lógica.
 
-- Paquete: `com.repuestospro.app`
+- Nombre: **DriveFix**. Paquete: `com.drivefix.app` (antes `com.repuestospro.app`; se cambió en la sesión 5, antes de publicar en Google Play).
 - SDK mínimo 24 (Android 7), objetivo y compilación 36.
 - Tamaño: APK de release minificado ≈ 2,3 MB; APK de depuración ≈ 6 MB.
 
@@ -12,7 +12,7 @@ La app Android (`android/`) es un proyecto nativo de Android Studio generado con
 
 - **Inicio directo**: la app abre en el panel del usuario o en *Iniciar sesión*; la portada promocional queda para la web.
 - **Botón Atrás**: cierra las notificaciones, vuelve a la pantalla anterior o minimiza la app en las pantallas principales.
-- **Enlaces de correo**: la confirmación de cuenta y la recuperación de contraseña vuelven a la app mediante `com.repuestospro.app://auth/...` (flujo PKCE).
+- **Enlaces de correo**: la confirmación de cuenta y la recuperación de contraseña vuelven a la app mediante `com.drivefix.app://auth/...` (flujo PKCE).
 - **Sesión**: los tokens se renuevan solo con la app en primer plano.
 - **Sin conexión**: aviso fijo cuando no hay red.
 - **Teclado**: la barra inferior se oculta mientras se escribe.
@@ -21,7 +21,7 @@ La app Android (`android/`) es un proyecto nativo de Android Studio generado con
 - **Compartir promociones** con la hoja de compartir de Android (define `VITE_PUBLIC_SITE_URL` para incluir el enlace web).
 - **Vibración ligera** al navegar y al pulsar acciones principales.
 - **Barras del sistema y bordes**: diseño de borde a borde con márgenes seguros (`--safe-area-inset-*`).
-- **Pantalla de inicio** e iconos adaptativos con la marca (`assets/`, generados con `npm run android:assets`).
+- **Pantalla de inicio** e iconos con el logo «Doble señal»: el icono adaptativo y el temático (Android 13+) son vectores en `res/drawable*/` y `res/mipmap-anydpi-v26/`; los PNG (Android 7, splash y `assets/`) se generan desde `branding/drivefix/` con `npm run android:assets`. Barras del sistema en estilo `LIGHT` (iconos oscuros sobre las pantallas claras).
 
 Seguridad del contenedor: sin copias de seguridad de datos (`allowBackup=false` y reglas de extracción), sin tráfico HTTP sin cifrar y sin depuración de WebView en release.
 
@@ -44,10 +44,12 @@ Para probarla hace falta un emulador (Android Studio → Device Manager → crea
 En **Authentication → URL Configuration → Redirect URLs** añade:
 
 ```
-com.repuestospro.app://auth/**
+com.drivefix.app://auth/**
 ```
 
-Sin esto, los enlaces de confirmación y recuperación de contraseña abren la web en vez de la app.
+Sin esto, los enlaces de confirmación y recuperación de contraseña abren la web en vez de la app. Puedes quitar la entrada antigua `com.repuestospro.app://auth/**` cuando nadie use ya la versión anterior de la app.
+
+Como el paquete cambió, Android instala DriveFix como una app nueva: desinstala la versión de prueba `com.repuestospro.app` del teléfono o emulador.
 
 ## Publicación en Google Play
 

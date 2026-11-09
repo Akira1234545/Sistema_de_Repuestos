@@ -1,6 +1,6 @@
-﻿# Sistema de Repuestos
+﻿# DriveFix
 
-Aplicación React, Vite y Supabase para solicitudes de repuestos, propuestas de tiendas, promociones, reseñas y administración.
+DriveFix (antes RepuestosPro / Sistema de Repuestos) es una aplicación React, Vite y Supabase para solicitudes de repuestos, propuestas de tiendas, promociones, reseñas y administración.
 
 ## Desarrollo
 

@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
 import { registrarCuenta } from '../../services/authService.js'
+import BrandLogo from '../../components/BrandLogo.jsx'
 
 function Register() {
 	const [searchParams] = useSearchParams()
@@ -61,10 +62,10 @@ function Register() {
 
 	return (
 		<main className="auth-page">
-			<div className="auth-intro"><Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link><p>Un buen viaje empieza con la pieza correcta.</p></div>
+			<div className="auth-intro"><Link className="brand" to="/"><BrandLogo /></Link><p>Un buen viaje empieza con la pieza correcta.</p></div>
 			<form className="auth-card" onSubmit={handleSubmit}>
 				<p className="eyebrow">Crear cuenta / {role || 'tipo de cuenta'}</p>
-				<h1>Únete a RepuestosPro</h1>
+				<h1>Únete a DriveFix</h1>
 				{!role && <p className="auth-error" role="alert">Selecciona primero el tipo de cuenta en <Link to="/register">Registro</Link>.</p>}
 				<p className="auth-description">Crea tu cuenta para {role === 'tienda' ? 'ofrecer tus repuestos y hacer crecer tu tienda.' : 'encontrar repuestos para tu vehículo.'}</p>
 				<div className="auth-grid"><label>Nombre<input name="name" type="text" maxLength="100" autoComplete="given-name" required placeholder="Tu nombre" /></label>

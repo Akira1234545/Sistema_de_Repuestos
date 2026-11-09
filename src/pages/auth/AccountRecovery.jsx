@@ -5,6 +5,7 @@ import { useAuth } from '../../context/authState.js'
 import { authRedirectUrl } from '../../lib/platform.js'
 import { publicError } from '../../lib/errors.js'
 import { PASSWORD_HINT, passwordIssue } from '../../lib/password.js'
+import BrandLogo from '../../components/BrandLogo.jsx'
 
 export default function AccountRecovery({ reset = false, confirmation = false }) {
   const { user, loading, signOut } = useAuth()
@@ -44,7 +45,7 @@ export default function AccountRecovery({ reset = false, confirmation = false })
     } catch (cause) { setError(cause.message) }
     finally { setBusy(false) }
   }
-  return <main className="auth-page"><div className="auth-intro"><Link className="brand" to="/"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link><p>Recupera el acceso a tu cuenta.</p></div>
+  return <main className="auth-page"><div className="auth-intro"><Link className="brand" to="/"><BrandLogo /></Link><p>Recupera el acceso a tu cuenta.</p></div>
     <form className="auth-card" onSubmit={submit}><p className="eyebrow">Tu cuenta</p><h1>{reset ? 'Nueva contraseña' : confirmation ? 'Confirmar correo' : 'Recuperar contraseña'}</h1>
       {reset ? <><label>Nueva contraseña<input name="password" type="password" minLength={12} autoComplete="new-password" required /></label><label>Repite la contraseña<input name="confirmation" type="password" minLength={12} autoComplete="new-password" required /></label><p>{PASSWORD_HINT}</p></> : <label>Correo electrónico<input name="email" type="email" autoComplete="email" required /></label>}
       {error && <p role="alert" className="auth-error">{error}</p>}{message && <p role="status" className="auth-message">{message}</p>}

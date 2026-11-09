@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useRef } from 'react'
 import { useAuth } from '../context/authState.js'
 import { useBottomBar } from '../hooks/useBottomBar.js'
+import BrandLogo from './BrandLogo.jsx'
 
 const storeNavigation = [
 	{ label: 'Resumen', icon: 'home', to: '/tienda', end: true },
@@ -28,10 +29,10 @@ function StoreSidebar() {
 
 	return (
 		<aside className="store-sidebar" aria-label="Menú de tienda">
-			<Link className="store-brand" to="/tienda"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link>
+			<Link className="store-brand" to="/tienda"><BrandLogo /></Link>
 			<div className="store-sidebar-intro">
 				<span className="store-sidebar-mark">Tienda</span>
-				<p>Administra tu presencia en RepuestosPro.</p>
+				<p>Administra tu presencia en DriveFix.</p>
 			</div>
 			<nav className="store-navigation" ref={navRef} aria-label="Secciones de tienda">
 				{storeNavigation.map((item) => (

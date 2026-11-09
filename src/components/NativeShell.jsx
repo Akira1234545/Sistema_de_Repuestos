@@ -15,7 +15,7 @@ import PullToRefresh from './PullToRefresh.jsx'
 const ROOT_PATHS = new Set(['/', '/login', '/cliente', '/tienda', '/admin'])
 
 // Completes a Supabase Auth email link (confirmation or password recovery) that
-// arrived as com.repuestospro.app://auth/<path>?code=… and returns the in-app path.
+// arrived as com.drivefix.app://auth/<path>?code=… and returns the in-app path.
 async function completeAuthLink(rawUrl) {
 	const url = new URL(rawUrl)
 	const path = url.pathname && url.pathname !== '/' ? url.pathname : '/login'
@@ -57,7 +57,7 @@ function NativeBridge() {
 		}))
 
 		keep(CapacitorApp.addListener('appUrlOpen', ({ url }) => {
-			if (!url?.startsWith('com.repuestospro.app://') || !supabase) return
+			if (!url?.startsWith('com.drivefix.app://') || !supabase) return
 			void completeAuthLink(url).then(({ path, error }) => navigate(path, { replace: true, state: error ? { authLinkError: error } : undefined }))
 		}))
 

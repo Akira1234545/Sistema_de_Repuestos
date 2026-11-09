@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Dark app chrome that matches the web UI (graphite background, amber accent). -->
+    <!-- DriveFix: pantallas claras (#F3F5F9), tinta #0E1726 y azul de acción #1F4FE0. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -16,12 +16,11 @@
         <item name="android:windowBackground">@color/appBackground</item>
     </style>
 
-    <!-- Android 12+ system splash: brand mark on the app background, then the web splash. -->
+    <!-- Android 12+: chevrones de DriveFix sobre tinta; luego el splash web (también tinta). -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
-        <item name="windowSplashScreenBackground">@color/appBackground</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/colorAccent</item>
+        <item name="windowSplashScreenBackground">@color/splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

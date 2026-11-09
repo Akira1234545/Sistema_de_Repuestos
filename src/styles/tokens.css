@@ -1,43 +1,97 @@
-/* RepuestosPro design tokens.
-   Material: graphite workshop at night. Light: a single amber work lamp.
-   Motif: blueprint grid lines and machined, rounded-rect parts. */
+/* DriveFix design tokens — paleta A «Voltio» (sesión 4, 9 nov 2026).
+   Tema claro con secciones oscuras. Azul = acción, amarillo = atención.
+   Fuente de los valores y del contraste: claude/identidad-drivefix.md.
+   Ningún otro CSS escribe colores a mano: todo sale de aquí. */
 @import '@fontsource-variable/inter/wght.css';
 @import '@fontsource-variable/archivo/wdth.css';
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Surfaces, darkest to lightest */
-  --bg: #0b0d11;
-  --bg-raised: #10131a;
-  --surface: #151922;
-  --surface-2: #1b2029;
-  --surface-3: #232935;
-  --line: #2a313d;
-  --line-strong: #3a4352;
+  /* Escala de grises, de blanco a tinta */
+  --gray-50: #F8F8F8;
+  --gray-100: #EEEFF0;
+  --gray-200: #E0E1E3;
+  --gray-300: #C5C7CB;
+  --gray-400: #9A9EA4; /* < 3:1 sobre blanco: ni bordes de campos ni texto */
+  --gray-500: #737881;
+  --gray-600: #565D67;
+  --gray-700: #3E4551;
+  --gray-800: #262E3C;
+  --gray-900: #0E1726;
+  --white: #FFFFFF;
 
-  /* Text */
-  --text: #eef1f5;
-  --text-soft: #c4cad4;
-  --text-muted: #8d96a5;
+  /* Fondos y superficies */
+  --bg: #F3F5F9;
+  --surface: var(--white);
+  --surface-2: var(--gray-50);
+  --surface-3: var(--gray-100);
 
-  /* Amber work light */
-  --amber: #f5b13d;
-  --amber-hot: #ffc861;
-  --amber-deep: #c9861b;
-  --amber-ink: #1a1306;
-  --amber-wash: rgb(245 177 61 / 10%);
-  --amber-glow: rgb(245 177 61 / 28%);
+  /* Líneas */
+  --line: var(--gray-200);        /* decorativas */
+  --line-strong: var(--gray-300);
+  --line-input: #8A8F97;          /* bordes de campos: 3,3:1 */
 
-  /* Semantic */
-  --steel: #7fb2e5;
-  --steel-wash: rgb(127 178 229 / 12%);
-  --ok: #6fd6a2;
-  --ok-wash: rgb(111 214 162 / 12%);
-  --warn: #f2c66d;
-  --warn-wash: rgb(242 198 109 / 12%);
-  --danger: #ff8a80;
-  --danger-wash: rgb(255 138 128 / 12%);
+  /* Texto */
+  --text: var(--gray-900);
+  --text-soft: var(--gray-700);
+  --text-muted: #5A6478;
+
+  /* Acción (azul) */
+  --accent: #1F4FE0;
+  --accent-hover: #1A43BE;
+  --accent-pressed: #1639A1;
+  --accent-wash: #EDF1FD;
+  --accent-ink: var(--white);
+  --accent-line: color-mix(in srgb, var(--accent) 40%, transparent);
+
+  /* Destaque (amarillo): ofertas, estrellas, insignias. Texto encima siempre tinta. */
+  --highlight: #FFC72C;
+  --highlight-hover: #F0BB29;
+  --highlight-wash: #FFF3D1;
+  --highlight-ink: var(--gray-900);
+
+  /* Estados (oscurecidos para AA sobre blanco) */
+  --ok: #17804A;
+  --ok-wash: #EFF6F2;
+  --warn: #8A5A00;
+  --warn-wash: #FFF3D1;
+  --danger: #C5221F;
+  --danger-wash: #FAEDED;
+  --info: var(--accent);
+  --info-wash: var(--accent-wash);
+
+  /* Secciones oscuras (tinta) */
+  --dark-bg: var(--gray-900);
+  --dark-surface: #1F2735;
+  --dark-surface-2: #2B3340;
+  --dark-line: #39414D;
+  --dark-text: var(--white);
+  --dark-text-soft: var(--gray-300);
+  --dark-text-muted: #A3A7AD;
+  --dark-accent: #7EA0FF;
+  --dark-button-line: var(--gray-500);
+
+  /* Solo para el logo e ilustraciones; nunca en botones ni texto */
+  --brand-signal: #3D6BFF;
+
+  /* Marcas de terceros */
+  --whatsapp: #4AD187;
+  --whatsapp-hover: #64E19C;
+  --whatsapp-ink: var(--gray-900);
+
+  /* Botón principal (en secciones oscuras pasa a amarillo) */
+  --button-bg: var(--accent);
+  --button-bg-hover: var(--accent-hover);
+  --button-bg-pressed: var(--accent-pressed);
+  --button-ink: var(--accent-ink);
+
+  /* Capas translúcidas */
+  --scrim: color-mix(in srgb, var(--gray-900) 55%, transparent);
+  --glass: color-mix(in srgb, var(--surface) 86%, transparent);
+  --glass-strong: color-mix(in srgb, var(--surface) 94%, transparent);
+  --on-photo: color-mix(in srgb, var(--gray-900) 78%, transparent);
+  --mask-solid: #000; /* solo para mask-image: el color no se ve */
 
   /* Type */
   --font-body: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
@@ -50,15 +104,17 @@
   --fs-h2: clamp(24px, 2.4vw, 32px);
   --fs-h1: clamp(32px, 3.6vw, 48px);
 
-  /* Shape and depth */
+  /* Forma y profundidad (sombras en tinta translúcida, para fondo claro) */
   --r-xs: 6px;
   --r-sm: 10px;
   --r-md: 14px;
   --r-lg: 20px;
   --r-xl: 28px;
-  --shadow-1: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 8px 24px rgb(0 0 0 / 28%);
-  --shadow-2: 0 1px 0 rgb(255 255 255 / 4%) inset, 0 24px 60px rgb(0 0 0 / 45%);
-  --ring: 0 0 0 3px var(--amber-glow);
+  --shadow-color: 14 23 38;
+  --shadow-1: 0 1px 2px rgb(var(--shadow-color) / .06), 0 1px 3px rgb(var(--shadow-color) / .08);
+  --shadow-2: 0 8px 24px rgb(var(--shadow-color) / .10), 0 2px 6px rgb(var(--shadow-color) / .06);
+  --focus: var(--accent);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
 
   /* Layout */
   --header-h: 72px;
@@ -76,4 +132,43 @@
   --ease-out: cubic-bezier(.22, 1, .36, 1);
   --dur-fast: 140ms;
   --dur: 220ms;
+}
+
+/* Sección oscura: reasigna los tokens base, así los componentes de dentro se adaptan solos.
+   Úsala en la portada, el pie y cualquier bloque de impacto. */
+.section-dark {
+  color-scheme: dark;
+  --bg: var(--dark-bg);
+  --surface: var(--dark-surface);
+  --surface-2: var(--dark-surface-2);
+  --surface-3: var(--dark-line);
+  --line: var(--dark-line);
+  --line-strong: var(--gray-600);
+  --line-input: var(--dark-button-line);
+  --text: var(--dark-text);
+  --text-soft: var(--dark-text-soft);
+  --text-muted: var(--dark-text-muted);
+  --accent: var(--dark-accent);
+  --accent-hover: color-mix(in srgb, var(--dark-accent) 80%, var(--white));
+  --accent-pressed: color-mix(in srgb, var(--dark-accent) 85%, var(--gray-900));
+  --accent-wash: color-mix(in srgb, var(--dark-accent) 14%, transparent);
+  --accent-ink: var(--gray-900);
+  --info: var(--dark-accent);
+  --info-wash: color-mix(in srgb, var(--dark-accent) 14%, transparent);
+  --highlight-wash: color-mix(in srgb, var(--highlight) 14%, transparent);
+  --button-bg: var(--highlight);
+  --button-bg-hover: var(--highlight-hover);
+  --button-bg-pressed: var(--highlight-hover);
+  --button-ink: var(--highlight-ink);
+  --glass: color-mix(in srgb, var(--dark-surface) 72%, transparent);
+  --glass-strong: color-mix(in srgb, var(--dark-surface) 92%, transparent);
+  --shadow-color: 0 0 0;
+  --shadow-1: 0 1px 2px rgb(var(--shadow-color) / .30), 0 8px 24px rgb(var(--shadow-color) / .28);
+  --shadow-2: 0 24px 60px rgb(var(--shadow-color) / .45);
+  --focus: var(--dark-accent);
+  /* Las variables que dependen de otras se resuelven donde se declaran: se repiten aquí. */
+  --accent-line: color-mix(in srgb, var(--dark-accent) 40%, transparent);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--dark-accent) 35%, transparent);
+  color: var(--text);
+  background-color: var(--bg);
 }

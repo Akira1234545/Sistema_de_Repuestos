@@ -27,7 +27,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.repuestospro.app" android:host="auth" />
+                <data android:scheme="com.drivefix.app" android:host="auth" />
             </intent-filter>
         </activity>
 

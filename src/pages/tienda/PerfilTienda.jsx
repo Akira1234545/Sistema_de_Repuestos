@@ -52,7 +52,7 @@ function PerfilTienda() {
 			<div className="profile-status-row">
 				<span className={`profile-status-dot is-${store.estado || 'pendiente'}`} aria-hidden="true" />
 				<strong>Estado de la tienda</strong>
-				<span className="profile-status-value">{store.estado ? statusLabel(store.estado) : 'No registrado'}</span>
+				<span className={`profile-status-value is-${store.estado || 'pendiente'}`}>{store.estado ? statusLabel(store.estado) : 'No registrado'}</span>
 			</div>
 
 			<section className="profile-gallery-section">

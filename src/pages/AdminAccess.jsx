@@ -14,6 +14,7 @@ import CountUp from '../components/ui/CountUp.jsx'
 import Icon from '../components/Icon.jsx'
 import { statusLabel } from '../lib/format.js'
 import Select from '../components/ui/Select.jsx'
+import BrandLogo from '../components/BrandLogo.jsx'
 
 const statLabels = [
 	['total_usuarios', 'Cuentas registradas'],
@@ -114,7 +115,7 @@ function AdminAccess() {
 
 	return <main className="admin-page">
 		{profileError && <p className="admin-alert" role="alert">{profileError}</p>}
-		<header className="admin-heading"><div><Link className="brand admin-brand" to="/"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link><p className="eyebrow">Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
+		<header className="admin-heading"><div><Link className="brand admin-brand" to="/"><BrandLogo /></Link><p className="eyebrow">Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
 		<AdminOverview />
 		<nav className="admin-tabs" aria-label="Administración del sistema">
 			{sections.map(([key, text]) => <button key={key} className={section === key ? 'active' : ''} type="button" aria-current={section === key ? 'page' : undefined} onClick={(event) => {

@@ -8,6 +8,7 @@ import BrakeAssembly from '../components/home/BrakeAssembly.jsx'
 import { useAuth } from '../context/authState.js'
 import { obtenerCategoriasActivas } from '../services/solicitudService.js'
 import { panelPath } from '../lib/roles.js'
+import BrandLogo from '../components/BrandLogo.jsx'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -124,10 +125,10 @@ function Home() {
 			<a className="skip-link" href="#contenido">Ir al contenido</a>
 			<Header />
 			<main id="contenido" tabIndex={-1}>
-				<section className="home-hero" aria-labelledby="hero-title">
+				<section className="home-hero section-dark" aria-labelledby="hero-title">
 					<div className="hero-grid" aria-hidden="true" />
 					<div className="hero-copy">
-						<p className="eyebrow" data-hero-fade>RepuestosPro · Tu aliado automotor</p>
+						<p className="eyebrow" data-hero-fade>DriveFix · Tu aliado automotor</p>
 						<h1 id="hero-title">
 							<span className="hero-line"><span className="hero-word">Tu</span> <span className="hero-word">vehículo,</span></span>{' '}
 							<span className="hero-line"><em><span className="hero-word">en</span> <span className="hero-word">buenas</span> <span className="hero-word">manos</span></em></span>
@@ -192,12 +193,12 @@ function Home() {
 					</Link>)}</div>
 				</section>
 
-				<section id="como-funciona" className="process-section" aria-labelledby="process-title">
+				<section id="como-funciona" className="process-section section-dark" aria-labelledby="process-title">
 					<div className="process-pin">
 						<div className="process-copy">
 							<div className="section-heading">
 								<p className="eyebrow">Paso a paso</p>
-								<h2 id="process-title">Cómo funciona RepuestosPro</h2>
+								<h2 id="process-title">Cómo funciona DriveFix</h2>
 							</div>
 							<ol className="process-steps">
 								{steps.map((step) => <li className="process-step" key={step.title}>
@@ -239,7 +240,7 @@ function Home() {
 					</div>
 				</section>
 
-				<section className="store-cta" aria-labelledby="cta-title">
+				<section className="store-cta section-dark" aria-labelledby="cta-title">
 					<div className="store-cta-inner">
 						<p className="eyebrow">¿Tienes una tienda?</p>
 						<h2 id="cta-title">Haz que encuentren tu tienda</h2>
@@ -248,10 +249,10 @@ function Home() {
 					</div>
 				</section>
 			</main>
-			<footer className="home-footer">
-				<Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link>
+			<footer className="home-footer section-dark">
+				<Link className="brand" to="/"><BrandLogo variant="dark" /></Link>
 				<nav aria-label="Enlaces del pie de página"><Link to="/tiendas">Tiendas</Link><Link to="/promociones">Promociones</Link><Link to="/login">Iniciar sesión</Link><Link to="/register">Registrarse</Link></nav>
-				<p>Tu vehículo, en buenas manos. © {new Date().getFullYear()} RepuestosPro</p>
+				<p>Tu vehículo, en buenas manos. © {new Date().getFullYear()} DriveFix</p>
 			</footer>
 		</div>
 	)

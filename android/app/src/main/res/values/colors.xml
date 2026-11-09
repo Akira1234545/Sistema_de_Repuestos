@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Identidad DriveFix (paleta A «Voltio»): tinta, azul de acción y fondo claro. -->
 <resources>
-    <color name="colorPrimary">#0B0D11</color>
-    <color name="colorPrimaryDark">#0B0D11</color>
-    <color name="colorAccent">#F5B13D</color>
-    <color name="appBackground">#0B0D11</color>
+    <color name="colorPrimary">#0E1726</color>
+    <color name="colorPrimaryDark">#0E1726</color>
+    <color name="colorAccent">#1F4FE0</color>
+    <color name="appBackground">#F3F5F9</color>
+    <color name="splashBackground">#0E1726</color>
 </resources>

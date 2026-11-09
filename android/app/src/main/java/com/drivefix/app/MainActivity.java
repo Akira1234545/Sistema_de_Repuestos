@@ -1,4 +1,4 @@
-package com.repuestospro.app;
+package com.drivefix.app;
 
 import com.getcapacitor.BridgeActivity;
 
