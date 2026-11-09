@@ -11,3 +11,7 @@ export const NATIVE_AUTH_URL = 'com.repuestospro.app://auth'
 export function authRedirectUrl(path) {
 	return isNativeApp ? `${NATIVE_AUTH_URL}${path}` : `${window.location.origin}${path}`
 }
+
+// Show a «Tomar foto» button only where the camera can be opened directly
+// (the Android app or a touch device); on desktop it would just open the file picker.
+export const canCapturePhoto = isNativeApp || (typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches))

@@ -193,6 +193,8 @@ input[type="search"]::-webkit-search-cancel-button { filter: invert(.7); }
 .admin-request-status-propuesta_seleccionada, .admin-request-status-atendida, .admin-promotion-state-activa { color: var(--ok); border-color: rgb(111 214 162 / 35%); background: var(--ok-wash); }
 .status-cerrada, .proposal-status-retirada, .admin-request-status-cerrada, .admin-promotion-state-finalizada, .admin-user-state:not(.is-active) { color: var(--text-muted); border-color: var(--line-strong); background: var(--surface-2); }
 .proposal-status-rechazada, .admin-status-rechazada, .admin-status-suspendida { color: var(--danger); border-color: rgb(255 138 128 / 35%); background: var(--danger-wash); }
+.request-answered { color: var(--ok); border-color: rgb(111 214 162 / 35%); background: var(--ok-wash); }
+.request-answered.is-withdrawn { color: var(--text-muted); border-color: var(--line-strong); background: var(--surface-2); }
 .admin-promotion-state-pausada { color: var(--warn); border-color: rgb(242 198 109 / 35%); background: var(--warn-wash); }
 
 /* ---------- Pagination ---------- */
@@ -385,6 +387,8 @@ a.stat-tile:hover { border-color: rgb(245 177 61 / 45%); transform: translateY(-
 .list-filters[hidden] { display: none; }
 .list-filters label { display: grid; gap: 6px; font-size: var(--fs-xs); color: var(--text-muted); }
 .list-filters .filter-clear { min-height: 46px; }
+.list-filters label.list-filter-check { display: flex; align-items: center; gap: 8px; min-height: 46px; color: var(--text-soft); font-size: var(--fs-sm); cursor: pointer; }
+.list-filter-check input { width: 18px; height: 18px; min-height: 0; accent-color: var(--amber); }
 .view-switcher { display: inline-flex; flex-shrink: 0; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg-raised); }
 .view-switcher button { display: grid; place-items: center; width: 36px; height: 34px; border: 0; border-radius: 7px; color: var(--text-muted); background: transparent; cursor: pointer; }
 .view-switcher button.is-active { color: var(--amber-ink); background: var(--amber); }

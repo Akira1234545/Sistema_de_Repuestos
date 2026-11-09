@@ -29,12 +29,15 @@ function DashboardCliente() {
 	const { profile } = useAuth()
 	const [stats, setStats] = useState(null)
 	const [loading, setLoading] = useState(true)
+	const [loadError, setLoadError] = useState(false)
+	const [reload, setReload] = useState(0)
 
 	useEffect(() => {
 		let active = true
-		obtenerResumenCliente().then((data) => { if (active) setStats(data) }).catch(() => {}).finally(() => { if (active) setLoading(false) })
+		obtenerResumenCliente().then((data) => { if (active) setStats(data) }).catch(() => { if (active) setLoadError(true) }).finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
-	}, [])
+	}, [reload])
+	function retry() { setLoadError(false); setLoading(true); setReload((value) => value + 1) }
 
 	const step = nextStep(stats)
 	const statItems = [
@@ -55,6 +58,7 @@ function DashboardCliente() {
 				</div>
 				<Link className="button button-lg" to="/cliente/solicitudes/crear">+ Nueva solicitud</Link>
 			</div>
+			{loadError && <div className="request-history-notice store-notice" role="alert"><span>No se pudo cargar tu resumen. Comprueba tu conexión.</span><button className="button button-secondary" type="button" onClick={retry}>Reintentar</button></div>}
 			<StatStrip items={statItems} loading={loading} />
 			{step && <div className="dashboard-tip"><span aria-hidden="true">✦</span><div><strong>Siguiente paso</strong><p>{step.text}</p></div><Link to={step.to}>{step.label} →</Link></div>}
 			<div className="quick-heading"><div><p className="dashboard-eyebrow">Accesos rápidos</p><h2>¿Qué necesitas hacer?</h2></div></div>

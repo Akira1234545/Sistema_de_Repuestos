@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import { publicError } from '../lib/errors.js'
 import { crearResena, obtenerResenaDePropuesta } from '../services/resenaService.js'
 
 function errorMessage(error) {
 	if (error.code === '23505') return 'Ya existe una reseña para esta propuesta. Actualiza la página para verla.'
 	if (error.code === '42501' || error.code === '28000') return 'No tienes permiso para reseñar esta propuesta.'
-	return error.message || 'Ocurrió un error inesperado.'
+	return publicError(error)
 }
 
 function Stars({ score }) {

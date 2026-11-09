@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import FavoriteToggle from '../../components/FavoriteToggle.jsx'
+import Icon from '../../components/Icon.jsx'
 import { obtenerMiPropuesta, retirarPropuesta } from '../../services/propuestaService.js'
 import { obtenerSolicitudDisponiblePorId } from '../../services/solicitudService.js'
 import PropuestaForm from './PropuestaForm.jsx'
@@ -17,13 +18,15 @@ function DetalleSolicitud() {
 	const [myProposal, setMyProposal] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
+	const [actionError, setActionError] = useState('')
+	const [viewer, setViewer] = useState('')
 	const [refresh, setRefresh] = useState(0)
 	const [withdrawing, setWithdrawing] = useState(false)
 	async function withdraw() {
 		if (!window.confirm('¿Retirar esta propuesta? No podrás reenviarla para la misma solicitud.')) return
-		setWithdrawing(true); setError('')
+		setWithdrawing(true); setActionError('')
 		try { await retirarPropuesta(myProposal.id); setMyProposal(current => ({ ...current, estado: 'retirada' })); setRefresh(value => value + 1) }
-		catch (cause) { setError(`No se pudo retirar la propuesta: ${publicError(cause)}`) }
+		catch (cause) { setActionError(`No se pudo retirar la propuesta: ${publicError(cause)}`) }
 		finally { setWithdrawing(false) }
 	}
 	useEffect(() => {
@@ -39,19 +42,29 @@ function DetalleSolicitud() {
 	if (error) return <section className="store-requests-page"><p className="store-request-error" role="alert">{error}</p></section>
 	if (!request) return <section className="store-requests-page"><p className="store-request-empty">Esta solicitud ya no está disponible.</p><Link className="store-request-detail-back" to="/tienda/solicitudes">Volver a solicitudes ↩</Link></section>
 	const vehicle = request.vehiculo
+	const vehiclePhotos = vehicle?.fotos || []
+	const vehicleLabel = [vehicle?.marcaNombre, vehicle?.modeloNombre, vehicle?.anio].filter(Boolean).join(' ') || 'vehículo'
 	return <section className="store-requests-page store-request-detail">
 		<div className="store-request-detail-header"><div><p className="store-eyebrow">Panel de tienda / Solicitud</p><h1>{request.titulo}</h1></div><Link className="store-request-detail-back" to="/tienda/solicitudes">← Volver a solicitudes</Link></div>
 		<div className="store-request-detail-card">
+			{actionError && <p className="store-request-error" role="alert">{actionError}</p>}
 			{myProposal?.estado === 'enviada' && ['publicada', 'recibiendo_propuestas'].includes(request.estado) && <button className="button button-secondary" type="button" onClick={withdraw} disabled={withdrawing}>{withdrawing ? 'Retirando…' : 'Retirar propuesta'}</button>}
 			<div className="store-detail-section"><p className="store-detail-label">Estado y publicación</p><div className="store-detail-grid"><div><span>Estado</span><strong>{statusLabel(request.estado)}</strong></div><div><span>Categoría</span><strong>{request.categoriaNombre || 'No disponible'}</strong></div><div><span>Cantidad</span><strong>{request.cantidad}</strong></div><div><span>Publicado</span><strong>{formatDate(request.fecha_creacion)}</strong></div></div></div>
 			<div className="store-detail-section"><p className="store-detail-label">Descripción</p><p>{request.descripcion}</p></div>
 			{request.caracteristicas && <div className="store-detail-section"><p className="store-detail-label">Características</p><p>{request.caracteristicas}</p></div>}
-			<div className="store-detail-section"><p className="store-detail-label">Vehículo</p><div className="store-detail-grid"><div><span>Tipo</span><strong>{vehicle?.tipoNombre || 'No disponible'}</strong></div><div><span>Marca</span><strong>{vehicle?.marcaNombre || 'No disponible'}</strong></div><div><span>Modelo</span><strong>{vehicle?.modeloNombre || 'No disponible'}</strong></div><div><span>Año</span><strong>{vehicle?.anio || 'No disponible'}</strong></div></div></div>
+			<div className="store-detail-section"><p className="store-detail-label">Vehículo</p><div className="store-detail-grid"><div><span>Tipo</span><strong>{vehicle?.tipoNombre || 'No disponible'}</strong></div><div><span>Marca</span><strong>{vehicle?.marcaNombre || 'No disponible'}</strong></div><div><span>Modelo</span><strong>{vehicle?.modeloNombre || 'No disponible'}</strong></div><div><span>Año</span><strong>{vehicle?.anio || 'No disponible'}</strong></div></div>
+				{vehicle?.descripcion && <div className="store-vehicle-notes"><span>Notas del cliente</span><p>{vehicle.descripcion}</p></div>}
+				{vehiclePhotos.length > 0 && <div className="vehicle-gallery store-vehicle-gallery" aria-label="Fotos del vehículo">{vehiclePhotos.map((url, index) => <figure key={url} className="vehicle-photo"><button type="button" className="vehicle-photo-open" onClick={() => setViewer(url)} aria-label={`Ampliar foto ${index + 1}`}><img src={url} alt={`Foto ${index + 1} de ${vehicleLabel}`} loading="lazy" referrerPolicy="no-referrer" /></button></figure>)}</div>}
+			</div>
 			<div className="store-detail-section"><p className="store-detail-label">Tu respuesta</p><FavoriteToggle type="solicitud" itemId={request.id} label="solicitud" />
 				{myProposal ? <div className="existing-proposal"><p>Ya enviaste una propuesta para esta solicitud.</p><strong>{money(myProposal.precio)}</strong><span>{myProposal.marca} · {myProposal.disponibilidad}</span><small>Estado: {statusLabel(myProposal.estado)}</small></div>
 					: ['publicada', 'recibiendo_propuestas'].includes(request.estado) ? <PropuestaForm solicitudId={request.id} onCreated={() => setRefresh((value) => value + 1)} /> : <p>La solicitud ya no acepta propuestas.</p>}
 			</div>
 		</div>
+		{viewer && <div className="photo-viewer" role="dialog" aria-modal="true" aria-label="Foto ampliada" onClick={() => setViewer('')}>
+			<img src={viewer} alt={`Foto de ${vehicleLabel}`} />
+			<button type="button" className="icon-action" aria-label="Cerrar" onClick={() => setViewer('')}><Icon name="x" size={18} /></button>
+		</div>}
 	</section>
 }
 export default DetalleSolicitud

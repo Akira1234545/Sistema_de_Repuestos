@@ -11,6 +11,7 @@ import Icon from '../../components/Icon.jsx'
 import ViewSwitcher from '../../components/ui/ViewSwitcher.jsx'
 import { obtenerCategoriasActivas, obtenerSolicitudesDisponibles } from '../../services/solicitudService.js'
 import { obtenerTiendaUsuario } from '../../services/tiendaService.js'
+import { obtenerEstadoRespuestas } from '../../services/propuestaService.js'
 import { statusLabel } from '../../lib/format.js'
 import Select from '../../components/ui/Select.jsx'
 
@@ -38,21 +39,29 @@ function SolicitudesDisponibles() {
 	const effectiveFilters = useDebouncedValue(filters)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
+	const [answered, setAnswered] = useState({})
+	const [onlyPending, setOnlyPending] = useState(false)
 	useEffect(() => {
 		let active = true
-		Promise.resolve().then(() => { if (active) { setLoading(true); setError('') }; return Promise.allSettled([obtenerSolicitudesDisponibles(page, effectiveFilters), obtenerCategoriasActivas(), obtenerTiendaUsuario(user.id)]) }).then(([result, cats, ownStore]) => {
+		Promise.resolve().then(() => { if (active) { setLoading(true); setError('') }; return Promise.allSettled([obtenerSolicitudesDisponibles(page, effectiveFilters), obtenerCategoriasActivas(), obtenerTiendaUsuario(user.id)]) }).then(async ([result, cats, ownStore]) => {
 			if (!active) return
 			if (result.status === 'rejected') setError(`No se pudieron cargar las solicitudes disponibles: ${publicError(result.reason)}`)
 			else { setRequests(result.value.items); setHasMore(result.value.hasMore) }
 			if (cats.status === 'fulfilled') setCategories(cats.value)
 			if (ownStore.status === 'fulfilled') setStore(ownStore.value)
+			if (result.status === 'fulfilled' && ownStore.status === 'fulfilled' && ownStore.value) {
+				// Si falla, solo falta la insignia «Ya respondiste»; la lista sigue siendo útil.
+				const states = await obtenerEstadoRespuestas(ownStore.value.id, result.value.items.map((item) => item.id)).catch(() => ({}))
+				if (active) setAnswered(states)
+			}
 		}).finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
 	}, [user.id, page, effectiveFilters])
-	const extraFilters = [filters.category, filters.status, filters.from, filters.to].filter(Boolean).length
+	const extraFilters = [filters.category, filters.status, filters.from, filters.to, onlyPending].filter(Boolean).length
+	const visibleRequests = onlyPending ? requests.filter((item) => !answered[item.id]) : requests
 	const hasFilters = Object.values(effectiveFilters).some(Boolean)
 	function update(event) { setPage(0); setFilters((current) => ({ ...current, [event.target.name]: event.target.value })) }
-	function clearFilters() { setPage(0); setFilters(emptyFilters) }
+	function clearFilters() { setPage(0); setFilters(emptyFilters); setOnlyPending(false) }
 	function toggleExpanded(id) { setExpanded((current) => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next }) }
 
 	return <section className="store-requests-page requests-page-compact">
@@ -71,18 +80,21 @@ function SolicitudesDisponibles() {
 			<label>Estado<Select ariaLabel="Estado" name="status" value={filters.status} onChange={update} options={[{ value: '', label: 'Todos los estados' }, { value: 'publicada', label: 'Publicada' }, { value: 'recibiendo_propuestas', label: 'Recibiendo propuestas' }]} /></label>
 			<label>Desde<input name="from" type="date" value={filters.from} onChange={update} /></label>
 			<label>Hasta<input name="to" type="date" value={filters.to} onChange={update} /></label>
+			<label className="list-filter-check"><input type="checkbox" checked={onlyPending} onChange={(event) => setOnlyPending(event.target.checked)} /> Sin responder</label>
 			<button className="filter-clear" type="button" onClick={clearFilters}>Limpiar</button>
 		</div>
 
 		{loading && <SkeletonList label="Cargando solicitudes disponibles…" />}
 		{error && <p className="store-request-error" role="alert">{error}</p>}
+		{!loading && !error && onlyPending && requests.length > 0 && visibleRequests.length === 0 && <div className="store-request-empty">Ya respondiste todas las solicitudes de esta página.{hasMore && ' Pasa a la siguiente para ver más.'}</div>}
 		{!loading && !error && requests.length === 0 && <div className="store-request-empty">{hasFilters ? 'No hay coincidencias. Ajusta los filtros o límpialos.' : 'No hay solicitudes disponibles por ahora.'}{hasFilters && <button className="filter-clear" type="button" onClick={clearFilters}>Limpiar filtros</button>}</div>}
-		{!loading && !error && requests.length > 0 && <div className={`request-list request-list-${view}`}>{requests.map((request) => {
+		{!loading && !error && visibleRequests.length > 0 && <div className={`request-list request-list-${view}`}>{visibleRequests.map((request) => {
 			const isOpen = view === 'detallada' || expanded.has(request.id)
+			const answer = answered[request.id]
 			return <article className={`request-card${isOpen ? ' is-expanded' : ''}`} key={request.id}>
 				<button type="button" className="request-card-summary" aria-expanded={isOpen} onClick={() => view !== 'detallada' && toggleExpanded(request.id)} disabled={view === 'detallada'}>
 					<span className="request-card-title"><strong className="request-card-name">{request.titulo}</strong>{view !== 'lista' && <span className="request-card-sub">{[request.categoriaNombre || 'Sin categoría', vehicleLabel(request.vehiculo), `x${request.cantidad}`].join(' · ')}</span>}</span>
-					<span className={`request-status status-${request.estado}`}>{statusLabel(request.estado)}</span>
+					{answer ? <span className={`request-status request-answered${answer === 'retirada' ? ' is-withdrawn' : ''}`}>{answer === 'retirada' ? 'Propuesta retirada' : 'Ya respondiste'}</span> : <span className={`request-status status-${request.estado}`}>{statusLabel(request.estado)}</span>}
 					{view === 'lista' && <time className="request-card-date" dateTime={request.fecha_creacion}>{shortDate(request.fecha_creacion)}</time>}
 					{view !== 'detallada' && <span className="request-card-chevron" aria-hidden="true"><Icon name="chevron" size={16} /></span>}
 				</button>
@@ -92,7 +104,7 @@ function SolicitudesDisponibles() {
 				</div>}
 				{(view !== 'lista' || isOpen) && <div className="request-icon-actions">
 					<FavoriteToggle type="solicitud" itemId={request.id} label="solicitud" iconOnly />
-					<Link className="icon-action is-wide is-primary" to={`/tienda/solicitudes/${request.id}`}><Icon name="eye" size={18} /> Ver y proponer</Link>
+					<Link className="icon-action is-wide is-primary" to={`/tienda/solicitudes/${request.id}`}><Icon name="eye" size={18} /> {answer ? 'Ver mi propuesta' : 'Ver y proponer'}</Link>
 				</div>}
 			</article>
 		})}</div>}

@@ -78,3 +78,13 @@ export async function obtenerMisPropuestas(userId, page = 0) {
 	if (error) throw error
 	return { items: data.slice(0, 25), hasMore: data.length > 25 }
 }
+
+// Estado de la propuesta de esta tienda para cada solicitud de la lista (solo las que ya respondió).
+export async function obtenerEstadoRespuestas(storeId, solicitudIds) {
+	const ids = [...new Set(solicitudIds)].filter(Boolean)
+	if (!storeId || ids.length === 0) return {}
+	const { data, error } = await supabase.from('propuestas').select('solicitud_id, estado')
+		.eq('tienda_id', storeId).in('solicitud_id', ids)
+	if (error) throw error
+	return Object.fromEntries(data.map((item) => [item.solicitud_id, item.estado]))
+}

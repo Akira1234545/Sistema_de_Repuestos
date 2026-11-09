@@ -14,5 +14,10 @@ try {
   if (payload.role === 'service_role') failures.push('La clave service_role no puede usarse en el frontend.')
   else if (payload.role !== 'anon') failures.push('Usa una clave anon/publishable; no publiques un token de usuario.')
 } catch { if (key && !/^sb_publishable_[A-Za-z0-9_-]{20,}$/.test(key)) failures.push('La clave no tiene formato anon/publishable válido.') }
+const siteUrl = env.VITE_PUBLIC_SITE_URL || ''
+if (siteUrl) {
+  try { if (new URL(siteUrl).protocol !== 'https:') failures.push('VITE_PUBLIC_SITE_URL debe empezar con https://.') }
+  catch { failures.push('VITE_PUBLIC_SITE_URL no es una dirección válida.') }
+} else console.warn('Aviso: falta VITE_PUBLIC_SITE_URL; en la app Android las promociones se compartirán sin enlace.')
 if (failures.length) { console.error(failures.join('\n')); process.exitCode = 1 }
 else console.log('Formato de configuración pública validado. Falta comprobar su conexión real y el documento de producción.')

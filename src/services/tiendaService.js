@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js'
-import { compressImage } from '../lib/images.js'
+import { compressImage, imageExtension } from '../lib/images.js'
 
 const storeColumns = `
 	id,
@@ -123,10 +123,10 @@ export async function subirFotografiaTienda(userId, file) {
 	if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Selecciona fotografías JPEG, PNG o WebP.')
 	const blob = await compressImage(file)
 	if (blob.size > 5 * 1024 * 1024) throw new Error('La fotografía sigue pesando más de 5 MB. Prueba con otra.')
-	const path = `${userId}/${crypto.randomUUID()}.webp`
+	const path = `${userId}/${crypto.randomUUID()}.${imageExtension(blob.type)}`
 	const { error: uploadError } = await supabase.storage
 		.from('tiendas')
-		.upload(path, blob, { cacheControl: '3600', upsert: false, contentType: 'image/webp' })
+		.upload(path, blob, { cacheControl: '3600', upsert: false, contentType: blob.type })
 
 	if (uploadError) throw uploadError
 	const { data } = supabase.storage.from('tiendas').getPublicUrl(path)

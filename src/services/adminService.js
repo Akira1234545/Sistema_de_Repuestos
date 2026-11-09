@@ -9,7 +9,11 @@ function requireSupabase() {
 
 function throwRpcError(error) {
 	if (error) {
-		throw new Error(error.message || 'La operación administrativa no se pudo completar.')
+		const wrapped = new Error(error.message || 'La operación administrativa no se pudo completar.')
+		wrapped.code = error.code
+		wrapped.status = error.status
+		wrapped.details = error.details
+		throw wrapped
 	}
 }
 

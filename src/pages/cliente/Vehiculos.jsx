@@ -17,6 +17,8 @@ function Vehiculos() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 
+	// Al cambiar de página se muestra la carga y se bloquea la paginación hasta que llegue la respuesta.
+	function changePage(next) { if (next === page) return; setLoading(true); setError(''); setPage(next) }
 	useEffect(() => {
 		let active = true
 		async function loadVehicles() {
@@ -57,7 +59,7 @@ function Vehiculos() {
 				</div>
 			</article>
 		})}</div>}
-		<Pagination page={page} hasMore={hasMore} loading={loading} onChange={setPage} />
+		<Pagination page={page} hasMore={hasMore} loading={loading} onChange={changePage} />
 	</section>
 }
 

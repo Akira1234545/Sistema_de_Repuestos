@@ -23,9 +23,10 @@ function EditarSolicitud() {
 		async function loadRequest() {
 			try {
 				const data = await obtenerSolicitudPorId(id, user.id)
+				if (!active) return
 				if (!data) {
 					setError('La solicitud no existe o no pertenece al usuario autenticado.')
-				} else if (active) {
+				} else {
 					setRequest(data)
 				}
 			} catch (loadError) {

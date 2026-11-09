@@ -31,12 +31,16 @@ function DashboardTienda() {
 	const [store, setStore] = useState(undefined)
 	const [stats, setStats] = useState(null)
 	const [statsLoading, setStatsLoading] = useState(true)
+	const [loadError, setLoadError] = useState(false)
+	const [reload, setReload] = useState(0)
 	useEffect(() => {
 		let active = true
-		obtenerTiendaUsuario(user.id).then((data) => { if (active) setStore(data) }).catch(() => { if (active) setStore(null) })
-		obtenerResumenTienda().then((data) => { if (active) setStats(data) }).catch(() => {}).finally(() => { if (active) setStatsLoading(false) })
+		// Si falla la carga, store queda en undefined: no se muestra «Completa el perfil» por error.
+		obtenerTiendaUsuario(user.id).then((data) => { if (active) setStore(data) }).catch(() => { if (active) setLoadError(true) })
+		obtenerResumenTienda().then((data) => { if (active) setStats(data) }).catch(() => { if (active) setLoadError(true) }).finally(() => { if (active) setStatsLoading(false) })
 		return () => { active = false }
-	}, [user.id])
+	}, [user.id, reload])
+	function retry() { setLoadError(false); setStatsLoading(true); setReload((value) => value + 1) }
 	const statItems = [
 		{ label: 'Solicitudes sin responder', value: stats?.solicitudes_nuevas, to: '/tienda/solicitudes', highlight: Number(stats?.solicitudes_nuevas) > 0 },
 		{ label: 'Propuestas en espera', value: stats?.propuestas_enviadas, to: '/tienda/propuestas' },
@@ -54,6 +58,7 @@ function DashboardTienda() {
 				<p className="store-lead">Responde solicitudes, publica promociones y mantén tu tienda al día desde un solo lugar.</p>
 				{store?.estado === 'aprobada' && store.activa && <span className="admin-status admin-status-aprobada store-hero-status">Tienda aprobada y visible</span>}
 			</div>
+			{loadError && <div className="request-history-notice store-notice" role="alert"><span>No se pudo cargar toda la información de tu panel. Comprueba tu conexión.</span><button className="button button-secondary" type="button" onClick={retry}>Reintentar</button></div>}
 			<StatStrip items={statItems} loading={statsLoading} />
 			{notice && <div className={notice.tone === 'info' ? 'store-request-message store-notice' : 'request-history-notice store-notice'} role="status">
 				<span>{notice.text}</span>

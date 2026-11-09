@@ -1,7 +1,8 @@
 import { publicError } from '../../lib/errors.js'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
+import { canCapturePhoto } from '../../lib/platform.js'
 import {
 	actualizarFotografiasTienda,
 	actualizarTienda,
@@ -34,8 +35,11 @@ function EditarTienda() {
 	const [saving, setSaving] = useState(false)
 	const [removingPhoto, setRemovingPhoto] = useState('')
 	const [error, setError] = useState('')
+	const [loadError, setLoadError] = useState('')
 	const [success, setSuccess] = useState('')
 	const [locationMessage, setLocationMessage] = useState('')
+	const redirectTimer = useRef(0)
+	const cameraRef = useRef(null)
 
 	useEffect(() => {
 		let active = true
@@ -49,7 +53,7 @@ function EditarTienda() {
 					setExistingPhotos(loadedStore.fotografias || [])
 				}
 			} catch (loadError) {
-				if (active) setError(`No se pudo cargar tu tienda: ${publicError(loadError)}`)
+				if (active) setLoadError(`No se pudo cargar tu tienda: ${publicError(loadError)}`)
 			} finally {
 				if (active) setLoading(false)
 			}
@@ -59,9 +63,15 @@ function EditarTienda() {
 	}, [user?.id])
 
 	useEffect(() => () => previews.forEach((preview) => URL.revokeObjectURL(preview)), [previews])
+	useEffect(() => () => window.clearTimeout(redirectTimer.current), [])
 
 	function updateField(event) {
 		setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
+	}
+
+	function clearLocation() {
+		setForm((current) => ({ ...current, latitud: '', longitud: '' }))
+		setLocationMessage('Ubicación quitada. Guarda los cambios para confirmarlo.')
 	}
 
 	function useCurrentLocation() {
@@ -81,6 +91,7 @@ function EditarTienda() {
 	function handleFileChange(event) {
 		setError('')
 		const files = Array.from(event.target.files || [])
+		event.target.value = ''
 		const invalidFile = files.find((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > MAX_IMAGE_SIZE)
 		if (files.length + existingPhotos.length > 12) { setError('Puedes guardar hasta 12 fotografías.'); return }
 		if (invalidFile) {
@@ -129,8 +140,10 @@ function EditarTienda() {
 			setStore(savedStore)
 			setExistingPhotos(savedStore.fotografias || [])
 			if (store && savedStore.fotografias_version !== store.fotografias_version) {
+				// Los datos del perfil ya se guardaron; solo las fotos nuevas quedan sin subir.
 				setSelectedFiles([]); setPreviews([])
-				throw new Error('Las fotos cambiaron en otra sesión. Revisa las fotografías antes de volver a subir archivos.')
+				setSuccess('Datos guardados. Las fotos cambiaron en otra sesión: revísalas antes de volver a subir archivos.')
+				return
 			}
 			let photos = existingPhotos
 			let photoVersion = store?.fotografias_version ?? savedStore.fotografias_version
@@ -146,7 +159,7 @@ function EditarTienda() {
 			setSelectedFiles([])
 			setPreviews([])
 			setSuccess('Fotografías y datos guardados correctamente.')
-			setTimeout(() => navigate('/tienda/perfil'), 700)
+			redirectTimer.current = window.setTimeout(() => navigate('/tienda/perfil'), 700)
 		} catch (saveError) {
 			try { if (!photosCommitted) await limpiarSubidasFallidas(uploadedPhotos) }
 			catch (cleanupError) { setError(cleanupError.message); return }
@@ -157,7 +170,7 @@ function EditarTienda() {
 	}
 
 	if (loading) return <section className="store-page"><p className="store-message">Cargando información de tu tienda...</p></section>
-	if (error && !form.nombre) return <section className="store-page"><p className="store-error" role="alert">{error}</p></section>
+	if (loadError) return <section className="store-page"><p className="store-error" role="alert">{loadError}</p><button className="store-button" type="button" onClick={() => window.location.reload()}>Reintentar</button></section>
 
 	return (
 		<section className="store-page">
@@ -171,13 +184,22 @@ function EditarTienda() {
 						<label>Teléfono<input name="telefono" type="tel" value={form.telefono} onChange={updateField} /></label>
 						<label className="store-field-full">Descripción<textarea name="descripcion" value={form.descripcion} onChange={updateField} /></label>
 						<label className="store-field-full">Dirección<input name="direccion" value={form.direccion} onChange={updateField} /></label>
-						<div className="store-field-full"><button type="button" className="store-button" onClick={useCurrentLocation}>Usar mi ubicación actual</button><p role="status">{locationMessage || 'La ubicación es opcional. Pulsa el botón para registrarla.'}</p>{coordinatesReady ? <div className="store-location-map"><iframe title="Vista previa de la ubicación de la tienda en OpenStreetMap" src={mapUrl} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><small>© OpenStreetMap contributors · <a href={`https://www.openstreetmap.org/?mlat=${form.latitud}&mlon=${form.longitud}#map=16/${form.latitud}/${form.longitud}`} target="_blank" rel="noreferrer">Abrir mapa</a></small></div> : <p role="status">Usa el botón para registrar la ubicación y previsualizarla.</p>}</div>
+						<div className="store-field-full store-location">
+							<div className="store-location-actions"><button type="button" className="store-button" onClick={useCurrentLocation}>Usar mi ubicación actual</button>{(form.latitud !== '' || form.longitud !== '') && <button type="button" className="store-cancel" onClick={clearLocation}>Quitar ubicación</button>}</div>
+							<p role="status">{locationMessage || 'La ubicación es opcional. Usa el botón o escribe las coordenadas.'}</p>
+							<div className="store-location-fields">
+								<label>Latitud<input name="latitud" type="number" inputMode="decimal" step="any" min="-90" max="90" value={form.latitud} onChange={updateField} placeholder="-16.5000000" /></label>
+								<label>Longitud<input name="longitud" type="number" inputMode="decimal" step="any" min="-180" max="180" value={form.longitud} onChange={updateField} placeholder="-68.1500000" /></label>
+							</div>
+							{coordinatesReady ? <div className="store-location-map"><iframe title="Vista previa de la ubicación de la tienda en OpenStreetMap" src={mapUrl} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><small>© OpenStreetMap contributors · <a href={`https://www.openstreetmap.org/?mlat=${form.latitud}&mlon=${form.longitud}#map=16/${form.latitud}/${form.longitud}`} target="_blank" rel="noreferrer">Abrir mapa</a></small></div> : <p role="status">Registra la ubicación para previsualizarla en el mapa.</p>}
+						</div>
 						<label>Hora de apertura<input name="horaApertura" type="time" value={form.horaApertura} onChange={updateField} /><small>Ejemplo: 08:30</small></label>
 						<label>Hora de cierre<input name="horaCierre" type="time" value={form.horaCierre} onChange={updateField} /><small>Ejemplo: 12:30</small></label>
 					</div>
 					<div className="store-photo-section">
 						<div><p className="store-label">Fotografías de la tienda</p><small>Imágenes de hasta 20 MB; se optimizan antes de subirlas.</small></div>
-						<input type="file" accept="image/*" multiple onChange={handleFileChange} />
+						<input type="file" accept="image/*" multiple onChange={handleFileChange} aria-label="Elegir fotografías de la galería" />
+						{canCapturePhoto && <><button type="button" className="store-button store-photo-camera" onClick={() => cameraRef.current?.click()}>Tomar foto</button><input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={handleFileChange} /></>}
 						{previews.length > 0 && <div className="store-photo-grid">{previews.map((preview) => <img src={preview} alt="Vista previa" key={preview} />)}</div>}
 						{existingPhotos.length > 0 ? <div className="store-photo-grid">{existingPhotos.map((photo) => <div className="store-photo-item" key={photo}><img src={photo} alt="Fotografía de la tienda" /><button type="button" onClick={() => handleRemovePhoto(photo)} disabled={removingPhoto === photo}>{removingPhoto === photo ? 'Eliminando...' : 'Eliminar'}</button></div>)}</div> : <p className="store-photo-empty">No hay fotografías registradas.</p>}
 					</div>

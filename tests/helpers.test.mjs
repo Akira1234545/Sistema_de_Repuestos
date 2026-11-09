@@ -35,3 +35,41 @@ test('password checks mirror the Supabase policy and name what is missing', asyn
   assert.equal(passwordIssue('SinNumerosNiSimbolos'), 'Añade al menos un número y un símbolo.')
   assert.equal(passwordIssue('Repuestos2026!'), '')
 })
+
+test('business errors raised by the database reach the user, internal ones stay hidden', () => {
+  assert.equal(publicError({ code: 'P0001', message: 'Filtros no válidos' }), 'Filtros no válidos')
+  assert.equal(publicError({ code: 'P0001', message: 'Esta propuesta ya no se puede retirar' }), 'Esta propuesta ya no se puede retirar')
+  assert.equal(publicError({ code: '22023', message: 'El nombre no puede superar 80 caracteres' }), 'El nombre no puede superar 80 caracteres')
+  assert.match(publicError({ code: 'P0001', message: 'x'.repeat(241) }), /Comprueba tu conexión/u)
+  assert.match(publicError({ code: 'P0001', message: 'permission denied for table usuarios' }), /Comprueba tu conexión/u)
+  assert.match(publicError({ code: '42P01', message: 'relation "public.x" does not exist' }), /Comprueba tu conexión/u)
+  assert.match(publicError({ code: '23503', message: 'Filtros no válidos' }), /Comprueba tu conexión/u)
+  assert.match(publicError(new TypeError('Failed to fetch')), /Comprueba tu conexión/u)
+})
+
+test('account revalidation only drops the role on definitive errors', async () => {
+  const { isAccountGoneError, isDefinitiveAuthError } = await import('../src/lib/authErrors.js')
+  assert.equal(isDefinitiveAuthError(new TypeError('Failed to fetch')), false)
+  assert.equal(isDefinitiveAuthError({ message: 'FetchError: network timeout', code: '' }), false)
+  assert.equal(isDefinitiveAuthError({ status: 503, message: 'Service Unavailable' }), false)
+  assert.equal(isDefinitiveAuthError({ status: 0, message: 'AuthRetryableFetchError' }), false)
+  assert.equal(isDefinitiveAuthError(new Error('Tu cuenta está desactivada. Contacta al administrador del sistema.')), true)
+  assert.equal(isDefinitiveAuthError(new Error('No existe un perfil asociado en public.usuarios.')), true)
+  assert.equal(isDefinitiveAuthError({ status: 401, message: 'JWT expired' }), true)
+  assert.equal(isDefinitiveAuthError({ status: 403, message: 'Forbidden' }), true)
+  assert.equal(isDefinitiveAuthError({ code: 'PGRST301', message: 'JWT expired' }), true)
+  assert.equal(isDefinitiveAuthError({ code: 'refresh_token_not_found', message: 'Invalid Refresh Token' }), true)
+  assert.equal(isAccountGoneError({ status: 401 }), false)
+})
+
+test('only public photos of this Supabase project are shown to other users', async () => {
+  const { isProjectPhotoUrl } = await import('../src/lib/storageUrls.js')
+  const project = 'https://abc.supabase.co'
+  assert.equal(isProjectPhotoUrl('https://abc.supabase.co/storage/v1/object/public/vehiculos/u1/p.webp', project, 'vehiculos'), true)
+  assert.equal(isProjectPhotoUrl('https://evil.example/storage/v1/object/public/vehiculos/u1/p.webp', project, 'vehiculos'), false)
+  assert.equal(isProjectPhotoUrl('http://abc.supabase.co/storage/v1/object/public/vehiculos/u1/p.webp', project, 'vehiculos'), false)
+  assert.equal(isProjectPhotoUrl('https://abc.supabase.co/storage/v1/object/public/tiendas/u1/p.webp', project, 'vehiculos'), false)
+  assert.equal(isProjectPhotoUrl('javascript:alert(1)', project, 'vehiculos'), false)
+  assert.equal(isProjectPhotoUrl('https://abc.supabase.co.evil.example/storage/v1/object/public/vehiculos/u1/p.webp', project, 'vehiculos'), false)
+  assert.equal(isProjectPhotoUrl('https://abc.supabase.co/storage/v1/object/public/vehiculos/u1/p.webp', '', 'vehiculos'), false)
+})

@@ -38,7 +38,7 @@ function RequestActions({ request, proposals, confirming, closing, onAskClose, o
 		<Link className="icon-action" to={`/cliente/solicitudes/${request.id}/propuestas`} aria-label={`Ver propuestas (${proposals || 0})`} title="Ver propuestas">
 			<Icon name="eye" size={18} />{proposals > 0 && <span className="icon-badge">{proposals}</span>}
 		</Link>
-		{open && <Link className="icon-action" to={`/cliente/solicitudes/editar/${request.id}`} aria-label="Editar solicitud" title="Editar"><Icon name="edit" size={18} /></Link>}
+		{request.estado === 'publicada' && <Link className="icon-action" to={`/cliente/solicitudes/editar/${request.id}`} aria-label="Editar solicitud" title="Editar"><Icon name="edit" size={18} /></Link>}
 		{open && <button className="icon-action is-danger" type="button" onClick={onAskClose} aria-label="Cerrar solicitud" title="Cerrar solicitud"><Icon name="close" size={18} /></button>}
 	</div>
 }
@@ -69,6 +69,7 @@ function Solicitudes() {
 	const [view, setView] = useViewMode('cliente-solicitudes', VIEWS.map((item) => item.value), 'compacta')
 	const [filters, setFilters] = useState(emptyFilters)
 	const effectiveFilters = useDebouncedValue(filters)
+	const rangeInvalid = Boolean(effectiveFilters.from && effectiveFilters.to && effectiveFilters.from > effectiveFilters.to)
 
 	useEffect(() => {
 		let active = true
@@ -87,9 +88,9 @@ function Solicitudes() {
 			} catch (loadError) { if (active) setError(`No se pudieron cargar tus solicitudes: ${publicError(loadError)}`) }
 			finally { if (active) setLoading(false) }
 		}
-		if (user?.id) loadRequests()
+		if (user?.id && !rangeInvalid) loadRequests()
 		return () => { active = false }
-	}, [user?.id, page, effectiveFilters])
+	}, [user?.id, page, effectiveFilters, rangeInvalid])
 
 	const extraFilters = [filters.status, filters.from, filters.to].filter(Boolean).length
 	const hasFilters = Object.values(effectiveFilters).some(Boolean)
@@ -128,17 +129,18 @@ function Solicitudes() {
 		</div>
 		<div id="request-filters" className="list-filters" hidden={!filtersOpen}>
 			<label>Estado<Select ariaLabel="Estado" name="status" value={filters.status} onChange={updateFilter} options={[{ value: '', label: 'Todos' }, ...statuses.map((status) => ({ value: status, label: statusLabel(status) }))]} /></label>
-			<label>Desde<input name="from" type="date" value={filters.from} onChange={updateFilter} /></label>
-			<label>Hasta<input name="to" type="date" value={filters.to} onChange={updateFilter} /></label>
+			<label>Desde<input name="from" type="date" value={filters.from} max={filters.to || undefined} onChange={updateFilter} /></label>
+			<label>Hasta<input name="to" type="date" value={filters.to} min={filters.from || undefined} onChange={updateFilter} /></label>
 			<button className="filter-clear" type="button" onClick={clearFilters}>Limpiar</button>
 		</div>
 
 		{historyNotice && <p className="request-history-notice" role="status">{historyNotice}</p>}
-		{loading && <SkeletonList label="Cargando tus solicitudes…" />}
-		{error && <p className="request-error" role="alert">{error}</p>}
-		{!loading && !error && requests.length === 0 && !hasFilters && <div className="request-empty"><h2>Aún no tienes solicitudes</h2><p>Crea una solicitud para encontrar el repuesto que necesitas.</p><Link className="button requests-button" to="/cliente/solicitudes/crear">Crear solicitud</Link></div>}
-		{!loading && !error && hasFilters && requests.length === 0 && <div className="request-empty"><h2>No hay coincidencias</h2><p>Ajusta o limpia los filtros para ver tus solicitudes.</p><button className="button requests-button" type="button" onClick={clearFilters}>Limpiar filtros</button></div>}
-		{!loading && !error && requests.length > 0 && <div className={`request-list request-list-${view}`}>{requests.map((request) => {
+		{rangeInvalid && <p className="request-error" role="alert">La fecha «Desde» no puede ser posterior a «Hasta». Corrige el rango para ver tus solicitudes.</p>}
+		{!rangeInvalid && loading && <SkeletonList label="Cargando tus solicitudes…" />}
+		{!rangeInvalid && error && <p className="request-error" role="alert">{error}</p>}
+		{!rangeInvalid && !loading && !error && requests.length === 0 && !hasFilters && <div className="request-empty"><h2>Aún no tienes solicitudes</h2><p>Crea una solicitud para encontrar el repuesto que necesitas.</p><Link className="button requests-button" to="/cliente/solicitudes/crear">Crear solicitud</Link></div>}
+		{!rangeInvalid && !loading && !error && hasFilters && requests.length === 0 && <div className="request-empty"><h2>No hay coincidencias</h2><p>Ajusta o limpia los filtros para ver tus solicitudes.</p><button className="button requests-button" type="button" onClick={clearFilters}>Limpiar filtros</button></div>}
+		{!rangeInvalid && !loading && !error && requests.length > 0 && <div className={`request-list request-list-${view}`}>{requests.map((request) => {
 			const isOpen = view === 'detallada' || expanded.has(request.id)
 			const summary = [request.categoriaNombre || 'Sin categoría', vehicleLabel(request.vehiculo)].join(' · ')
 			return <article className={`request-card${isOpen ? ' is-expanded' : ''}`} key={request.id}>
