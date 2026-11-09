@@ -21,8 +21,9 @@ function EditarVehiculo() {
 		async function loadVehicle() {
 			try {
 				const data = await obtenerVehiculoPorId(id, user.id)
+				if (!active) return
 				if (!data) setError('El vehículo no existe o no pertenece al usuario autenticado.')
-				else if (active) setVehicle(data)
+				else setVehicle(data)
 			} catch (loadError) { if (active) setError(`No se pudo cargar el vehículo: ${publicError(loadError)}`) } finally { if (active) setLoading(false) }
 		}
 		if (user?.id && id) loadVehicle()

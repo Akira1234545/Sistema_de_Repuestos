@@ -58,7 +58,7 @@ function NotificationBell({ variant }) {
 			setUnreadCount(result.unreadCount)
 		} catch (cause) {
 			if (requestVersion.current === version) {
-				setError(`No se pudieron cargar las notificaciones: ${cause.message || 'Inténtalo de nuevo.'}`)
+				setError(`No se pudieron cargar las notificaciones: ${publicError(cause)}`)
 			}
 		} finally {
 			if (requestVersion.current === version) setLoading(false)

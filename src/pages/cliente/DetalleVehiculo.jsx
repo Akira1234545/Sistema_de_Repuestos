@@ -4,6 +4,7 @@ import Icon from '../../components/Icon.jsx'
 import { useAuth } from '../../context/authState.js'
 import { useToast } from '../../context/toastState.js'
 import { publicError } from '../../lib/errors.js'
+import { canCapturePhoto } from '../../lib/platform.js'
 import { vehicleName } from '../../lib/vehicles.js'
 import { actualizarNotasVehiculo, agregarFotoVehiculo, contarSolicitudesPorVehiculo, eliminarVehiculo, obtenerVehiculoPorId, quitarFotoVehiculo } from '../../services/vehiculoService.js'
 
@@ -15,6 +16,7 @@ export default function DetalleVehiculo() {
 	const navigate = useNavigate()
 	const toast = useToast()
 	const fileRef = useRef(null)
+	const cameraRef = useRef(null)
 	const [vehicle, setVehicle] = useState(null)
 	const [requests, setRequests] = useState(0)
 	const [loading, setLoading] = useState(true)
@@ -86,9 +88,13 @@ export default function DetalleVehiculo() {
 				<button type="button" className="icon-action is-danger vehicle-photo-remove" onClick={() => removePhoto(url)} disabled={Boolean(busy)} aria-label={`Quitar foto ${index + 1}`}><Icon name="trash" size={16} /></button>
 			</figure>)}
 			{photos.length < MAX_PHOTOS && <button type="button" className="vehicle-photo-add" onClick={() => fileRef.current?.click()} disabled={Boolean(busy)}>
-				<Icon name="camera" size={24} /><span>{busy === 'photo' ? 'Subiendo…' : photos.length ? 'Agregar foto' : 'Agrega fotos de tu vehículo'}</span><small>{photos.length}/{MAX_PHOTOS}</small>
+				<Icon name="plus" size={24} /><span>{busy === 'photo' ? 'Subiendo…' : photos.length ? 'Agregar foto' : 'Agrega fotos de tu vehículo'}</span><small>{canCapturePhoto ? 'Desde la galería · ' : ''}{photos.length}/{MAX_PHOTOS}</small>
 			</button>}
-			<input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={addPhoto} />
+			{canCapturePhoto && photos.length < MAX_PHOTOS && <button type="button" className="vehicle-photo-add" onClick={() => cameraRef.current?.click()} disabled={Boolean(busy)}>
+				<Icon name="camera" size={24} /><span>Tomar foto</span><small>Con la cámara</small>
+			</button>}
+			<input ref={fileRef} type="file" accept="image/*" hidden onChange={addPhoto} />
+			<input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={addPhoto} />
 		</section>
 
 		<dl className="vehicle-specs">
@@ -106,10 +112,11 @@ export default function DetalleVehiculo() {
 			<div className="vehicle-notes-head"><h2>Notas</h2>{!editingNotes && <button type="button" className="icon-action" onClick={() => setEditingNotes(true)} aria-label="Editar notas"><Icon name="edit" size={16} /></button>}</div>
 			{editingNotes
 				? <form onSubmit={saveNotes} className="vehicle-notes-form">
-					<textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={1000} rows={4} placeholder="Color, motor, placa, detalles que ayuden a la tienda…" aria-label="Notas del vehículo" />
+					<textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={1000} rows={4} placeholder="Color, motor, versión, detalles que ayuden a la tienda…" aria-label="Notas del vehículo" aria-describedby="vehicle-notes-privacy" />
 					<div className="vehicle-notes-actions"><button type="button" className="button button-secondary" onClick={() => { setNotes(vehicle.descripcion || ''); setEditingNotes(false) }}>Cancelar</button><button className="button" disabled={busy === 'notes'}>{busy === 'notes' ? 'Guardando…' : 'Guardar notas'}</button></div>
 				</form>
-				: <p className={vehicle.descripcion ? '' : 'is-empty'}>{vehicle.descripcion || 'Sin notas. Añade color, motor o placa para que las tiendas acierten con el repuesto.'}</p>}
+				: <p className={vehicle.descripcion ? '' : 'is-empty'}>{vehicle.descripcion || 'Sin notas. Añade color, motor o versión para que las tiendas acierten con el repuesto.'}</p>}
+			<small id="vehicle-notes-privacy" className="vehicle-notes-privacy">Las tiendas que reciban tus solicitudes verán estas notas y las fotos. No incluyas la placa ni datos personales.</small>
 		</section>
 
 		<div className="vehicle-detail-actions">

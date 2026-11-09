@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { publicError } from '../lib/errors.js'
 import { useAuth } from '../context/authState.js'
 import Icon from './Icon.jsx'
 import { obtenerFavorito, agregarFavorito, quitarFavorito } from '../services/favoritoService.js'
@@ -13,7 +14,7 @@ function FavoriteToggle({ type, itemId, label = 'Favorito', iconOnly = false }) 
 	useEffect(() => {
 		let active = true
 		obtenerFavorito(type, itemId, user.id).then((exists) => { if (active) setSaved(exists) })
-			.catch((loadError) => { if (active) setError(loadError.message) })
+			.catch((loadError) => { if (active) setError(publicError(loadError)) })
 			.finally(() => { if (active) setLoading(false) })
 		return () => { active = false }
 	}, [type, itemId, user.id])
@@ -23,7 +24,7 @@ function FavoriteToggle({ type, itemId, label = 'Favorito', iconOnly = false }) 
 			if (saved) await quitarFavorito(type, itemId, user.id)
 			else await agregarFavorito(type, itemId, user.id)
 			setSaved(!saved)
-		} catch (toggleError) { setError(toggleError.message) }
+		} catch (toggleError) { setError(publicError(toggleError)) }
 		finally { setBusy(false) }
 	}
 	if (iconOnly) return <button className={`icon-action${saved ? ' is-saved' : ''}`} type="button" onClick={toggle} disabled={loading || busy || !user?.id} aria-pressed={saved} aria-label={saved ? `Quitar ${label} de favoritos` : `Guardar ${label}`} title={error || (saved ? 'Guardado' : 'Guardar')}><Icon name="heart" size={18} filled={saved} /></button>

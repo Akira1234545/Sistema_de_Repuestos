@@ -2,7 +2,7 @@ import { catalogNames } from './catalogService.js'
 import { supabase } from './supabase.js'
 import { clearFormDrafts } from '../lib/formDrafts.js'
 import { createOnce } from './createOnce.js'
-import { compressImage } from '../lib/images.js'
+import { compressImage, imageExtension } from '../lib/images.js'
 
 const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fotos, fecha_creacion'
 
@@ -148,8 +148,10 @@ async function borrarFotosStorage(urls) {
 export async function agregarFotoVehiculo(vehicle, userId, file) {
 	if ((vehicle.fotos || []).length >= 4) throw new Error('Puedes guardar hasta 4 fotos por vehículo.')
 	const blob = await compressImage(file)
-	const path = `${userId}/${crypto.randomUUID()}.webp`
-	const { error: uploadError } = await supabase.storage.from('vehiculos').upload(path, blob, { contentType: 'image/webp', upsert: false })
+	// El bucket «vehiculos» admite hasta 3 MB por archivo.
+	if (blob.size > 3 * 1024 * 1024) throw new Error('La fotografía sigue pesando más de 3 MB. Prueba con otra.')
+	const path = `${userId}/${crypto.randomUUID()}.${imageExtension(blob.type)}`
+	const { error: uploadError } = await supabase.storage.from('vehiculos').upload(path, blob, { contentType: blob.type, upsert: false })
 	if (uploadError) throw uploadError
 	const url = supabase.storage.from('vehiculos').getPublicUrl(path).data.publicUrl
 	try {

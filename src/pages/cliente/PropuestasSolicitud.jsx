@@ -70,7 +70,7 @@ function PropuestasSolicitud() {
 			const shop = proposal.tienda
 			const shopWhatsAppPhone = whatsappPhone(shop?.telefono)
 			return <article className={`proposal-card${selected ? ' proposal-card-selected' : ''}`} key={proposal.id}>
-				<div className="proposal-card-heading"><div><p className="requests-eyebrow">{selected ? 'Tu selección' : 'Propuesta'}</p><h2>{shop?.nombre || 'Tienda'}</h2></div><span className={`proposal-status proposal-status-${proposal.estado}`}>{statusLabels[proposal.estado] || proposal.estado}</span></div>
+				<div className="proposal-card-heading"><div><p className="requests-eyebrow">{selected ? 'Tu selección' : 'Propuesta'}</p><h2>{shop?.nombre || 'Tienda no disponible'}</h2></div><span className={`proposal-status proposal-status-${proposal.estado}`}>{statusLabels[proposal.estado] || proposal.estado}</span></div>
 				<strong className="proposal-price">{money(proposal.precio)}</strong>
 				<dl className="proposal-data"><div><dt>Marca</dt><dd>{proposal.marca}</dd></div><div><dt>Disponibilidad</dt><dd>{proposal.disponibilidad}</dd></div>{proposal.garantia && <div><dt>Garantía</dt><dd>{proposal.garantia}</dd></div>}{proposal.caracteristicas && <div><dt>Características</dt><dd>{proposal.caracteristicas}</dd></div>}{proposal.observaciones && <div><dt>Observaciones</dt><dd>{proposal.observaciones}</dd></div>}<div><dt>Recibida</dt><dd>{date(proposal.fecha_creacion)}</dd></div></dl>
 				{selected && shop && <section className="selected-shop-contact"><h3>Contacto y ubicación de la tienda</h3><p className="selected-shop-phone"><strong>Teléfono de contacto</strong>{shop.telefono ? <a href={`tel:${shop.telefono}`}>{shop.telefono}</a> : <span>No registrado</span>}{shopWhatsAppPhone && <a className="whatsapp-link" href={`https://wa.me/${shopWhatsAppPhone}`} target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>}</p><p><strong>Dirección:</strong> {shop.direccion || 'No registrada'}</p><FavoriteToggle type="tienda" itemId={shop.id} label="tienda" />
@@ -78,7 +78,8 @@ function PropuestasSolicitud() {
 				</section>}
 				{selected && !shop && <p className="map-unavailable" role="status">La propuesta está seleccionada, pero no se pudo consultar el perfil de contacto de la tienda.</p>}
 				{selected && shop && request.estado === 'atendida' && <ResenaTienda key={proposal.id} usuarioId={user.id} tiendaId={shop.id} propuestaId={proposal.id} tiendaNombre={shop.nombre || 'la tienda'} />}
-				{canSelect && proposal.estado === 'enviada' && <button className="button proposal-select" type="button" onClick={() => choose(proposal)} disabled={Boolean(selectingId)}>{selectingId === proposal.id ? 'Seleccionando…' : 'Seleccionar propuesta'}</button>}
+				{canSelect && proposal.estado === 'enviada' && !shop && <p className="map-unavailable" role="status">Esta tienda ya no está disponible; no se puede seleccionar su propuesta.</p>}
+				{canSelect && proposal.estado === 'enviada' && shop && <button className="button proposal-select" type="button" onClick={() => choose(proposal)} disabled={Boolean(selectingId)}>{selectingId === proposal.id ? 'Seleccionando…' : 'Seleccionar propuesta'}</button>}
 			</article>
 		})}</div>}
 	</section>

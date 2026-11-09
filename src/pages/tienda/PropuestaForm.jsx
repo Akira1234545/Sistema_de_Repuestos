@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { publicError } from '../../lib/errors.js'
 import { useToast } from '../../context/toastState.js'
 import { crearPropuesta } from '../../services/propuestaService.js'
 import { useFormDraft } from '../../hooks/useFormDraft.js'
@@ -20,7 +21,7 @@ function PropuestaForm({ solicitudId, onCreated }) {
 		}
 		setSaving(true)
 		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId, userId: user.id }); toast({ title: 'Propuesta enviada', description: 'El cliente recibirá una notificación.', tone: 'success' }); onCreated() }
-		catch (saveError) { setError(saveError.message || 'No se pudo enviar la propuesta.') }
+		catch (saveError) { setError(`No se pudo enviar la propuesta: ${publicError(saveError)}`) }
 		finally { setSaving(false) }
 	}
 	return <form className="proposal-form" onSubmit={submit}>

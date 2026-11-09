@@ -2,6 +2,7 @@ import { catalogNames } from './catalogService.js'
 import { supabase } from './supabase.js'
 import { clearFormDrafts } from '../lib/formDrafts.js'
 import { createOnce } from './createOnce.js'
+import { isProjectPhotoUrl } from '../lib/storageUrls.js'
 
 const requestColumns = `
 	id,
@@ -86,11 +87,12 @@ async function enrichAvailableRequests(requests) {
 async function obtenerVehiclesByIds(ids) {
 	const { data, error } = await supabase
 		.from('vehiculos')
-		.select('id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fecha_creacion')
+		.select('id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fotos, fecha_creacion')
 		.in('id', ids)
 
 	if (error) throw error
-	return enrichVehicles(data)
+	const projectUrl = import.meta.env?.VITE_SUPABASE_URL
+	return enrichVehicles(data.map((item) => ({ ...item, fotos: (item.fotos || []).filter((url) => isProjectPhotoUrl(url, projectUrl, 'vehiculos')) })))
 }
 
 async function requestPage(available, page, filters) {

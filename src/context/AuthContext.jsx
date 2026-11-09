@@ -1,4 +1,5 @@
 import { publicError } from '../lib/errors.js'
+import { isAccountGoneError, isDefinitiveAuthError } from '../lib/authErrors.js'
 import { useEffect, useRef, useState } from 'react'
 import { clearFormDrafts } from '../lib/formDrafts.js'
 import { supabase, supabaseConfigError } from '../services/supabase.js'
@@ -103,9 +104,15 @@ function AuthContext({ children }) {
 				}
 			} catch (cause) {
 				if (!mounted) return
+				if (!isDefinitiveAuthError(cause)) {
+					// Corte de red o fallo temporal: se mantiene el rol para no desmontar la página
+					// ni perder lo que el usuario estaba escribiendo. Se reintenta en el próximo ciclo.
+					setProfileError('No pudimos comprobar tu cuenta por un problema de conexión. Puedes seguir trabajando; lo volveremos a intentar.')
+					return
+				}
 				setRole(null)
 				setProfileError(`No se pudo revalidar tu cuenta: ${publicError(cause)}`)
-				if (cause.message?.includes('desactivada') || cause.message?.includes('No existe un perfil')) {
+				if (isAccountGoneError(cause)) {
 					await supabase.auth.signOut()
 					if (mounted) {
 						setUser(null)

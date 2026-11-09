@@ -116,6 +116,10 @@
   padding-top: 20px; border-top: 1px solid var(--line);
 }
 .store-field-full > p { margin: 10px 0 0; color: var(--text-muted); font-size: var(--fs-sm); }
+.store-location-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.store-location-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin-top: 12px; }
+@media (max-width: 420px) { .store-location-fields { grid-template-columns: 1fr; } }
+.store-photo-camera { justify-self: start; }
 .store-photo-section { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-raised); }
 .store-photo-empty { color: var(--text-muted); font-size: var(--fs-sm); }
 .request-no-vehicles { display: grid; gap: 10px; justify-items: start; color: var(--text-soft); }
@@ -147,6 +151,9 @@
 .store-detail-grid div { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg-raised); }
 .store-detail-grid span { color: var(--text-muted); font-size: var(--fs-xs); }
 .store-detail-grid strong { font-size: var(--fs-md); }
+.store-vehicle-notes { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg-raised); }
+.store-vehicle-notes span { color: var(--text-muted); font-size: var(--fs-xs); }
+.store-vehicle-notes p { white-space: pre-line; overflow-wrap: anywhere; }
 .existing-proposal { display: grid; gap: 6px; }
 .existing-proposal strong { color: var(--amber); font: 800 28px/1.1 var(--font-display); }
 .existing-proposal span, .existing-proposal small { color: var(--text-muted); }
@@ -438,6 +445,7 @@
 .vehicle-notes p.is-empty { color: var(--text-muted); font-size: var(--fs-sm); }
 .vehicle-notes-form { display: grid; gap: 10px; }
 .vehicle-notes-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.vehicle-notes-privacy { color: var(--text-muted); font-size: var(--fs-xs); }
 .vehicle-detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .vehicle-detail-actions .button { display: inline-flex; align-items: center; gap: 6px; }
 .vehicle-detail-actions .request-confirm { padding: 0; }

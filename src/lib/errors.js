@@ -10,6 +10,7 @@ export function publicError(error) {
   if (error?.status === 429) return 'Espera un momento antes de volver a intentarlo.'
   const message = String(error?.message || '')
   const businessMessage = /^(Esta solicitud|Este vehículo|Las fotos|La configuración|La tienda|Cuenta no disponible|Se requiere|Solo puedes|No puedes|Selecciona|Indica|El sistema está en mantenimiento|La fotografía|Demasiadas|Ya existe|El registro ya se guardó|El nombre y el apellido|Escribe un teléfono|Debes iniciar sesión)/u
-  if (businessMessage.test(message) && message.length <= 240 && !/\b(SELECT|UPDATE|public\.|permission denied|relation|function)\b/i.test(message)) return message
+  const raisedByDatabase = error?.code === 'P0001' || error?.code === '22023'
+  if ((businessMessage.test(message) || raisedByDatabase) && message.length <= 240 && !/\b(SELECT|UPDATE|public\.|permission denied|relation|function)\b/i.test(message)) return message
   return 'Comprueba tu conexión y vuelve a intentarlo. Si continúa, contacta con soporte.'
 }
