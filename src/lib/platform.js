@@ -4,8 +4,8 @@ import { Capacitor } from '@capacitor/core'
 export const isNativeApp = Capacitor.isNativePlatform()
 
 // Custom scheme registered in AndroidManifest.xml. Supabase Auth must list
-// "com.repuestospro.app://auth/**" under Authentication → URL Configuration → Redirect URLs.
-export const NATIVE_AUTH_URL = 'com.repuestospro.app://auth'
+// "com.drivefix.app://auth/**" under Authentication → URL Configuration → Redirect URLs.
+export const NATIVE_AUTH_URL = 'com.drivefix.app://auth'
 
 // Where Supabase Auth emails should send the user back to, per platform.
 export function authRedirectUrl(path) {

@@ -102,7 +102,7 @@ function downloadCsv(report, period) {
 	const categoryRequests = categories.solicitudes_por_categoria ?? []
 
 	const rows = [
-		['Reporte de actividad', 'Sistema de Repuestos'],
+		['Reporte de actividad', 'DriveFix'],
 		['Periodo', `${period.fechaDesde} a ${period.fechaHasta}`],
 		['Zona horaria', timeZone],
 		['Agrupación temporal', report.periodo.agrupacion],

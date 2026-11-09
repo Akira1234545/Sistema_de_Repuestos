@@ -1,6 +1,6 @@
 {
-  "appId": "com.repuestospro.app",
-  "appName": "RepuestosPro",
+  "appId": "com.drivefix.app",
+  "appName": "DriveFix",
   "webDir": "dist",
   "android": {
     "allowMixedContent": false,
@@ -10,12 +10,12 @@
     "SystemBars": {
       "insetsHandling": "css",
       "initialViewportFitValueHint": "cover",
-      "style": "DARK"
+      "style": "LIGHT"
     },
     "SplashScreen": {
       "launchShowDuration": 2000,
       "launchAutoHide": false,
-      "backgroundColor": "#0b0d11",
+      "backgroundColor": "#0E1726",
       "showSpinner": false,
       "androidScaleType": "CENTER_CROP"
     },

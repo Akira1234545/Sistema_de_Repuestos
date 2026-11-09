@@ -16,7 +16,7 @@
     "preview": "vite preview",
     "android:sync": "vite build && cap sync android",
     "android:open": "cap open android",
-    "android:assets": "node scripts/generate-app-assets.mjs && capacitor-assets generate --android --iconBackgroundColor \"#f5b13d\" --splashBackgroundColor \"#0b0d11\" --splashBackgroundColorDark \"#0b0d11\""
+    "android:assets": "node scripts/generate-app-assets.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

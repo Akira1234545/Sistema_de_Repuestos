@@ -3,6 +3,7 @@ import { publicError } from '../../lib/errors.js'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenerResenasRecibidas } from '../../services/resenaService.js'
+import BrandLogo from '../../components/BrandLogo.jsx'
 
 function Stars({ rating }) {
 	return <span className="received-review-stars" role="img" aria-label={`${rating} de 5 estrellas`}>
@@ -61,7 +62,7 @@ function ResenasRecibidas() {
 		</div>}
 		{!loading && !error && store && <div className="received-reviews-content">
 			<div className="received-reviews-store">
-				<div className="received-reviews-store-mark" aria-hidden="true">R</div>
+				<div className="received-reviews-store-mark"><BrandLogo compact decorative /></div>
 				<div><span>RESEÑAS DE TU TIENDA</span><strong>{store.nombre}</strong></div>
 			</div>
 			<div className="received-reviews-summary" aria-label="Resumen de reseñas">

@@ -2,6 +2,7 @@ import { publicError } from '../../lib/errors.js'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
+import BrandLogo from '../../components/BrandLogo.jsx'
 
 function Login() {
 	const navigate = useNavigate()
@@ -53,7 +54,7 @@ function Login() {
 
 	return (
 		<main className="auth-page">
-			<div className="auth-intro"><Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link><p>Vuelve a poner tu vehículo en movimiento.</p></div>
+			<div className="auth-intro"><Link className="brand" to="/"><BrandLogo /></Link><p>Vuelve a poner tu vehículo en movimiento.</p></div>
 			<form className="auth-card" onSubmit={handleSubmit}>
 				<p className="eyebrow">Acceder</p><h1>Bienvenido de vuelta</h1><p className="auth-description">Ingresa para continuar con tu experiencia.</p>
 				<label>Correo electrónico<input name="email" type="email" autoComplete="email" required placeholder="tu@correo.com" /></label>

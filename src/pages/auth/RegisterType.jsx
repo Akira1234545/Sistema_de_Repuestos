@@ -1,12 +1,13 @@
 import Icon from '../../components/Icon.jsx'
 import { Link, useNavigate } from 'react-router-dom'
+import BrandLogo from '../../components/BrandLogo.jsx'
 
 function RegisterType() {
 	const navigate = useNavigate()
 
 	return (
 		<main className="register-type-page">
-			<div className="register-type-header"><Link className="brand" to="/"><span>R</span>Repuestos<strong>Pro</strong></Link><Link className="back-link" to="/">Volver al inicio</Link></div>
+			<div className="register-type-header"><Link className="brand" to="/"><BrandLogo /></Link><Link className="back-link" to="/">Volver al inicio</Link></div>
 			<section className="register-type-content">
 				<p className="eyebrow">Primer paso</p><h1>¿Cómo deseas registrarte?</h1><p className="register-type-lead">Elige el camino que mejor se adapta a lo que necesitas.</p>
 				<div className="account-options">

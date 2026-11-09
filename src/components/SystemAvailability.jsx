@@ -56,7 +56,7 @@ function SystemAvailability({ children }) {
 	if (status.maintenance && !administrativeRole && !['/login', '/forgot-password', '/reset-password'].includes(pathname)) {
 		return <main className="system-maintenance-page">
 			<div className="system-maintenance-card">
-				<p className="system-maintenance-kicker">REPUESTOS PRO / AVISO</p>
+				<p className="system-maintenance-kicker">DRIVEFIX / AVISO</p>
 				<h1>Sistema en mantenimiento</h1>
 				<p>{status.message}</p>
 				{status.supportEmail && <p>Soporte: <a href={`mailto:${status.supportEmail}`}>{status.supportEmail}</a></p>}

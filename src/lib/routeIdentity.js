@@ -7,6 +7,6 @@ export function announceRoute(root = document) {
 	heading.tabIndex = -1
 	heading.focus({ preventScroll: true })
 	const title = heading.textContent.replace(/\s+/g, ' ').trim()
-	document.title = title ? `${title} · RepuestosPro` : 'RepuestosPro'
+	document.title = title ? `${title} · DriveFix` : 'DriveFix'
 	return true
 }

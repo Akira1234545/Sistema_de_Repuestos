@@ -33,7 +33,7 @@ function Favoritos() {
 		} catch (cause) { setError(`No se pudo quitar el favorito: ${publicError(cause)}`) }
 		finally { setRemoving('') }
 	}
-	return <section className="promo-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">RepuestosPro / Guardados</p><h1>Mis favoritos</h1><p>Tiendas, solicitudes y promociones que guardaste.</p><Link to={role === 'tienda' ? '/tienda' : '/cliente'}>Volver al panel</Link></div></header>
+	return <section className="promo-page"><header className="promo-page-heading"><div><p className="promo-eyebrow">DriveFix / Guardados</p><h1>Mis favoritos</h1><p>Tiendas, solicitudes y promociones que guardaste.</p><Link to={role === 'tienda' ? '/tienda' : '/cliente'}>Volver al panel</Link></div></header>
 		{loading && <SkeletonList variant="grid" label="Cargando favoritos…" />}{error && <p className="promo-error" role="alert">{error}</p>}{!loading && !error && !items.length && <div className="promo-state"><h2>No guardaste elementos todavía</h2><p>Usa el botón de favorito cuando consultes una tienda seleccionada, una solicitud o una promoción.</p><Link to="/promociones">Explorar promociones</Link></div>}
 		{!loading && items.length > 0 && <div className="favorites-groups">{Object.keys(itemType).map((type) => {
 			const group = items.filter((item) => item.type === type)

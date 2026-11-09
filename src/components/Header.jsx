@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
 import { panelPath } from '../lib/roles.js'
+import BrandLogo from './BrandLogo.jsx'
 
 function Header() {
 	const navigate = useNavigate()
@@ -21,7 +22,7 @@ function Header() {
 
 	return (
 		<header className={`site-header${scrolled ? ' is-scrolled' : ''}`}>
-			<Link className="brand" to="/" aria-label="RepuestosPro, inicio"><span aria-hidden="true">R</span>Repuestos<strong>Pro</strong></Link>
+			<Link className="brand" to="/" aria-label="DriveFix, inicio"><BrandLogo decorative /></Link>
 			<nav className="site-nav" aria-label="Navegación principal">
 				<Link to="/#categorias">Categorías</Link>
 				<NavLink to="/tiendas">Tiendas</NavLink>

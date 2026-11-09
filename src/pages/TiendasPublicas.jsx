@@ -64,7 +64,7 @@ export default function TiendasPublicas({ embedded = false }) {
 
 	const content = <>
 			<header className="public-stores-heading">
-				<p className="eyebrow">RepuestosPro · Tiendas aprobadas</p>
+				<p className="eyebrow">DriveFix · Tiendas aprobadas</p>
 				<h1>{embedded ? 'Tiendas' : 'Encuentra tu tienda de repuestos'}</h1>
 				{!embedded && <p>Consulta perfiles y reseñas. El teléfono se comparte en promociones y la ubicación al seleccionar una propuesta.</p>}
 			</header>

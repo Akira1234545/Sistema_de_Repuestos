@@ -1,6 +1,6 @@
 # Sistema visual
 
-Dirección: taller de grafito de noche iluminado por una lámpara ámbar. Superficies oscuras escalonadas, un único acento ámbar para las acciones principales y colores semánticos (acero, verde, ámbar claro, coral) para estados.
+Identidad **DriveFix** (paleta A «Voltio», logo «Doble señal»): tema claro con secciones oscuras. Azul `#1F4FE0` para la acción (botones, enlaces, foco), amarillo `#FFC72C` para la atención (ofertas, estrellas, insignias y el botón de las secciones oscuras, siempre con texto tinta) y tinta `#0E1726` para el texto y los bloques oscuros. Todos los colores son variables de `tokens.css`; `.section-dark` reasigna esas variables para que cualquier componente funcione sobre tinta. El logo se dibuja con `src/components/BrandLogo.jsx` (`variant="light|dark|mono"`, `compact`) a partir de `branding/drivefix/`.
 
 ## Estructura de estilos
 
