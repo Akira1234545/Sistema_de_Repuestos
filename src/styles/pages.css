@@ -215,6 +215,8 @@
 .profile-status-dot:is(.is-rechazada, .is-suspendida) { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
 .profile-status-row strong { font-size: var(--fs-sm); }
 .profile-status-value { margin-left: auto; }
+.profile-status-value.is-aprobada { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); background: var(--ok-wash); }
+.profile-status-value:is(.is-rechazada, .is-suspendida) { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); background: var(--danger-wash); }
 .profile-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
 .profile-section-heading > span { color: var(--text-muted); font-size: var(--fs-sm); }
 .profile-information-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
