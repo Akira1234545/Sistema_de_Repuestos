@@ -1,5 +1,10 @@
 import { useLayoutEffect } from 'react'
 import { gsap } from 'gsap'
+import { isNativeApp } from '../lib/platform.js'
+
+// Set by PageOutlet when a page leaves, so the next one waits for the outgoing blur (180 ms).
+let lastLeave = 0
+export function markPageLeave() { lastLeave = performance.now() }
 
 // Containers whose children are records loaded after the page mounts.
 const LIST_SELECTOR = [
@@ -17,9 +22,12 @@ export function usePageMotion(containerRef) {
 		if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
 
 		const page = container.firstElementChild
-		const entrance = page
-			? gsap.fromTo(Array.from(page.children).slice(0, 8), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: .55, ease: 'power3.out', stagger: .05, clearProps: 'transform,opacity' })
-			: null
+		// Sesión 7: blocks enter scaled (.96 → 1), blurred (6 px → 0) and faded, 450 ms, 60 ms apart.
+		// The blur is skipped in the Android app, where filters are costly.
+		const delay = performance.now() - lastLeave < 400 ? .14 : 0
+		const from = isNativeApp ? { y: 12, scale: .98, opacity: 0 } : { y: 12, scale: .96, opacity: 0, filter: 'blur(6px)' }
+		const to = { y: 0, scale: 1, opacity: 1, ...(isNativeApp ? {} : { filter: 'blur(0px)' }), duration: .45, delay, ease: 'power3.out', stagger: .06, clearProps: 'transform,opacity,filter' }
+		const entrance = page ? gsap.fromTo(Array.from(page.children).slice(0, 8), from, to) : null
 
 		const seen = new WeakSet()
 		const reveal = (nodes) => {

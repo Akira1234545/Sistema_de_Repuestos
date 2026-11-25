@@ -1,7 +1,9 @@
 import { publicError } from '../lib/errors.js'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/authState.js'
+import { SIGN_OUT_CONFIRM, useConfirm } from '../context/confirmState.js'
+import { useReverify } from '../context/reverifyState.js'
 import { supabase } from '../services/supabase.js'
 import AdminSettings from './AdminSettings.jsx'
 import AdminUsers from './AdminUsers.jsx'
@@ -10,35 +12,78 @@ import AdminRequests from './AdminRequests.jsx'
 import AdminPromociones from './AdminPromociones.jsx'
 import AdminReportes from './AdminReportes.jsx'
 import { obtenerResumenAdministracion } from '../services/adminService.js'
-import CountUp from '../components/ui/CountUp.jsx'
+import { ActivityCard, KpiRow, PanelGreeting, PanelHero, PeriodControl } from '../components/panel/PanelHome.jsx'
+import ActivityChart from '../components/panel/ActivityChart.jsx'
+import { useDashboardSeries } from '../hooks/useDashboardSeries.js'
+import { usePanelLens, useSlidingPill } from '../hooks/usePanelShell.js'
+import { initials, trendFor } from '../lib/panel.js'
 import Icon from '../components/Icon.jsx'
 import { statusLabel } from '../lib/format.js'
 import Select from '../components/ui/Select.jsx'
 import BrandLogo from '../components/BrandLogo.jsx'
 
-const statLabels = [
-	['total_usuarios', 'Cuentas registradas'],
-	['total_clientes', 'Clientes'],
-	['tiendas_activas', 'Tiendas activas'],
-	['tiendas_pendientes', 'Tiendas por revisar'],
-	['solicitudes_activas', 'Solicitudes abiertas'],
-	['total_propuestas', 'Propuestas enviadas'],
-	['promociones_activas', 'Promociones vigentes'],
-]
+// statusLabel() is written for proposals («No seleccionada»); stores need their own words.
+const storeStateLabels = { pendiente: 'Pendiente', aprobada: 'Aprobada', rechazada: 'Rechazada', suspendida: 'Suspendida' }
+const storeStateLabel = (value) => storeStateLabels[value] || statusLabel(value)
 
-function AdminOverview() {
+// Admin home (sesión 7): greeting, hero with the share of approved stores, latest stores and 4 KPI.
+// Store counts come from the store list this page already loads; the rest from get_dashboard_stats.
+function AdminHome({ name, stores, storesLoading, onReviewStores, onOpenStore, onSection }) {
 	const [stats, setStats] = useState(null)
 	const [failed, setFailed] = useState(false)
+	const [reload, setReload] = useState(0)
 	useEffect(() => {
 		let active = true
 		obtenerResumenAdministracion().then((data) => { if (active) setStats(data) }).catch(() => { if (active) setFailed(true) })
 		return () => { active = false }
-	}, [])
-	if (failed) return null
-	return <section className="admin-report-cards admin-overview" aria-label="Resumen del sistema">{statLabels.map(([key, text]) => <article className={`admin-report-card${key === 'tiendas_pendientes' && Number(stats?.[key]) > 0 ? ' is-highlight' : ''}`} key={key}>
-		<span className="admin-report-card-label">{text}</span>
-		<strong className="admin-report-card-value">{stats ? <CountUp value={Number(stats[key] || 0)} /> : '—'}</strong>
-	</article>)}</section>
+	}, [reload])
+	const loading = !stats && !failed
+	const trends = useDashboardSeries(reload)
+	const trend = (key, nouns) => (trends.available ? trendFor(trends.series, key, trends.days, nouns) : null)
+	const pending = Number(stats?.tiendas_pendientes) || 0
+	const approved = stores.filter((store) => store.estado === 'aprobada')
+	const latest = stores.slice(0, 4)
+	const kpis = [
+		{ label: 'Tiendas por revisar', icon: 'store', value: stats?.tiendas_pendientes, highlight: true, onClick: onReviewStores, trend: trend('tiendas_nuevas', ['registrada', 'registradas']) },
+		{ label: 'Cuentas registradas', icon: 'user', value: stats?.total_usuarios, onClick: () => onSection('usuarios'), trend: trend('usuarios_nuevos', ['nueva', 'nuevas']) },
+		{ label: 'Solicitudes abiertas', icon: 'requests', value: stats?.solicitudes_activas, onClick: () => onSection('solicitudes'), trend: trend('solicitudes_creadas', ['publicada', 'publicadas']) },
+		{ label: 'Propuestas enviadas', icon: 'proposal', value: stats?.total_propuestas, onClick: () => onSection('reportes'), trend: trend('propuestas_enviadas', ['enviada', 'enviadas']) },
+	]
+	return <div className="panel-home admin-home">
+		<PanelGreeting name={name} attention={failed ? null : pending} loading={loading} />
+		{failed && <div className="request-history-notice store-notice" role="alert"><span>No se pudo cargar el resumen del sistema.</span><button className="button button-secondary" type="button" onClick={() => { setFailed(false); setReload((value) => value + 1) }}>Reintentar</button></div>}
+		<div className="panel-home-top">
+			<PanelHero id="admin-hero-title" loading={loading || storesLoading}
+				kicker="Administración"
+				title={pending > 0 ? `${pending} ${pending === 1 ? 'tienda espera' : 'tiendas esperan'} revisión` : 'No hay tiendas esperando revisión'}
+				lead="Gestiona cuentas, tiendas, categorías, solicitudes, promociones y la configuración del sistema."
+				metrics={[
+					{ label: 'Clientes', value: stats?.total_clientes },
+					{ label: 'Tiendas activas', value: stats?.tiendas_activas },
+					{ label: 'Promociones vigentes', value: stats?.promociones_activas },
+				]}
+				ring={{
+					value: approved.length, total: stores.length, label: 'aprobadas',
+					caption: stores.length ? `${approved.length} de ${stores.length} tiendas registradas están aprobadas.` : 'Todavía no hay tiendas registradas.',
+					orbit: approved.slice(0, 6).map((store) => ({ key: store.id, label: initials(store.nombre), title: store.nombre })),
+				}}
+				actions={<>
+					<button className="button" type="button" onClick={onReviewStores}><Icon name="store" size={18} /> Revisar tiendas</button>
+					<button className="button button-secondary" type="button" onClick={() => onSection('reportes')}>Ver reportes</button>
+				</>} />
+			<ActivityCard title="Últimas tiendas registradas" loading={storesLoading} empty="Todavía no hay tiendas registradas."
+				items={latest.map((store) => ({ id: store.id, title: store.nombre, text: storeStateLabel(store.estado), date: store.fecha_creacion, icon: 'store', unread: store.estado === 'pendiente', onClick: () => onOpenStore(store) }))} />
+		</div>
+		{trends.available && <PeriodControl days={trends.days} onChange={trends.setDays} busy={trends.loading} />}
+		<KpiRow items={kpis} loading={loading} label="Resumen del sistema" />
+		{trends.available && <ActivityChart title="Actividad de la plataforma" days={trends.days} series={trends.series} loading={trends.loading} error={trends.error} onRetry={() => setReload((value) => value + 1)}
+			options={[
+				{ key: 'solicitudes_creadas', label: 'Solicitudes publicadas', short: 'Solicitudes' },
+				{ key: 'propuestas_enviadas', label: 'Propuestas enviadas', short: 'Propuestas' },
+				{ key: 'usuarios_nuevos', label: 'Cuentas nuevas', short: 'Cuentas' },
+				{ key: 'tiendas_nuevas', label: 'Tiendas registradas', short: 'Tiendas' },
+			]} />}
+	</div>
 }
 
 const sections = [
@@ -60,7 +105,12 @@ function formatDate(value) {
 }
 
 function AdminAccess() {
-	const { role, signOut, profileError } = useAuth()
+	const { role, profile, signOut, profileError } = useAuth()
+	const confirm = useConfirm()
+	const reverify = useReverify()
+	const pageRef = useRef(null)
+	const tabsRef = useRef(null)
+	usePanelLens(pageRef)
 	const [stores, setStores] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
@@ -70,6 +120,15 @@ function AdminAccess() {
 	const [filter, setFilter] = useState({ status: 'pendiente', search: '' })
 	const [reasons, setReasons] = useState({})
 	const [openStore, setOpenStore] = useState('')
+	const captureTab = useSlidingPill(tabsRef, section)
+
+	function goToSection(key) {
+		captureTab()
+		setSection(key)
+		requestAnimationFrame(() => tabsRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }))
+	}
+	function reviewStores() { setFilter((current) => ({ ...current, status: 'pendiente' })); goToSection('tiendas') }
+	function showStore(store) { setFilter({ status: store.estado, search: '' }); setOpenStore(store.id); goToSection('tiendas') }
 
 	const loadStores = useCallback(async () => {
 		setLoading(true)
@@ -94,6 +153,16 @@ function AdminAccess() {
 			setError('Escribe el motivo antes de rechazar o suspender una tienda.')
 			return
 		}
+		const verb = action === 'aprobar' ? 'Aprobar' : action === 'rechazar' ? 'Rechazar' : 'Suspender'
+		const ok = await confirm({
+			title: `¿${verb} la tienda «${store.nombre}»?`,
+			message: action === 'aprobar' ? 'Será visible para los clientes y podrá responder solicitudes de sus categorías.'
+				: action === 'rechazar' ? `La tienda dejará de ser visible y verá este motivo: «${reason.trim()}». Si edita su perfil, volverá a revisión.`
+				: `La tienda dejará de ser visible y no podrá responder solicitudes. Motivo: «${reason.trim()}».`,
+			confirmLabel: `${verb} tienda`, tone: action === 'aprobar' ? undefined : 'danger',
+		})
+		if (!ok) return
+		if (action !== 'aprobar' && !(await reverify(`Vas a ${verb.toLowerCase()} la tienda «${store.nombre}».`))) return
 		setBusyId(store.id)
 		setError('')
 		setNotice('')
@@ -113,15 +182,15 @@ function AdminAccess() {
 		}
 	}
 
-	return <main className="admin-page">
+	return <main className="admin-page glass-scene" ref={pageRef}>
 		{profileError && <p className="admin-alert" role="alert">{profileError}</p>}
-		<header className="admin-heading"><div><Link className="brand admin-brand" to="/"><BrandLogo /></Link><p className="eyebrow">Administración</p><h1>Panel de administración</h1><p>Sesión administrativa verificada ({role}). Gestiona cuentas, tiendas, categorías, solicitudes, promociones, reportes de actividad y preferencias del sistema.</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
-		<AdminOverview />
-		<nav className="admin-tabs" aria-label="Administración del sistema">
+		<header className="admin-heading"><div><Link className="brand admin-brand" to="/"><BrandLogo /></Link><p className="eyebrow">Administración</p><p className="admin-heading-title">Panel de administración</p><p>Sesión administrativa verificada ({role}).</p></div><div className="admin-header-actions"><button type="button" className="button button-secondary" onClick={async () => { if (await confirm(SIGN_OUT_CONFIRM)) void signOut() }}>Cerrar sesión</button><Link className="button button-secondary" to="/">Volver al inicio</Link></div></header>
+		<AdminHome name={profile?.nombre} stores={stores} storesLoading={loading} onReviewStores={reviewStores} onOpenStore={showStore} onSection={goToSection} />
+		<nav className="admin-tabs" aria-label="Administración del sistema" ref={tabsRef} onClickCapture={captureTab}>
 			{sections.map(([key, text]) => <button key={key} className={section === key ? 'active' : ''} type="button" aria-current={section === key ? 'page' : undefined} onClick={(event) => {
 				setSection(key)
 				event.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
-			}}>{text}</button>)}
+			}}>{section === key && <span className="admin-tab-pill" data-flip-id="admin-tab-pill" aria-hidden="true" />}<span>{text}</span></button>)}
 		</nav>
 			{section === 'usuarios' && <AdminUsers />}
 			{section === 'categorias' && <AdminCategories />}
@@ -141,7 +210,7 @@ function AdminAccess() {
 			<button type="button" className="admin-store-summary" aria-expanded={openStore === store.id} onClick={() => setOpenStore((current) => current === store.id ? '' : store.id)}>
 				<span className="admin-user-avatar" aria-hidden="true">{store.fotografias?.[0] ? <img src={store.fotografias[0]} alt="" loading="lazy" /> : store.nombre?.charAt(0)?.toUpperCase()}</span>
 				<span className="compact-row-text"><strong>{store.nombre}</strong><span>{store.activa ? 'Activa' : 'Inactiva'} · {formatDate(store.fecha_creacion)}</span></span>
-				<span className={`admin-status admin-status-${store.estado}`}>{statusLabel(store.estado)}</span>
+				<span className={`admin-status admin-status-${store.estado}`}>{storeStateLabel(store.estado)}</span>
 				<span className="request-card-chevron" aria-hidden="true"><Icon name="chevron" size={16} /></span>
 			</button>
 			{openStore === store.id && <div className="admin-store-body">

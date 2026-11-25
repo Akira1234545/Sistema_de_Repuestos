@@ -93,6 +93,23 @@
   --on-photo: color-mix(in srgb, var(--gray-900) 78%, transparent);
   --mask-solid: #000; /* solo para mask-image: el color no se ve */
 
+  /* Vidrio de los paneles (sesión 7). Sólido en la app Android, con transparencia reducida
+     o sin backdrop-filter: ver .glass-card en components.css. */
+  --glass-bg: color-mix(in srgb, var(--white) 62%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--white) 80%, transparent);
+  --glass-border: color-mix(in srgb, var(--white) 70%, transparent);
+  --glass-edge: rgb(var(--shadow-color) / .06); /* filo de 1 px para que el borde blanco se lea */
+  --glass-blur: blur(18px) saturate(140%);
+  --glass-shadow: 0 0 0 1px var(--glass-edge), 0 10px 30px rgb(var(--shadow-color) / .07), 0 2px 6px rgb(var(--shadow-color) / .05);
+  --glass-shadow-hover: 0 0 0 1px var(--glass-edge), 0 22px 48px rgb(var(--shadow-color) / .13), 0 4px 10px rgb(var(--shadow-color) / .06);
+  --glass-blob-accent: color-mix(in srgb, var(--accent) 12%, transparent);
+  --glass-blob-highlight: color-mix(in srgb, var(--highlight) 10%, transparent);
+  --glass-dark: color-mix(in srgb, var(--gray-900) 90%, transparent); /* barra lateral */
+  /* Tarjeta hero: azul acción con el azul señal solo en la esquina del anillo (sin texto encima). */
+  --hero-bg: radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--brand-signal) 85%, transparent) 0%, transparent 52%),
+             linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  --hero-text-soft: #E3E9FB; /* 5,3:1 sobre --accent; el pie del anillo va en blanco */
+
   /* Type */
   --font-body: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Archivo Variable', 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
@@ -119,6 +136,7 @@
   /* Layout */
   --header-h: 72px;
   --sidebar-w: 264px;
+  --sidebar-rail: 76px;
   --page-max: 1240px;
   --gutter: clamp(16px, 4vw, 48px);
 

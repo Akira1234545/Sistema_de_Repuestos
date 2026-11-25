@@ -45,11 +45,29 @@ Aplicada el 3 de noviembre de 2026. La tabla `notificaciones` se publica en Supa
 
 Aplicada el 3 de noviembre de 2026. Columna `vehiculos.fotos` (máximo 4) y bucket público `vehiculos` de Storage (3 MB, JPG/PNG/WebP). Cada cliente solo sube y borra en su carpeta (`<uid>/`), y un trigger exige que las URL apunten a esa carpeta. Con solicitudes vinculadas, el tipo, la marca, el modelo y el año siguen bloqueados; las notas y las fotos se pueden editar.
 
+## Correcciones de la sesión 3b (20261116)
+
+**Pendiente de aplicar.** Antes, en el remoto: respaldo, y estas consultas de solo lectura (si alguna devuelve filas, el CHECK correspondiente queda `NOT VALID` y la migración lo avisa con un `NOTICE`):
+
+```sql
+SELECT count(*) FROM propuestas WHERE precio <= 0 AND estado = 'enviada';
+SELECT count(*) FROM vehiculos WHERE length(descripcion) > 1000;
+```
+
+- Tienda rechazada que cambia su perfil → vuelve a `pendiente` sin motivo. Avisos `cambio_estado_tienda` al dueño (aprobada, rechazada, suspendida) y a los admins (tienda nueva o reenviada).
+- `cancelar_seleccion(p_solicitud_id)`: la propuesta elegida pasa a `rechazada`, las demás vuelven a `enviada` y la solicitud a `recibiendo_propuestas`. El cliente también puede cerrar desde `propuesta_seleccionada`. Tabla `selecciones_canceladas` (solo RPC).
+- Propuestas con precio `> 0` (RPC y CHECK `propuestas_precio_positivo`).
+- Fotos de vehículo solo por `guardar_fotos_vehiculo(p_vehiculo_id, p_urls, p_expected_version)`: host del proyecto (emisor del JWT), objeto propio, versión `fotos_version`, cuota por cliente (`vehicle_upload_allowed`) y cola de limpieza con `storage_cleanup_jobs.bucket_id`. Notas ≤ 1000 caracteres. El cliente puede eliminar un vehículo sin solicitudes (faltaba el `GRANT DELETE`).
+- `promociones.fotografias` ya no es escribible por las tiendas; si llega por otra vía, debe ser del Storage del proyecto.
+- Búsquedas: `%` y `_` son literales. Las tiendas ya no ven ni cotizan solicitudes de clientes desactivados. `request_page` acepta `p_unanswered`.
+- Requiere el frontend de la misma rama: las versiones anteriores de la app ya no pueden guardar fotos de vehículo (la columna dejó de ser escribible). Ejecutar `npm run android:sync` y publicar la app.
+- `scripts/cleanup-storage.mjs` limpia ahora los dos buckets.
+
 ## Base nueva y actualización
 
 1. Crear un proyecto de staging y respaldar cualquier base existente antes de migrar.
 2. Solo en una base vacía, ejecutar `BD_Sistema_Repuestos.sql` una vez.
-3. Aplicar los archivos de `database/migrations` en orden lexicográfico. Incluye `20261006_sprint1a_helpers.sql`, antes de Sprint 2, y todas las correcciones desde `20261027_production_security.sql` hasta `20261114_realtime_and_dashboards.sql`.
+3. Aplicar los archivos de `database/migrations` en orden lexicográfico. Incluye `20261006_sprint1a_helpers.sql`, antes de Sprint 2, y todas las correcciones desde `20261027_production_security.sql` hasta `20261116_sesion3b.sql`.
 4. En una instalación existente, registrar qué migraciones ya se aplicaron y ejecutar únicamente las pendientes. No volver a ejecutar el SQL base ni todas las migraciones antiguas indiscriminadamente.
 5. Ejecutar `database/preflight_production.sql` como propietario para inspeccionar restricciones pendientes, RLS y categorías repetidas. No modifica datos. Revisar y corregir datos antiguos antes de validar restricciones `NOT VALID`; las migraciones conservan registros históricos y aplican los límites a nuevas escrituras.
 6. Ejecutar `database/preflight_rpc.sql` como propietario. Debe devolver `installed = true` para cada RPC; comparar `actual_arguments` con las firmas de las migraciones. La prueba local valida nombres y parámetros del código contra el SQL del repositorio, pero no confirma qué migraciones están instaladas en el proyecto remoto.

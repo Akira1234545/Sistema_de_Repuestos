@@ -1,21 +1,28 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Header from '../components/Header.jsx'
 import Icon from '../components/Icon.jsx'
+import BrandLogo from '../components/BrandLogo.jsx'
 import BrakeAssembly from '../components/home/BrakeAssembly.jsx'
+import CategoryGlyph from '../components/home/CategoryGlyph.jsx'
+import HeroScene from '../components/home/HeroScene.jsx'
 import { useAuth } from '../context/authState.js'
 import { obtenerCategoriasActivas } from '../services/solicitudService.js'
-import { panelPath } from '../lib/roles.js'
-import BrandLogo from '../components/BrandLogo.jsx'
+import { obtenerTiendasPublicas } from '../services/tiendaService.js'
+import { obtenerResenasPublicasDeTiendas } from '../services/resenaService.js'
+import { categoryLink, featuredReviews, finalPaths, heroActions, landingCategories, publicNavLinks, storeLink } from '../lib/publicNav.js'
+import { categoryPhoto } from '../lib/categoryPhotos.js'
+import { useDragScroll } from '../hooks/useDragScroll.js'
+import { LEGAL_DOCS, LEGAL_ORDER, legalPath } from '../lib/legal.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const steps = [
-	{ kicker: 'Paso 01', title: 'Describe lo que necesitas', detail: 'Registra tu vehículo y publica una solicitud de repuestos.' },
-	{ kicker: 'Paso 02', title: 'Compara propuestas', detail: 'Revisa precios totales, disponibilidad y garantías de las tiendas.' },
-	{ kicker: 'Paso 03', title: 'Confirma la atención', detail: 'Selecciona una tienda, confirma la atención recibida y deja tu reseña.' },
+	{ kicker: 'Paso 01', title: 'Describe lo que necesitas', detail: 'Registra tu vehículo y publica una solicitud de repuestos con fotos y notas.' },
+	{ kicker: 'Paso 02', title: 'Compara propuestas', detail: 'Las tiendas que atienden esa categoría responden con precio total, marca, disponibilidad y garantía.' },
+	{ kicker: 'Paso 03', title: 'Confirma la atención', detail: 'Selecciona una tienda, recibe su ubicación, confirma la atención y deja tu reseña.' },
 ]
 
 const benefits = [
@@ -25,60 +32,88 @@ const benefits = [
 	{ icon: 'star', title: 'Reseñas verificadas', text: 'Solo quien confirmó la atención de una tienda puede calificarla.' },
 ]
 
-function useLandingMotion(rootRef, ready) {
+// Texto que se «enciende» palabra por palabra con el scroll. `strong` = en azul.
+const manifesto = [
+	{ text: 'Pides tu repuesto' }, { text: 'una sola vez.', strong: true },
+	{ text: 'Las tiendas responden con' }, { text: 'precio, marca y garantía.', strong: true },
+	{ text: 'Tú' }, { text: 'eliges.', strong: true },
+]
+const manifestoWords = manifesto.flatMap((part, partIndex) => part.text.split(' ').map((word, wordIndex) => ({ word, strong: part.strong, key: `${partIndex}-${wordIndex}` })))
+
+const dateFormat = new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeZone: 'America/La_Paz' })
+
+// Entrada del hero y parallax por capas. Corre una vez al montar.
+function useHeroMotion(rootRef) {
 	useLayoutEffect(() => {
 		const root = rootRef.current
 		if (!root) return undefined
 		const context = gsap.context(() => {
 			const media = gsap.matchMedia()
+			media.add('(prefers-reduced-motion: no-preference)', () => {
+				gsap.timeline({ defaults: { ease: 'power3.out' } })
+					.from('.hero-word', { yPercent: 115, duration: 1, stagger: .06 })
+					.from('[data-hero-fade]', { y: 24, opacity: 0, duration: .8, stagger: .1 }, '-=.6')
+					.from('.hero-layer-chevrons', { xPercent: 12, opacity: 0, duration: 1.4 }, 0)
+					.from('.hero-rotor', { scale: .75, opacity: 0, rotate: -60, duration: 1.4 }, .1)
+					.from('.hero-card', { y: 50, opacity: 0, duration: .9, stagger: .12 }, .5)
+
+				const scroll = { trigger: '.landing-hero', start: 'top top', end: 'bottom top', scrub: .5 }
+				const parallax = gsap.timeline({ scrollTrigger: scroll, defaults: { ease: 'none' } })
+				gsap.utils.toArray('.hero-scene [data-depth]', root).forEach((layer) => {
+					parallax.to(layer, { yPercent: -36 * Number(layer.dataset.depth), force3D: true }, 0)
+				})
+				parallax
+					.to('.hero-rotor', { rotate: 150 }, 0)
+					.to('.hero-copy', { yPercent: -18, opacity: .15 }, 0)
+			})
+		}, root)
+		return () => context.revert()
+	}, [rootRef])
+}
+
+// Relatos con scroll: texto que se enciende, categorías en horizontal, freno que se arma,
+// columnas desfasadas y apariciones. Se monta cuando los datos ya tienen su altura final.
+function useStoryMotion(rootRef, ready) {
+	useLayoutEffect(() => {
+		const root = rootRef.current
+		if (!root || !ready) return undefined
+		const context = gsap.context(() => {
+			const media = gsap.matchMedia()
 
 			media.add('(prefers-reduced-motion: no-preference)', () => {
-				// Hero entrance
-				gsap.timeline({ defaults: { ease: 'power3.out' } })
-					.from('.hero-word', { yPercent: 110, opacity: 0, duration: 1, stagger: .07 })
-					.from('.hero-copy [data-hero-fade]', { y: 24, opacity: 0, duration: .8, stagger: .1 }, '-=.6')
-					.from('.hero-card', { y: 60, opacity: 0, rotate: (index) => [-6, 4, -3][index], duration: 1, stagger: .12 }, '-=.9')
-					.from('.hero-rotor', { scale: .7, opacity: 0, rotate: -60, duration: 1.4 }, '<')
-
-				// Hero parallax, tied to scroll progress through the hero
-				const hero = gsap.timeline({ scrollTrigger: { trigger: '.home-hero', start: 'top top', end: 'bottom top', scrub: .6 } })
-				hero.to('.hero-grid', { yPercent: 18, ease: 'none' }, 0)
-					.to('.hero-rotor', { yPercent: 28, rotate: 140, ease: 'none' }, 0)
-					.to('.hero-card-1', { yPercent: -60, ease: 'none' }, 0)
-					.to('.hero-card-2', { yPercent: -25, ease: 'none' }, 0)
-					.to('.hero-card-3', { yPercent: -100, ease: 'none' }, 0)
-					.to('.hero-copy', { yPercent: -12, ease: 'none' }, 0)
-
-				// Category name band drifts opposite to the scroll direction
-				gsap.to('.category-band-track', { xPercent: -35, ease: 'none', scrollTrigger: { trigger: '.category-band', start: 'top bottom', end: 'bottom top', scrub: .4 } })
-
-				// Generic reveals
-				ScrollTrigger.batch('[data-reveal]', {
-					start: 'top 88%',
-					once: true,
-					onEnter: (elements) => gsap.from(elements, { y: 36, opacity: 0, duration: .9, ease: 'power3.out', stagger: .08, overwrite: true }),
+				gsap.fromTo('.manifesto-word', { '--fill': 0 }, {
+					'--fill': 1, ease: 'none', stagger: .5,
+					scrollTrigger: { trigger: '.landing-manifesto', start: 'top 72%', end: 'bottom 52%', scrub: .4 },
 				})
 
-				// Store CTA headline scales into place
-				gsap.from('.store-cta h2', { scale: .92, opacity: .4, ease: 'none', scrollTrigger: { trigger: '.store-cta', start: 'top 90%', end: 'center 60%', scrub: true } })
+				gsap.fromTo('.manifesto-chevrons', { xPercent: -20 }, { xPercent: 20, ease: 'none', scrollTrigger: { trigger: '.landing-manifesto', start: 'top bottom', end: 'bottom top', scrub: true } })
+
+				gsap.fromTo('.final-chevrons', { yPercent: 25 }, { yPercent: -25, ease: 'none', scrollTrigger: { trigger: '.landing-final', start: 'top bottom', end: 'bottom top', scrub: true } })
+				gsap.from('.landing-final h2', { scale: .9, opacity: .3, ease: 'none', scrollTrigger: { trigger: '.landing-final', start: 'top 90%', end: 'top 35%', scrub: true } })
+
+				ScrollTrigger.batch('[data-reveal]', {
+					start: 'top 90%',
+					once: true,
+					onEnter: (elements) => gsap.from(elements, { y: 40, opacity: 0, duration: .9, ease: 'power3.out', stagger: .08, overwrite: true }),
+				})
 			})
 
-			// Signature moment: the brake assembles as the visitor moves through the three steps
 			media.add('(min-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
-				const stepNodes = gsap.utils.toArray('.process-step')
+				// Beneficios: la segunda columna se desliza más rápido que la primera.
+				gsap.fromTo('.benefits-col-b', { yPercent: 10 }, { yPercent: -10, ease: 'none', scrollTrigger: { trigger: '.landing-benefits', start: 'top bottom', end: 'bottom top', scrub: true } })
+
+				// Firma: el freno se arma mientras se recorren los tres pasos.
+				const stepNodes = gsap.utils.toArray('.process-step', root)
+				const fill = root.querySelector('.process-meter-fill')
 				const setActive = (progress) => {
 					const active = Math.min(stepNodes.length - 1, Math.floor(progress * stepNodes.length * .999))
 					stepNodes.forEach((node, index) => node.classList.toggle('is-active', index === active))
-					root.querySelector('.process-meter-fill')?.style.setProperty('--progress', progress.toFixed(3))
+					fill?.style.setProperty('--progress', progress.toFixed(3))
 				}
-				const assembly = gsap.timeline({
+				gsap.timeline({
 					defaults: { ease: 'power2.inOut' },
-					scrollTrigger: {
-						trigger: '.process-section', start: 'top top', end: '+=220%', pin: '.process-pin', scrub: .8,
-						onUpdate: (self) => setActive(self.progress),
-					},
+					scrollTrigger: { trigger: '.process-section', start: 'top 75%', end: 'bottom 60%', scrub: .8, onUpdate: (self) => setActive(self.progress) },
 				})
-				assembly
 					.fromTo('.process-stage [data-part="rotor"]', { scale: .55, rotate: -120, opacity: .25, transformOrigin: '50% 50%' }, { scale: 1, rotate: 0, opacity: 1, duration: 1 })
 					.fromTo('.process-stage [data-part="caliper"]', { x: 140, y: -150, rotate: 25, opacity: 0, transformOrigin: '75% 25%' }, { x: 0, y: 0, rotate: 0, opacity: 1, duration: 1 })
 					.fromTo('.process-stage [data-part="pads"]', { x: 60, y: -70, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: .6 })
@@ -88,118 +123,154 @@ function useLandingMotion(rootRef, ready) {
 				return () => stepNodes.forEach((node) => node.classList.remove('is-active'))
 			})
 		}, root)
+		ScrollTrigger.refresh()
 		return () => context.revert()
 	}, [rootRef, ready])
 }
 
+function Stars({ value }) {
+	return <span className="landing-stars" role="img" aria-label={`${value} de 5 estrellas`}>{'★'.repeat(value)}<span aria-hidden="true">{'★'.repeat(5 - value)}</span></span>
+}
+
+function StoreRating({ summary, failed }) {
+	if (failed) return <span>Reseñas no disponibles</span>
+	const total = Number(summary?.total || 0)
+	if (!total) return <span>Sin reseñas todavía</span>
+	return <span><b className="landing-store-star">★ {Number(summary.promedio).toFixed(1)}</b> · {total} {total === 1 ? 'reseña' : 'reseñas'}</span>
+}
+
 function Home() {
-	const navigate = useNavigate()
 	const { role, user } = useAuth()
-	const panel = panelPath(role)
-	const [categories, setCategories] = useState([])
-	const [categoryState, setCategoryState] = useState('loading')
+	const signedIn = Boolean(user)
 	const rootRef = useRef(null)
+	const [categories, setCategories] = useState({ state: 'loading', items: [] })
+	const [stores, setStores] = useState({ state: 'loading', items: [], summaries: {}, reviews: [], reviewsFailed: false })
 
 	useEffect(() => {
 		let active = true
 		obtenerCategoriasActivas()
-			.then((data) => { if (active) { setCategories(data); setCategoryState('ready') } })
-			.catch(() => { if (active) setCategoryState('error') })
+			.then((data) => { if (active) setCategories({ state: 'ready', items: data || [] }) })
+			.catch(() => { if (active) setCategories({ state: 'error', items: [] }) })
+		obtenerTiendasPublicas(0)
+			.then(async ({ items }) => {
+				const featured = items.slice(0, 6)
+				let summaries = {}
+				let reviews = []
+				let reviewsFailed = false
+				try {
+					const result = await obtenerResenasPublicasDeTiendas(items.map((store) => store.id))
+					summaries = result.summaries
+					reviews = result.reviews
+				} catch { reviewsFailed = true }
+				if (active) setStores({ state: 'ready', items: featured, all: items, summaries, reviews, reviewsFailed })
+			})
+			.catch(() => { if (active) setStores({ state: 'error', items: [], summaries: {}, reviews: [], reviewsFailed: false }) })
 		return () => { active = false }
 	}, [])
 
-	useLandingMotion(rootRef, categoryState)
-	useEffect(() => { ScrollTrigger.refresh() }, [categoryState])
-
-	function search(event) {
-		event.preventDefault()
-		const term = String(new FormData(event.currentTarget).get('buscar') || '').trim()
-		navigate(term ? `/promociones?q=${encodeURIComponent(term)}` : '/promociones')
+	const categoryItems = landingCategories(categories.items)
+	const ready = categories.state !== 'loading' && stores.state !== 'loading'
+	useHeroMotion(rootRef)
+	useStoryMotion(rootRef, ready)
+	const categoriesRef = useRef(null)
+	useDragScroll(categoriesRef, categoryItems.length > 0)
+	const scrollCategories = (direction) => {
+		const viewport = categoriesRef.current
+		if (viewport) viewport.scrollBy({ left: direction * viewport.clientWidth * .8, behavior: 'smooth' })
 	}
 
-	const categoryNames = categories.slice(0, 14).map((category) => category.nombre)
-	const bandWords = categoryNames.length ? categoryNames : ['Frenos', 'Motor', 'Suspensión', 'Transmisión', 'Eléctrico', 'Carrocería']
+	const hero = heroActions(role, signedIn)
+	const paths = finalPaths(role, signedIn)
+	const storesById = new Map((stores.all || stores.items).map((store) => [store.id, store]))
+	const reviews = featuredReviews(stores.reviews, storesById)
+	const footerLinks = publicNavLinks(role, signedIn).filter((link) => !link.hash)
 
 	return (
-		<div className="public-home" ref={rootRef}>
+		<div className="public-home landing" ref={rootRef}>
 			<a className="skip-link" href="#contenido">Ir al contenido</a>
-			<Header />
+			<Header overlay />
 			<main id="contenido" tabIndex={-1}>
-				<section className="home-hero section-dark" aria-labelledby="hero-title">
-					<div className="hero-grid" aria-hidden="true" />
+
+				{/* 1 · Hero (oscuro) */}
+				<section className="landing-hero section-dark" aria-labelledby="hero-title">
+					<HeroScene />
 					<div className="hero-copy">
-						<p className="eyebrow" data-hero-fade>DriveFix · Tu aliado automotor</p>
+						<p className="eyebrow" data-hero-fade>DriveFix · Repuestos con propuestas</p>
 						<h1 id="hero-title">
-							<span className="hero-line"><span className="hero-word">Tu</span> <span className="hero-word">vehículo,</span></span>{' '}
-							<span className="hero-line"><em><span className="hero-word">en</span> <span className="hero-word">buenas</span> <span className="hero-word">manos</span></em></span>
+							<span className="hero-line"><span className="hero-word">El</span> <span className="hero-word">repuesto</span> <span className="hero-word">correcto,</span></span>{' '}
+							<span className="hero-line hero-line-accent"><span className="hero-word">sin</span> <span className="hero-word">dar</span> <span className="hero-word">vueltas.</span></span>
 						</h1>
-						<p className="hero-text" data-hero-fade>Encuentra repuestos confiables y tiendas especializadas para mantener tu vehículo listo para la ruta.</p>
+						<p className="hero-text" data-hero-fade>Publica lo que necesita tu vehículo y recibe propuestas de tiendas aprobadas. Tú comparas y eliges.</p>
 						<div className="hero-actions" data-hero-fade>
-							<Link className="button button-primary button-lg" to={user ? panel : '/register'}>{user ? 'Ir a mi panel' : 'Comenzar ahora'} <span aria-hidden="true">→</span></Link>
-							<Link className="button button-secondary button-lg" to="/tiendas">Explorar tiendas</Link>
+							<Link className="button button-primary button-lg" to={hero.primary.to}>{hero.primary.label} <span aria-hidden="true">→</span></Link>
+							<Link className="button button-secondary button-lg" to={hero.secondary.to}>{hero.secondary.label}</Link>
 						</div>
-						<ul className="hero-points" data-hero-fade>
-							<li>Busca</li><li>Compara</li><li>Decide</li>
+						{!signedIn && <p className="hero-note" data-hero-fade>Las promociones de las tiendas se ven al <Link to="/login">iniciar sesión</Link>.</p>}
+					</div>
+					<a className="hero-scroll" href="#manifiesto"><span>Desliza</span><i aria-hidden="true" /></a>
+				</section>
+
+				{/* 2 · Manifiesto (claro) */}
+				<section id="manifiesto" className="landing-manifesto" aria-labelledby="manifesto-title">
+					<svg className="manifesto-chevrons" viewBox="0 0 520 400" aria-hidden="true" focusable="false">
+						<path d="M40 30l170 170L40 370" className="hero-chevron hero-chevron-signal" />
+						<path d="M240 30l170 170-170 170" className="hero-chevron hero-chevron-highlight" />
+					</svg>
+					<p className="eyebrow">Así de simple</p>
+					<h2 id="manifesto-title" className="manifesto-text">
+						{manifestoWords.map((item) => <span key={item.key} className={`manifesto-word${item.strong ? ' is-strong' : ''}`}>{item.word} </span>)}
+					</h2>
+				</section>
+
+				{/* 3 · Categorías (claro, fila horizontal que se arrastra) */}
+				<section id="categorias" className="landing-categories" aria-labelledby="categorias-title">
+					<div className="landing-heading">
+						<div>
+							<p className="eyebrow">Explora por categoría</p>
+							<h2 id="categorias-title">La pieza correcta empieza aquí</h2>
+						</div>
+						<div className="landing-heading-aside">
+							<p>
+								{role === 'tienda' ? 'Elige las categorías que atiendes para recibir solicitudes.'
+									: signedIn && role !== 'cliente' ? 'Categorías activas en DriveFix.'
+									: 'Elige una categoría y publica tu solicitud en un minuto.'}
+							</p>
+							{categoryItems.length > 0 && <div className="categories-arrows">
+								<button type="button" className="icon-action" onClick={() => scrollCategories(-1)} aria-label="Categorías anteriores">←</button>
+								<button type="button" className="icon-action" onClick={() => scrollCategories(1)} aria-label="Más categorías">→</button>
+							</div>}
+						</div>
+					</div>
+					{categories.state === 'error' && <p className="request-history-notice" role="status">No se pudieron cargar las categorías. Puedes explorar las tiendas mientras tanto.</p>}
+					{categories.state === 'loading' && <div className="categories-viewport"><div className="categories-track" role="status" aria-label="Cargando categorías…">{[0, 1, 2, 3].map((index) => <span className="category-card is-skeleton" key={index} />)}</div></div>}
+					{categories.state === 'ready' && categoryItems.length === 0 && <p className="request-history-notice" role="status">Todavía no hay categorías activas.</p>}
+					{categoryItems.length > 0 && <div className="categories-viewport" ref={categoriesRef}>
+						<ul className="categories-track">
+							{categoryItems.map((category, index) => {
+								const link = categoryLink(role, signedIn, category.id)
+								const body = <>
+									<span className="category-card-index">{String(index + 1).padStart(2, '0')}</span>
+									{categoryPhoto(category.nombre)
+										? <span className="category-card-photo"><img src={categoryPhoto(category.nombre)} alt="" width="480" height="320" loading="lazy" decoding="async" draggable="false" /></span>
+										: <span className="category-card-art"><CategoryGlyph name={category.nombre} /></span>}
+									<strong>{category.nombre}</strong>
+									{category.subcategorias > 0 && <span className="category-card-meta">{category.subcategorias} {category.subcategorias === 1 ? 'subcategoría' : 'subcategorías'}</span>}
+									{link && <span className="category-card-action">{link.action} <span aria-hidden="true">→</span></span>}
+								</>
+								return <li key={category.id}>
+									{link ? <Link className="category-card" to={link.to}>{body}</Link> : <div className="category-card">{body}</div>}
+								</li>
+							})}
 						</ul>
-					</div>
-					<div className="hero-stage" aria-hidden="true">
-						<BrakeAssembly idPrefix="hero" className="hero-rotor" />
-						<div className="hero-card hero-card-1">
-							<span className="hero-card-kicker">Solicitud publicada</span>
-							<strong>Pastillas de freno delanteras</strong>
-							<span className="hero-card-meta">Frenos · 2 unidades</span>
-						</div>
-						<div className="hero-card hero-card-2">
-							<span className="hero-card-kicker hero-card-kicker-steel">Propuesta de tienda</span>
-							<strong>Precio total, marca y garantía</strong>
-							<span className="hero-card-status">Enviada</span>
-						</div>
-						<div className="hero-card hero-card-3">
-							<span className="hero-card-stars">★★★★★</span>
-							<strong>Atención confirmada</strong>
-						</div>
-					</div>
-					<a className="hero-scroll" href="#como-funciona"><span>Cómo funciona</span><i aria-hidden="true" /></a>
+					</div>}
 				</section>
 
-				<section className="search-panel" aria-labelledby="search-title" data-reveal>
-					<div>
-						<p className="eyebrow">Encuentra lo que necesitas</p>
-						<h2 id="search-title">¿Qué estás buscando hoy?</h2>
-					</div>
-					<form className="search-box" role="search" onSubmit={search}>
-						<span aria-hidden="true">⌕</span>
-						<input name="buscar" type="search" maxLength={160} placeholder="Buscar en promociones…" aria-label="Buscar promociones" />
-						<button type="submit">Buscar</button>
-					</form>
-				</section>
-
-				<div className="category-band" aria-hidden="true">
-					<div className="category-band-track">{[...bandWords, ...bandWords].map((word, index) => <span key={index}>{word}<i>✦</i></span>)}</div>
-				</div>
-
-				<section id="categorias" className="home-section categories-section" aria-labelledby="categorias-title">
-					<div className="section-heading inline-heading" data-reveal>
-						<div><p className="eyebrow">Explora por categoría</p><h2 id="categorias-title">La pieza correcta empieza aquí</h2></div>
-						<Link className="text-button" to={user && role === 'cliente' ? '/cliente/solicitudes/crear' : '/register?role=cliente'}>Publicar una solicitud →</Link>
-					</div>
-					{categoryState === 'error' && <p className="request-history-notice" role="status">No se pudieron cargar las categorías. Puedes explorar las tiendas mientras tanto.</p>}
-					{categoryState === 'loading' && <p className="request-loading" role="status">Cargando categorías…</p>}
-					{categoryState === 'ready' && categories.length === 0 && <p className="request-history-notice" role="status">Todavía no hay categorías activas.</p>}
-					<div className="category-list">{categories.slice(0, 12).map((category, index) => <Link className="category-item" data-reveal key={category.id} to={`/cliente/solicitudes/crear?categoria=${category.id}`}>
-						<span className="category-index">{String(index + 1).padStart(2, '0')}</span>
-						<strong>{category.nombre}</strong>
-						<b aria-hidden="true">→</b>
-					</Link>)}</div>
-				</section>
-
+				{/* 4 · Cómo funciona (oscuro, contado con el scroll) */}
 				<section id="como-funciona" className="process-section section-dark" aria-labelledby="process-title">
 					<div className="process-pin">
 						<div className="process-copy">
-							<div className="section-heading">
-								<p className="eyebrow">Paso a paso</p>
-								<h2 id="process-title">Cómo funciona DriveFix</h2>
-							</div>
+							<p className="eyebrow">Paso a paso</p>
+							<h2 id="process-title">Cómo funciona DriveFix</h2>
 							<ol className="process-steps">
 								{steps.map((step) => <li className="process-step" key={step.title}>
 									<span className="process-step-kicker">{step.kicker}</span>
@@ -216,43 +287,114 @@ function Home() {
 					</div>
 				</section>
 
-				<section className="home-section benefits-section" aria-labelledby="benefits-title">
-					<div className="section-heading inline-heading" data-reveal>
-						<div><p className="eyebrow">Una plataforma para avanzar</p><h2 id="benefits-title">Todo lo que necesitas para cuidar tu vehículo, en un solo lugar.</h2></div>
-						<Link className="text-button" to="/promociones">Ver promociones →</Link>
+				{/* 5 · Beneficios (claro, columnas desfasadas) */}
+				<section className="landing-benefits" aria-labelledby="benefits-title">
+					<div className="benefits-intro" data-reveal>
+						<p className="eyebrow">Por qué DriveFix</p>
+						<h2 id="benefits-title">Todo lo que necesitas para cuidar tu vehículo, en un solo lugar.</h2>
+						<p>Sin llamar tienda por tienda ni comparar precios por partes: cada propuesta llega completa y ordenada.</p>
 					</div>
-					<div className="feature-grid">{benefits.map((benefit, index) => <article className="part-card" key={benefit.title} data-reveal>
-						<span className="card-number">0{index + 1}</span>
-						<span className="part-icon"><Icon name={benefit.icon} size={22} /></span>
-						<h3>{benefit.title}</h3>
-						<p>{benefit.text}</p>
-					</article>)}</div>
+					<div className="benefits-cols">
+						{[benefits.slice(0, 2), benefits.slice(2)].map((column, columnIndex) => <div className={`benefits-col benefits-col-${columnIndex ? 'b' : 'a'}`} key={columnIndex}>
+							{column.map((benefit) => <article className="benefit-card" key={benefit.title} data-reveal>
+								<span className="benefit-icon"><Icon name={benefit.icon} size={24} /></span>
+								<h3>{benefit.title}</h3>
+								<p>{benefit.text}</p>
+							</article>)}
+						</div>)}
+					</div>
 				</section>
 
-				<section id="tiendas" className="home-section stores-section" aria-labelledby="stores-title">
-					<div className="stores-panel" data-reveal>
+				{/* 6 · Tiendas y reseñas reales (claro) */}
+				<section id="tiendas" className="landing-stores" aria-labelledby="stores-title">
+					<div className="landing-heading" data-reveal>
 						<div>
 							<p className="eyebrow">Perfiles aprobados</p>
-							<h2 id="stores-title">Explora tiendas de repuestos</h2>
-							<p>Consulta la presentación de las tiendas activas. El teléfono se publica en sus promociones y la ubicación se comparte al seleccionar una propuesta.</p>
+							<h2 id="stores-title">Tiendas reales, opiniones reales</h2>
 						</div>
-						<Link className="button button-secondary button-lg" to="/tiendas">Ver catálogo de tiendas →</Link>
+						<Link className="text-button" to={role === 'cliente' ? '/cliente/tiendas' : '/tiendas'}>Ver todas las tiendas →</Link>
 					</div>
+					{stores.state === 'loading' && <p className="request-loading" role="status">Cargando tiendas…</p>}
+					{stores.state === 'error' && <p className="request-history-notice" role="status">No se pudieron cargar las tiendas. Vuelve a intentarlo más tarde.</p>}
+					{stores.state === 'ready' && stores.items.length === 0 && <div className="landing-empty" data-reveal>
+						<h3>Las primeras tiendas están en revisión</h3>
+						<p>Cuando el equipo de DriveFix apruebe una tienda, aparecerá aquí con sus reseñas.</p>
+					</div>}
+					{stores.items.length > 0 && <ul className="landing-store-grid" data-count={stores.items.length}>
+						{stores.items.map((store) => <li key={store.id} data-reveal>
+							<Link className="landing-store-card" to={storeLink(role, store.id)}>
+								<span className="landing-store-photo">
+									{store.fotografias?.[0]
+										? <img src={store.fotografias[0]} alt="" width="640" height="400" loading="lazy" decoding="async" />
+										: <span className="landing-store-initial" aria-hidden="true">{store.nombre?.charAt(0)?.toUpperCase() || 'D'}</span>}
+								</span>
+								<span className="landing-store-text">
+									<strong>{store.nombre}</strong>
+									<span className="landing-store-meta"><StoreRating summary={stores.summaries[store.id]} failed={stores.reviewsFailed} /></span>
+									{store.horario && <span className="landing-store-meta">{store.horario}</span>}
+								</span>
+							</Link>
+						</li>)}
+					</ul>}
+					{reviews.length > 0 && <div className="landing-reviews">
+						<h3 className="landing-reviews-title" data-reveal>Lo que dicen quienes ya fueron atendidos</h3>
+						<ul className="landing-review-row">
+							{reviews.map((review) => <li key={review.id} data-reveal>
+								<figure className="landing-review">
+									<Stars value={Number(review.calificacion) || 0} />
+									<blockquote><p>{review.comentario}</p></blockquote>
+									<figcaption>
+										<span>Reseña de <strong>{review.tienda.nombre}</strong></span>
+										<span>Atención confirmada · <time dateTime={review.fecha_creacion}>{dateFormat.format(new Date(review.fecha_creacion))}</time></span>
+									</figcaption>
+								</figure>
+							</li>)}
+						</ul>
+					</div>}
 				</section>
 
-				<section className="store-cta section-dark" aria-labelledby="cta-title">
-					<div className="store-cta-inner">
-						<p className="eyebrow">¿Tienes una tienda?</p>
-						<h2 id="cta-title">Haz que encuentren tu tienda</h2>
-						<p>Presenta tus repuestos a personas que ya están buscando soluciones confiables.</p>
-						<Link className="button button-primary button-lg" to={role === 'tienda' ? '/tienda' : '/register?role=tienda'}>{role === 'tienda' ? 'Administrar mi tienda' : 'Registrar mi tienda'} <span aria-hidden="true">→</span></Link>
+				{/* 7 · Llamada final (oscuro) */}
+				<section className="landing-final section-dark" aria-labelledby="final-title">
+					<svg className="final-chevrons" viewBox="0 0 520 400" aria-hidden="true" focusable="false">
+						<path d="M40 30l170 170L40 370" className="hero-chevron hero-chevron-signal" />
+						<path d="M240 30l170 170-170 170" className="hero-chevron hero-chevron-highlight" />
+					</svg>
+					<div className="landing-final-inner">
+						<p className="eyebrow">El siguiente paso</p>
+						<h2 id="final-title">Tu vehículo, en buenas manos.</h2>
+						{(paths.client || paths.store) ? <div className="final-paths">
+							{paths.client && <Link className="final-path" to={paths.client.to}>
+								<span className="final-path-kicker">Necesito un repuesto</span>
+								<strong>{paths.client.label}</strong>
+								<span>Publica tu solicitud y recibe propuestas.</span>
+								<span className="final-path-arrow" aria-hidden="true">→</span>
+							</Link>}
+							{paths.store && <Link className="final-path is-store" to={paths.store.to}>
+								<span className="final-path-kicker">Tengo una tienda</span>
+								<strong>{paths.store.label}</strong>
+								<span>Responde a personas que ya buscan lo que vendes.</span>
+								<span className="final-path-arrow" aria-hidden="true">→</span>
+							</Link>}
+						</div> : <Link className="button button-primary button-lg" to={hero.primary.to}>{hero.primary.label} <span aria-hidden="true">→</span></Link>}
 					</div>
 				</section>
 			</main>
+
 			<footer className="home-footer section-dark">
-				<Link className="brand" to="/"><BrandLogo variant="dark" /></Link>
-				<nav aria-label="Enlaces del pie de página"><Link to="/tiendas">Tiendas</Link><Link to="/promociones">Promociones</Link><Link to="/login">Iniciar sesión</Link><Link to="/register">Registrarse</Link></nav>
-				<p>Tu vehículo, en buenas manos. © {new Date().getFullYear()} DriveFix</p>
+				<div className="home-footer-top">
+					<Link className="brand" to="/" aria-label="DriveFix, inicio"><BrandLogo variant="dark" decorative /></Link>
+					<p className="home-footer-tagline">Solicitudes de repuestos y propuestas de tiendas aprobadas.</p>
+				</div>
+				<nav aria-label="Enlaces del pie de página">
+					<ul>
+						{footerLinks.map((link) => <li key={link.to}><Link to={link.to}>{link.label}</Link></li>)}
+						{!signedIn && <><li><Link to="/login">Iniciar sesión</Link></li><li><Link to="/register">Registrarse</Link></li></>}
+					</ul>
+				</nav>
+				<nav className="home-footer-docs" aria-label="Documentos legales">
+					<ul>{LEGAL_ORDER.map((key) => <li key={key}><Link to={legalPath(key)}>{LEGAL_DOCS[key].short}</Link></li>)}<li><Link to={legalPath('creditos')}>Créditos de imágenes</Link></li></ul>
+				</nav>
+				<p className="home-footer-legal">© {new Date().getFullYear()} DriveFix · Proyecto académico: algunas tiendas, reseñas y promociones son datos de demostración.</p>
 			</footer>
 		</div>
 	)

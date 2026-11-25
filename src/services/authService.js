@@ -20,7 +20,10 @@ export async function actualizarMiPerfil({ nombre, apellido, telefono }) {
 	if (!data) throw new Error('Cuenta no disponible para actualizar.')
 }
 
-export async function registrarCuenta({ email, password, nombre, apellido, telefono, role }) {
+export async function registrarCuenta({ email, password, nombre, apellido, telefono, role, legal }) {
 	if (!['cliente', 'tienda'].includes(role)) throw new Error('El registro público solo admite cuentas de cliente o tienda.')
-	return supabase.auth.signUp({ email, password, options: { data: { nombre, apellido, telefono, role }, emailRedirectTo: authRedirectUrl('/login') } })
+	if (!legal?.version) throw new Error('Debes aceptar los términos y la política de privacidad.')
+	// Sesión 8: la aceptación queda como evidencia en los metadatos de la cuenta (versión, documentos y fecha).
+	const aceptacion = { version: legal.version, documentos: legal.documentos, fecha: new Date().toISOString() }
+	return supabase.auth.signUp({ email, password, options: { data: { nombre, apellido, telefono, role, aceptacion_legal: aceptacion }, emailRedirectTo: authRedirectUrl('/login') } })
 }

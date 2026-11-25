@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../services/supabase.js'
 import { useAuth } from '../context/authState.js'
+import { SIGN_OUT_CONFIRM, useConfirm } from '../context/confirmState.js'
 
 export default function AdminMfaGate({ children }) {
   const { user, signOut } = useAuth()
+  const confirm = useConfirm()
   const [verified, setVerified] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -64,6 +66,6 @@ export default function AdminMfaGate({ children }) {
     {!factorId && <button className="button" type="button" disabled={busy} onClick={enroll}>Configurar autenticador</button>}
     {enrollment && <div><p>Escanea el QR con tu autenticador y guarda el acceso en un lugar seguro.</p><img src={enrollment.totp.qr_code} alt="QR para configurar el segundo factor" width="240" height="240" /><details><summary>Configurar manualmente</summary><code>{enrollment.totp.secret}</code></details></div>}
     {factorId && <form onSubmit={verify}><label>Código de seis dígitos<input name="code" inputMode="numeric" pattern="[0-9]{6}" minLength={6} maxLength={6} autoComplete="one-time-code" required /></label><button className="button" type="submit" disabled={busy}>{busy ? 'Verificando…' : 'Verificar código'}</button></form>}
-    <p><button type="button" className="button button-secondary" onClick={() => { void signOut() }}>Cerrar sesión</button></p>
+    <p><button type="button" className="button button-secondary" onClick={async () => { if (await confirm(SIGN_OUT_CONFIRM)) void signOut() }}>Cerrar sesión</button></p>
   </main>
 }

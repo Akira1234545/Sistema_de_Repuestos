@@ -30,3 +30,5 @@ dist-ssr
 
 # Local agent configuration
 .claude/
+
+.vercel

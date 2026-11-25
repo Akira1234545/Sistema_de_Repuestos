@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { publicError } from '../../lib/errors.js'
 import { useToast } from '../../context/toastState.js'
+import { PANEL_BADGES_EVENT } from '../../lib/events.js'
 import { crearPropuesta } from '../../services/propuestaService.js'
 import { useFormDraft } from '../../hooks/useFormDraft.js'
 import { useAuth } from '../../context/authState.js'
@@ -16,18 +17,18 @@ function PropuestaForm({ solicitudId, onCreated }) {
 	function update(event) { setForm((current) => ({ ...current, [event.target.name]: event.target.value })) }
 	async function submit(event) {
 		event.preventDefault(); setError('')
-		if (!form.marca.trim() || !form.disponibilidad.trim() || form.precio === '' || !Number.isFinite(Number(form.precio)) || Number(form.precio) < 0) {
-			setError('Completa un precio válido, la marca y la disponibilidad.'); return
+		if (!form.marca.trim() || !form.disponibilidad.trim() || form.precio === '' || !Number.isFinite(Number(form.precio)) || Number(form.precio) <= 0) {
+			setError('Indica un precio mayor que 0 Bs, la marca y la disponibilidad.'); return
 		}
 		setSaving(true)
-		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId, userId: user.id }); toast({ title: 'Propuesta enviada', description: 'El cliente recibirá una notificación.', tone: 'success' }); onCreated() }
+		try { await crearPropuesta({ ...form, precio: Number(form.precio), solicitud_id: solicitudId, userId: user.id }); toast({ title: 'Propuesta enviada', description: 'El cliente recibirá una notificación.', tone: 'success' }); window.dispatchEvent(new Event(PANEL_BADGES_EVENT)); onCreated() }
 		catch (saveError) { setError(`No se pudo enviar la propuesta: ${publicError(saveError)}`) }
 		finally { setSaving(false) }
 	}
 	return <form className="proposal-form" onSubmit={submit}>
 		{error && <p className="proposal-error" role="alert">{error}</p>}
 		<div className="proposal-form-grid">
-			<label>Precio total de la solicitud (Bs)<input name="precio" type="number" min="0" max="99999999.99" step="0.01" value={form.precio} onChange={update} required /><small>Incluye toda la cantidad solicitada.</small></label>
+			<label>Precio total de la solicitud (Bs)<input name="precio" type="number" min="0.01" max="99999999.99" step="0.01" value={form.precio} onChange={update} required /><small>Incluye toda la cantidad solicitada.</small></label>
 			<label>Marca<input name="marca" value={form.marca} onChange={update} maxLength="100" required /></label>
 			<label className="proposal-field-wide">Disponibilidad<input name="disponibilidad" value={form.disponibilidad} onChange={update} placeholder="Ej. Disponible para entrega inmediata" maxLength="250" required /></label>
 			<label>Garantía<input name="garantia" value={form.garantia} onChange={update} maxLength="250" /></label>

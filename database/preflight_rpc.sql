@@ -3,12 +3,13 @@
 -- match the parameter names and types validated by tests/contracts.test.mjs.
 WITH required(name) AS (
     VALUES
-        ('admin_user_page'),
+        ('drivefix_admin_user_page'),
+        ('drivefix_reverificacion_reciente'),
         ('get_dashboard_stats'),
         ('update_my_profile'),
         ('client_dashboard_stats'),
         ('store_dashboard_stats'),
-        ('sprint3_admin_set_user_active'),
+        ('drivefix_admin_set_user_active'),
         ('sprint3_admin_get_system_settings'),
         ('guardar_configuracion_segura'),
         ('sprint3_admin_list_categories'),
@@ -32,7 +33,10 @@ WITH required(name) AS (
         ('request_page'),
         ('confirmar_atencion'),
         ('sprint3_get_system_status'),
-        ('sprint1_admin_review_store')
+        ('sprint1_admin_review_store'),
+        ('cancelar_seleccion'),
+        ('guardar_fotos_vehiculo'),
+        ('dashboard_series')
 )
 SELECT required.name,
        p.oid IS NOT NULL AS installed,

@@ -2,13 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from './Icon.jsx'
 import { useAuth } from '../context/authState.js'
+import { SIGN_OUT_CONFIRM, useConfirm } from '../context/confirmState.js'
 import { ROLE_LABELS } from '../lib/roles.js'
+import { useLayer } from '../lib/layers.js'
 
 // Avatar button with the account shortcuts; it is the way to sign out on phones,
 // where the sidebar (and its sign-out button) becomes the bottom bar.
 export default function AccountMenu({ variant = 'client' }) {
 	const { user, profile, role, signOut } = useAuth()
 	const navigate = useNavigate()
+	const confirm = useConfirm()
 	const rootRef = useRef(null)
 	const [open, setOpen] = useState(false)
 	const [leaving, setLeaving] = useState(false)
@@ -18,13 +21,14 @@ export default function AccountMenu({ variant = 'client' }) {
 	useEffect(() => {
 		if (!open) return undefined
 		function onPointer(event) { if (!rootRef.current?.contains(event.target)) setOpen(false) }
-		function onKey(event) { if (event.key === 'Escape') setOpen(false) }
 		document.addEventListener('pointerdown', onPointer)
-		document.addEventListener('keydown', onKey)
-		return () => { document.removeEventListener('pointerdown', onPointer); document.removeEventListener('keydown', onKey) }
+		return () => document.removeEventListener('pointerdown', onPointer)
 	}, [open])
+	useLayer(open, () => { setOpen(false); rootRef.current?.querySelector('button')?.focus() })
 
 	async function leave() {
+		setOpen(false)
+		if (!(await confirm(SIGN_OUT_CONFIRM))) return
 		setLeaving(true)
 		if (await signOut()) navigate('/login', { replace: true })
 		else setLeaving(false)

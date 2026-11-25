@@ -1,47 +1,48 @@
-import Icon from './Icon.jsx'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { useRef } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import PanelSidebar from './panel/PanelSidebar.jsx'
 import { useAuth } from '../context/authState.js'
-import { useBottomBar } from '../hooks/useBottomBar.js'
-import BrandLogo from './BrandLogo.jsx'
+import { obtenerResumenCliente } from '../services/dashboardService.js'
+import { PANEL_BADGES_EVENT, REFRESH_EVENT } from '../lib/events.js'
 
-const clientNavigation = [
-	{ label: 'Inicio', icon: 'home', to: '/cliente', end: true },
-	{ label: 'Solicitudes', icon: 'requests', to: '/cliente/solicitudes' },
-	{ label: 'Vehículos', icon: 'vehicle', to: '/cliente/vehiculos' },
-	{ label: 'Promociones', icon: 'promotion', to: '/promociones' },
-	{ label: 'Tiendas', icon: 'store', to: '/cliente/tiendas' },
-	{ label: 'Favoritos', icon: 'heart', to: '/cliente/favoritos' },
-	{ label: 'Mi cuenta', icon: 'user', to: '/cuenta', desktopOnly: true },
+const clientGroups = [
+	{ title: 'Principal', items: [
+		{ label: 'Inicio', icon: 'home', to: '/cliente', end: true },
+		{ label: 'Solicitudes', icon: 'requests', to: '/cliente/solicitudes', badgeLabel: 'propuestas por revisar' },
+		{ label: 'Vehículos', icon: 'vehicle', to: '/cliente/vehiculos' },
+	] },
+	{ title: 'Mis cosas', items: [
+		{ label: 'Promociones', shortLabel: 'Promos', icon: 'promotion', to: '/promociones' },
+		{ label: 'Tiendas', icon: 'store', to: '/cliente/tiendas' },
+		{ label: 'Favoritos', icon: 'heart', to: '/cliente/favoritos' },
+	] },
+	{ title: 'Cuenta', items: [
+		{ label: 'Mi cuenta', icon: 'user', to: '/cuenta', desktopOnly: true },
+	] },
 ]
 
-function ClientSidebar() {
-	const navigate = useNavigate()
-	const { signOut } = useAuth()
-	const navRef = useRef(null)
-	useBottomBar(navRef)
+function ClientSidebar({ mode, onToggle }) {
+	const { profile } = useAuth()
+	const { pathname } = useLocation()
+	const [pending, setPending] = useState(0)
+	const [revision, setRevision] = useState(0)
 
-	async function handleSignOut() {
-		if (await signOut()) navigate('/login')
-	}
+	useEffect(() => {
+		const refresh = () => setRevision((value) => value + 1)
+		window.addEventListener(REFRESH_EVENT, refresh)
+		window.addEventListener(PANEL_BADGES_EVENT, refresh)
+		return () => { window.removeEventListener(REFRESH_EVENT, refresh); window.removeEventListener(PANEL_BADGES_EVENT, refresh) }
+	}, [])
+	// Badge on «Solicitudes»: proposals waiting for a decision. A failure just hides the badge.
+	useEffect(() => {
+		let active = true
+		obtenerResumenCliente().then((stats) => { if (active) setPending(Number(stats?.propuestas_por_revisar) || 0) }).catch(() => {})
+		return () => { active = false }
+	}, [pathname, revision])
 
-	return (
-		<aside className="client-sidebar" aria-label="Menú de cliente">
-			<Link className="client-brand" to="/cliente"><BrandLogo /></Link>
-			<div className="client-sidebar-intro">
-				<span className="client-sidebar-mark">Cliente</span>
-				<p>Todo lo que necesitas para tu vehículo.</p>
-			</div>
-			<nav className="client-navigation" ref={navRef} aria-label="Secciones de cliente">
-				{clientNavigation.map((item) => (
-					<NavLink className={`client-navigation-link${item.desktopOnly ? ' is-desktop-only' : ''}`} to={item.to} end={item.end} key={item.label}>
-						<span className="client-navigation-icon"><Icon name={item.icon} /></span><span>{item.label}</span>
-					</NavLink>
-				))}
-			</nav>
-			<div className="client-sidebar-footer"><span>DriveFix</span><p>Tu vehículo, en buenas manos.</p><button className="client-sidebar-logout" type="button" onClick={handleSignOut}>Cerrar sesión</button></div>
-		</aside>
-	)
+	return <PanelSidebar variant="client" label="Menú de cliente" homeTo="/cliente"
+		title={profile?.nombre ? `${profile.nombre}${profile.apellido ? ` ${profile.apellido}` : ''}` : 'Mi panel'} subtitle="Panel de cliente"
+		groups={clientGroups} badges={{ '/cliente/solicitudes': pending }} mode={mode} onToggle={onToggle} />
 }
 
 export default ClientSidebar

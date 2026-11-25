@@ -99,7 +99,7 @@
 /* Reports */
 .admin-report-period { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-bottom: 20px; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
 .admin-report-period label { flex: 0 1 220px; }
-.admin-report-export { margin-left: auto; }
+.admin-report-export { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 .admin-report-state { padding: 18px 20px; color: var(--text-muted); }
 .admin-report-meta { display: flex; flex-wrap: wrap; gap: 6px 20px; color: var(--text-muted); font-size: var(--fs-sm); }
 .admin-report-meta b { color: var(--text); }
@@ -255,3 +255,55 @@
   .admin-page .admin-report-period label input[type=date] { width: 100%; min-width: 0; padding-inline: 8px 4px; font-size: 13px; }
   .admin-report-period .button { min-height: 40px; padding: 0 12px; }
 }
+
+/* ---------- Sesión 7: inicio «glass» y pastilla deslizante de las pestañas ---------- */
+.admin-page.glass-scene .admin-heading { align-items: center; padding: 16px 20px; border-color: var(--glass-border); background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-shadow); }
+.admin-heading-title { margin: 0; font: 700 var(--fs-lg)/1.2 var(--font-display); }
+.admin-heading .admin-brand + .eyebrow { display: none; }
+.admin-heading > div:first-child { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; }
+.admin-heading > div:first-child p:not(.admin-heading-title) { margin: 0; font-size: var(--fs-sm); }
+.admin-home { margin-bottom: 24px; }
+.admin-tabs { border-color: var(--glass-border); background: var(--glass-bg-strong); box-shadow: var(--glass-shadow); }
+.admin-tabs button { position: relative; isolation: isolate; }
+.admin-tabs button.active { color: var(--accent-ink); background: transparent; }
+.admin-tab-pill { position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: var(--accent); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 30%, transparent); }
+.admin-heading > div:first-child .admin-heading-title { margin: 0; color: var(--text); font-size: var(--fs-lg); }
+
+/* Sesión 8, pendiente 1 (Admin › Usuarios): el nombre se recorta con «…» y la insignia
+   Activa/Inactiva queda siempre entera junto a él, sin taparse con el botón de activar. */
+.admin-user-row .compact-row-text strong { min-width: 0; }
+.admin-user-row .admin-user-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-user-row .icon-action { flex-shrink: 0; }
+
+/* Sesión 8, pendiente 2 (Admin › Categorías): los grupos no pueden ser más anchos que la
+   pantalla (min-width:auto de un elemento de grid tomaba los 300 px mínimos de la lista). */
+.admin-category-groups { grid-template-columns: minmax(0, 1fr); }
+.admin-category-group, .admin-category-card, .admin-category-card-heading, .admin-category-card-heading > div { min-width: 0; }
+.admin-category-group > summary .admin-category-count, .admin-category-group > summary .admin-user-state { flex-shrink: 0; }
+.admin-category-card-heading h3 { overflow-wrap: break-word; }
+@media (max-width: 400px) {
+  .admin-category-group > summary { flex-wrap: wrap; row-gap: 2px; padding-block: 8px; }
+  .admin-category-group > summary strong { flex-basis: calc(100% - 34px); }
+  .admin-category-group > summary .admin-category-count { margin-left: 26px; }
+}
+.admin-user-row .compact-row-text strong .admin-user-state { margin-left: 0; } /* anula el margen de 52 px de la regla ≤ 640 px */
+@media (max-width: 480px) {
+  .admin-user-row .compact-row-text strong { flex-wrap: wrap; row-gap: 4px; white-space: normal; }
+  .admin-user-row .admin-user-name { flex-basis: 100%; }
+}
+@media (max-width: 480px) {
+  /* El título va arriba y la insignia debajo: sin cortar palabras como «Carroc-ería». */
+  .admin-category-card-heading > div { flex-direction: column-reverse; align-items: flex-start; gap: 4px; }
+}
+
+/* Sesión 8: motivo de bloqueo y passkeys del administrador. */
+.admin-user-reason { color: var(--danger); font-size: var(--fs-xs); }
+.admin-passkeys { display: grid; gap: 12px; margin-top: 24px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.admin-passkeys h3 { font-size: var(--fs-h3); }
+.admin-passkeys > p { color: var(--text-muted); font-size: var(--fs-sm); }
+.admin-passkeys .button { justify-self: start; }
+.admin-passkeys-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.admin-passkeys-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); }
+.admin-passkeys-list span { display: grid; gap: 2px; min-width: 0; }
+.admin-passkeys-list small { color: var(--text-muted); }
+.admin-passkeys-empty { color: var(--text-muted); font-size: var(--fs-sm); }

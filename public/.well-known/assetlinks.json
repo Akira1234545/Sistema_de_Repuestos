@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.drivefix.app",
+      "sha256_cert_fingerprints": ["63:2B:4B:13:23:EF:DD:10:D7:34:FF:66:80:AE:05:8A:F3:D3:AE:57:59:2A:6A:9A:65:69:E1:F5:12:4D:85:66"]
+    }
+  }
+]

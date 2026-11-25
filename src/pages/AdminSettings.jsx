@@ -1,4 +1,7 @@
 import { publicError } from '../lib/errors.js'
+import { useConfirm } from '../context/confirmState.js'
+import { useReverify } from '../context/reverifyState.js'
+import PasskeyManager from '../components/PasskeyManager.jsx'
 import { useCallback, useEffect, useState } from 'react'
 import { guardarConfiguracionSistema, obtenerConfiguracionSistema } from '../services/adminService.js'
 
@@ -16,6 +19,8 @@ function AdminSettings() {
 	const [error, setError] = useState('')
 	const [notice, setNotice] = useState('')
 	const [loaded, setLoaded] = useState(false)
+	const confirm = useConfirm()
+	const reverify = useReverify()
 
 	const loadSettings = useCallback(async () => {
 		setLoading(true)
@@ -43,6 +48,8 @@ function AdminSettings() {
 	async function saveSettings(event) {
 		event.preventDefault()
 		if (!loaded) return
+		if (settings.mantenimiento_activo && !(await confirm({ title: '¿Guardar con el modo mantenimiento activo?', message: 'Clientes y tiendas verán el aviso de mantenimiento en lugar de la plataforma hasta que lo desactives.', confirmLabel: 'Guardar y activar aviso', tone: 'danger' }))) return
+		if (settings.mantenimiento_activo && !(await reverify('Vas a activar el modo mantenimiento para toda la plataforma.'))) return
 		setSaving(true)
 		setError('')
 		setNotice('')
@@ -75,6 +82,7 @@ function AdminSettings() {
 			</fieldset>
 			<button className="button button-primary" type="submit" disabled={saving}>{saving ? 'Guardando…' : 'Guardar configuración'}</button>
 		</form>}
+		<PasskeyManager />
 	</section>
 }
 

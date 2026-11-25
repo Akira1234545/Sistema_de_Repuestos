@@ -9,6 +9,8 @@ import { obtenerSolicitudesDisponibles, obtenerSolicitudesUsuario } from '../ser
 import { obtenerVehiculosUsuario } from '../services/vehiculoService.js'
 import { obtenerTiendasPublicas } from '../services/tiendaService.js'
 import { obtenerPromocionesDisponibles } from '../services/promocionService.js'
+import { OPEN_SEARCH_EVENT } from '../lib/events.js'
+import { useLayer } from '../lib/layers.js'
 
 const LIMIT = 4
 
@@ -68,6 +70,17 @@ export default function GlobalSearch({ className = '' }) {
 		return () => { alive = false }
 	}, [term, role, user?.id])
 
+	// Ctrl K / ⌘ K anywhere in the panel, or the sidebar «Buscar…» button, focuses this field.
+	useEffect(() => {
+		const focus = () => { inputRef.current?.focus(); inputRef.current?.select() }
+		function onKey(event) {
+			if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k') { event.preventDefault(); focus() }
+		}
+		window.addEventListener(OPEN_SEARCH_EVENT, focus)
+		document.addEventListener('keydown', onKey)
+		return () => { window.removeEventListener(OPEN_SEARCH_EVENT, focus); document.removeEventListener('keydown', onKey) }
+	}, [])
+
 	useEffect(() => {
 		if (!open) return undefined
 		function onPointer(event) { if (!rootRef.current?.contains(event.target)) setOpen(false) }
@@ -75,37 +88,44 @@ export default function GlobalSearch({ className = '' }) {
 		return () => document.removeEventListener('pointerdown', onPointer)
 	}, [open])
 
+	const showPanel = open && ready
+	// E31: Escape y el botón atrás cierran los resultados; el foco queda en el campo.
+	useLayer(showPanel, () => setOpen(false), { restoreFocus: false })
+	const optionId = (position) => `${listId}-option-${position}`
+
 	function go(item) { setOpen(false); setQuery(''); inputRef.current?.blur(); navigate(item.to) }
 	function onKeyDown(event) {
-		if (event.key === 'Escape') { setOpen(false); inputRef.current?.blur() }
-		else if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((index) => Math.min(flat.length - 1, index + 1)) }
+		if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((index) => Math.min(flat.length - 1, index + 1)) }
 		else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((index) => Math.max(0, index - 1)) }
 		else if (event.key === 'Enter') { event.preventDefault(); if (flat[active]) go(flat[active]) }
 	}
 
-	const showPanel = open && ready
 	const offsets = shown.map((_, groupIndex) => shown.slice(0, groupIndex).reduce((total, group) => total + group.items.length, 0))
 	return <div className={`global-search ${className}`} ref={rootRef}>
 		<label className="global-search-field">
 			<Icon name="search" size={18} />
 			<input ref={inputRef} type="search" value={query} maxLength={80} placeholder={placeholder} aria-label={placeholder}
-				role="combobox" aria-expanded={showPanel} aria-controls={listId} aria-autocomplete="list"
+				role="combobox" aria-expanded={showPanel} aria-controls={showPanel ? listId : undefined} aria-autocomplete="list"
+				aria-activedescendant={showPanel && flat[active] ? optionId(active) : undefined}
 				onFocus={() => setOpen(true)} onChange={(event) => { setQuery(event.target.value); setOpen(true) }} onKeyDown={onKeyDown} />
 			{query && <button type="button" className="global-search-clear" aria-label="Borrar búsqueda" onClick={() => { setQuery(''); inputRef.current?.focus() }}><Icon name="x" size={16} /></button>}
 		</label>
-		{showPanel && <div className="global-search-panel" id={listId} role="listbox" aria-label="Resultados">
+		{showPanel && <div className="global-search-panel">
 			{loading && !shown.length && <p className="global-search-state" role="status">Buscando…</p>}
-			{!loading && !shown.length && <p className="global-search-state">Sin resultados para «{term}».</p>}
-			{shown.map((group, groupIndex) => <section key={group.title} className="global-search-group">
-				<h3><Icon name={group.icon} size={14} /> {group.title}</h3>
+			{!loading && !shown.length && <p className="global-search-state" role="status">Sin resultados para «{term}».</p>}
+			{/* E32: listbox con grupos; la opción activa se anuncia con aria-activedescendant del campo. */}
+			<div id={listId} role="listbox" aria-label="Resultados de búsqueda">
+			{shown.map((group, groupIndex) => <section key={group.title} className="global-search-group" role="group" aria-labelledby={`${listId}-group-${groupIndex}`}>
+				<h3 id={`${listId}-group-${groupIndex}`}><Icon name={group.icon} size={14} /> {group.title}</h3>
 				{group.items.map((item, itemIndex) => {
 					const position = offsets[groupIndex] + itemIndex
-					return <button key={`${group.title}-${item.id}`} type="button" role="option" aria-selected={position === active}
+					return <button key={`${group.title}-${item.id}`} id={optionId(position)} type="button" role="option" tabIndex={-1} aria-selected={position === active}
 						className={position === active ? 'is-active' : ''} onPointerEnter={() => setActive(position)} onClick={() => go(item)}>
 						<span>{item.label}</span>{item.hint && <small>{item.hint}</small>}
 					</button>
 				})}
 			</section>)}
+			</div>
 		</div>}
 	</div>
 }

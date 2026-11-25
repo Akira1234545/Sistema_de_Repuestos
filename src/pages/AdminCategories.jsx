@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { guardarCategoriaAdministracion, obtenerCategoriasAdministracion } from '../services/adminService.js'
 import Select from '../components/ui/Select.jsx'
 import Icon from '../components/Icon.jsx'
+import { useConfirm } from '../context/confirmState.js'
+import { useReverify } from '../context/reverifyState.js'
 
 const emptyForm = { id: '', nombre: '', descripcion: '', categoria_padre_id: '', activo: true }
 
@@ -13,6 +15,8 @@ function AdminCategories() {
 	const [formOpen, setFormOpen] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
+	const confirm = useConfirm()
+	const reverify = useReverify()
 	const [error, setError] = useState('')
 	const [notice, setNotice] = useState('')
 
@@ -91,6 +95,11 @@ function AdminCategories() {
 	}
 
 	async function toggleCategory(category) {
+		const ok = await confirm(category.activo
+			? { title: `¿Desactivar «${category.nombre}»?`, message: 'Los clientes no podrán elegirla en solicitudes nuevas y las tiendas dejarán de verla en sus categorías.', confirmLabel: 'Desactivar categoría', tone: 'danger' }
+			: { title: `¿Activar «${category.nombre}»?`, message: 'Volverá a estar disponible para clientes y tiendas.', confirmLabel: 'Activar categoría' })
+		if (!ok) return
+		if (category.activo && !(await reverify(`Vas a desactivar la categoría «${category.nombre}».`))) return
 		setSaving(true)
 		setError('')
 		setNotice('')

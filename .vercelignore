@@ -1,0 +1,14 @@
+# Solo se sube lo necesario para compilar la web en Vercel.
+.env
+.env.*
+!.env.example
+node_modules
+dist
+android
+respaldos
+claude
+database
+tests
+scripts/cleanup-storage.mjs
+*.apk
+*.aab

@@ -1,3 +1,4 @@
+import { refreshPanelBadges } from '../../lib/events.js'
 import { publicError } from '../../lib/errors.js'
 import SkeletonList from '../../components/ui/Skeleton.jsx'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js'
@@ -15,7 +16,8 @@ import { cerrarSolicitud, contarPropuestas, obtenerHistorialSolicitud, obtenerHi
 import { statusLabel } from '../../lib/format.js'
 
 const statuses = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada', 'atendida', 'cerrada']
-const OPEN_STATES = ['publicada', 'recibiendo_propuestas']
+// E12: también se puede cerrar una solicitud con propuesta seleccionada (la tienda no atendió).
+const CLOSABLE_STATES = ['publicada', 'recibiendo_propuestas', 'propuesta_seleccionada']
 const VIEWS = [
 	{ value: 'compacta', label: 'Vista compacta', icon: 'compact' },
 	{ value: 'lista', label: 'Solo listado', icon: 'list' },
@@ -27,9 +29,9 @@ function shortDate(value) { return new Intl.DateTimeFormat('es-BO', { timeZone: 
 function vehicleLabel(vehicle) { return vehicle ? [vehicle.marcaNombre, vehicle.modeloNombre, vehicle.anio].filter(Boolean).join(' ') : 'Vehículo no disponible' }
 
 function RequestActions({ request, proposals, confirming, closing, onAskClose, onCancelClose, onClose }) {
-	const open = OPEN_STATES.includes(request.estado)
+	const closable = CLOSABLE_STATES.includes(request.estado)
 	if (confirming) return <div className="request-confirm" role="group" aria-label="Confirmar cierre">
-		<span>¿Cerrar esta solicitud?</span>
+		<span>{request.estado === 'propuesta_seleccionada' ? '¿Cerrar la solicitud? La propuesta seleccionada quedará rechazada.' : '¿Cerrar esta solicitud?'}</span>
 		<button type="button" className="icon-action is-danger is-wide" onClick={onClose} disabled={closing}>{closing ? 'Cerrando…' : 'Sí, cerrar'}</button>
 		<button type="button" className="icon-action is-wide" onClick={onCancelClose} disabled={closing}>No</button>
 	</div>
@@ -39,7 +41,7 @@ function RequestActions({ request, proposals, confirming, closing, onAskClose, o
 			<Icon name="eye" size={18} />{proposals > 0 && <span className="icon-badge">{proposals}</span>}
 		</Link>
 		{request.estado === 'publicada' && <Link className="icon-action" to={`/cliente/solicitudes/editar/${request.id}`} aria-label="Editar solicitud" title="Editar"><Icon name="edit" size={18} /></Link>}
-		{open && <button className="icon-action is-danger" type="button" onClick={onAskClose} aria-label="Cerrar solicitud" title="Cerrar solicitud"><Icon name="close" size={18} /></button>}
+		{closable && <button className="icon-action is-danger" type="button" onClick={onAskClose} aria-label="Cerrar solicitud" title="Cerrar solicitud"><Icon name="close" size={18} /></button>}
 	</div>
 }
 
@@ -107,6 +109,7 @@ function Solicitudes() {
 			setRequests((current) => current.map((item) => item.id === requestId ? { ...item, ...updated } : item))
 			setConfirmId('')
 			toast({ title: 'Solicitud cerrada', tone: 'success' })
+			refreshPanelBadges()
 			try {
 				const events = await obtenerHistorialSolicitud(requestId)
 				setHistory((current) => ({ ...current, [requestId]: events }))

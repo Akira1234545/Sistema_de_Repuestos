@@ -99,7 +99,7 @@ async function requestPage(available, page, filters) {
 	const { data, error } = await supabase.rpc('request_page', {
 		p_available: available, p_search: filters.search || null, p_state: filters.status || null,
 		p_category: filters.category || null, p_from: filters.from || null, p_to: filters.to || null,
-		p_offset: page * 25, p_limit: 26,
+		p_offset: page * 25, p_limit: 26, ...(available && filters.unanswered ? { p_unanswered: true } : {}),
 	}).select(requestColumns)
 	if (error) throw error
 	return { items: await enrichRequests(data.slice(0, 25)), hasMore: data.length > 25 }

@@ -167,7 +167,7 @@ input[type="search"]::-webkit-search-cancel-button { filter: none; }
   border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent); border-radius: var(--r-sm);
   color: var(--ok); background: var(--ok-wash); font-size: var(--fs-sm);
 }
-.request-history-notice, .categories-pending, .admin-maintenance-note, .system-status-warning {
+.request-history-notice, .categories-pending, .admin-maintenance-note, .system-status-warning, .auth-notice, .admin-report-native-note {
   display: block; padding: 12px 16px;
   border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent); border-radius: var(--r-sm);
   color: var(--warn); background: var(--warn-wash); font-size: var(--fs-sm);
@@ -403,3 +403,140 @@ a.stat-tile:hover { border-color: color-mix(in srgb, var(--accent) 45%, transpar
 .icon-action.is-primary { color: var(--accent-ink); border-color: transparent; background: var(--accent); }
 .icon-action.is-primary:hover:not(:disabled) { color: var(--accent-ink); background: var(--accent-hover); }
 .icon-action.is-wide { display: inline-flex; align-items: center; }
+
+/* E12: acciones cuando hay una propuesta seleccionada (confirmar, cancelar la selección o cerrar). */
+.proposal-selection-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-block: .5rem 1rem; }
+.proposal-selection-actions .button { flex: 0 1 auto; }
+.button.button-secondary.is-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.button.button-secondary.is-danger:hover:not(:disabled) { background: var(--danger-wash); }
+@media (max-width: 560px) { .proposal-selection-actions .button { flex: 1 1 100%; } }
+
+/* ---------- Vidrio (sesión 7: paneles «glass») ---------- */
+/* Escena: dos manchas difusas fijas detrás del panel (azul 12 %, amarillo 10 %), sin foto. */
+.glass-scene { position: relative; isolation: isolate; }
+.glass-scene::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(min(52vw, 760px) min(52vw, 760px) at 88% 6%, var(--glass-blob-accent), transparent 70%),
+    radial-gradient(min(46vw, 680px) min(46vw, 680px) at 18% 96%, var(--glass-blob-highlight), transparent 70%),
+    var(--bg);
+}
+.glass-card {
+  position: relative;
+  border: 1px solid var(--glass-border); border-radius: var(--r-xl);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), border-color var(--dur);
+}
+@media (hover: hover) {
+  :is(a, button).glass-card:hover, :is(a, button).kpi-card:hover { transform: translateY(-5px); box-shadow: var(--glass-shadow-hover); }
+}
+:is(a, button).glass-card:active, :is(a, button).kpi-card:active { transform: scale(.98); transition-duration: var(--dur-fast); }
+/* Respaldo sólido: sin backdrop-filter, transparencia reducida o app Android (rendimiento).
+   Se cambian las variables, así cualquier componente que use --glass-* queda sólido. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --glass-bg: var(--surface); --glass-bg-strong: var(--surface); --glass-border: var(--line); --glass-dark: var(--gray-900); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-bg: var(--surface); --glass-bg-strong: var(--surface); --glass-border: var(--line); --glass-dark: var(--gray-900); --glass-blur: none; }
+}
+.native-app { --glass-bg: var(--surface); --glass-bg-strong: var(--surface); --glass-border: var(--line); --glass-dark: var(--gray-900); --glass-blur: none; --glass-shadow: var(--shadow-1); --glass-shadow-hover: var(--shadow-1); }
+@media (prefers-reduced-motion: reduce) {
+  :is(a, button).glass-card:hover, :is(a, button).kpi-card:hover, :is(a, button).glass-card:active, :is(a, button).kpi-card:active { transform: none; }
+}
+
+/* ---------- Cifras en rodillo (RollingNumber) ---------- */
+.rolling-number { display: inline-flex; font-variant-numeric: tabular-nums; }
+.rolling-number-track { display: inline-flex; }
+.rolling-number-window { display: inline-block; height: 1em; overflow: hidden; line-height: 1; }
+.rolling-number-column { display: flex; flex-direction: column; will-change: transform; }
+.rolling-number-column > span, .rolling-number-sep { display: block; height: 1em; line-height: 1; text-align: center; }
+
+/* ---------- Anillo de progreso (ProgressRing) ---------- */
+.progress-ring { display: grid; justify-items: center; gap: 10px; margin: 0; }
+.progress-ring-dial { position: relative; width: 148px; height: 148px; }
+.progress-ring-dial svg { display: block; width: 100%; height: 100%; }
+.progress-ring-track { fill: none; stroke: color-mix(in srgb, var(--text) 18%, transparent); }
+.progress-ring-value { fill: none; stroke: var(--highlight); stroke-linecap: round; }
+.progress-ring-center { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 4px; text-align: center; }
+.progress-ring-center strong { display: inline-flex; align-items: baseline; gap: 2px; font: 800 34px/1 var(--font-display); font-stretch: 112%; }
+.progress-ring-center strong small { font: 700 16px/1 var(--font-body); }
+.progress-ring-center > span { color: var(--text-soft); font-size: var(--fs-xs); font-weight: 600; letter-spacing: .04em; }
+.progress-ring figcaption { max-width: 220px; color: var(--text-soft); font-size: var(--fs-xs); line-height: 1.45; text-align: center; }
+.progress-ring-orbit { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+.progress-ring-orbit li {
+  position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px;
+  transform: rotate(var(--angle)) translate(86px) rotate(calc(-1 * var(--angle)));
+}
+.progress-ring-orbit li > span {
+  display: grid; place-items: center; width: 100%; height: 100%;
+  border: 2px solid var(--highlight); border-radius: 50%;
+  color: var(--highlight-ink); background: var(--white); font: 800 10px/1 var(--font-body);
+  box-shadow: 0 4px 10px rgb(var(--shadow-color) / .18);
+}
+
+/* Diálogo de confirmación (sesión 8): cerrar sesión y acciones que no se deshacen. */
+.confirm-dialog {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.confirm-dialog::backdrop { background: var(--scrim); }
+.confirm-dialog-body { display: grid; gap: 12px; padding: 24px; }
+.confirm-dialog h2 { margin: 0; font-family: var(--font-display); font-size: var(--fs-h3); line-height: 1.25; }
+.confirm-dialog p { margin: 0; color: var(--text-soft); line-height: 1.5; }
+.confirm-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+@media (max-width: 480px) {
+  .confirm-dialog { margin: auto auto calc(var(--safe-bottom) + 16px); }
+  .confirm-dialog-actions { flex-direction: column-reverse; }
+  .confirm-dialog-actions .button { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .confirm-dialog[open] { animation: confirm-in var(--dur) var(--ease-out); }
+  @keyframes confirm-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+}
+
+/* E18: aviso de /reset-password sin enlace de recuperación (informativo, no de éxito). */
+.auth-notice p { margin: 0; }
+.auth-notice p + p { margin-top: 6px; }
+
+/* Sesión 8: motivo en el diálogo de confirmación y «Confirma que eres tú». */
+.confirm-dialog-input { display: grid; gap: 6px; margin-top: 14px; font-weight: 600; font-size: var(--fs-sm); }
+.confirm-dialog-input textarea { min-height: 84px; font-weight: 400; }
+.confirm-dialog-input small { color: var(--text-muted); font-weight: 400; }
+.reverify-dialog .confirm-dialog-body { display: grid; gap: 12px; }
+.reverify-dialog .eyebrow { margin: 0; }
+.reverify-passkey { display: inline-flex; justify-content: center; gap: 10px; width: 100%; min-height: 48px; }
+.reverify-code { display: grid; gap: 10px; padding-top: 4px; }
+.reverify-code label { display: grid; gap: 6px; font-size: var(--fs-sm); font-weight: 600; }
+.reverify-code input { letter-spacing: .3em; font-variant-numeric: tabular-nums; }
+.reverify-dialog .confirm-dialog-actions { justify-content: flex-end; }
+
+/* Sesión 8: mapa de tienda con fondo de carga y pie con dirección («no se ve vacío»). */
+.store-map { display: grid; margin: 14px 0 0; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); overflow: hidden; }
+.store-map-frame { position: relative; height: 280px; background: var(--accent-wash); }
+.store-map.is-compact .store-map-frame { height: 220px; }
+.store-map-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.store-map-placeholder { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 10px; color: var(--text-soft); font-size: var(--fs-sm);
+  background-image: linear-gradient(color-mix(in srgb, var(--accent) 10%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px; pointer-events: none; }
+.store-map-pin { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; background: var(--accent); transform: rotate(-45deg); box-shadow: var(--shadow-1); animation: store-map-pin 1.2s ease-in-out infinite; }
+@keyframes store-map-pin { 50% { transform: rotate(-45deg) translate(3px, -3px); } }
+.store-map figcaption { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.store-map-address { display: grid; gap: 2px; min-width: 0; }
+.store-map-address span { color: var(--text-muted); font-size: var(--fs-sm); }
+.store-map-links { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: var(--fs-sm); font-weight: 600; }
+.store-map-links a { color: var(--accent); text-decoration: none; }
+.store-map-links a:hover { text-decoration: underline; }
+.store-map figcaption small { flex-basis: 100%; color: var(--text-muted); font-size: var(--fs-xs); }
+.store-map.is-empty { display: flex; align-items: center; gap: 14px; padding: 18px; color: var(--accent); background: var(--accent-wash); }
+.store-map.is-empty p { display: grid; gap: 2px; margin: 0; color: var(--text); }
+.store-map.is-empty span { color: var(--text-muted); font-size: var(--fs-sm); }
+@media (prefers-reduced-motion: reduce) { .store-map-pin { animation: none; } }

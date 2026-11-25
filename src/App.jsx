@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import SystemAvailability from './components/SystemAvailability.jsx'
 import NativeShell from './components/NativeShell.jsx'
 import Toaster from './components/ui/Toaster.jsx'
+import ConfirmProvider from './components/ui/ConfirmDialog.jsx'
+import ReverifyProvider from './components/ui/ReverifyDialog.jsx'
 const Home = lazy(() => import('./pages/Home.jsx'))
 const Login = lazy(() => import('./pages/auth/Login.jsx'))
 const Register = lazy(() => import('./pages/auth/Register.jsx'))
@@ -40,6 +42,9 @@ const AdminAccess = lazy(() => import('./pages/AdminAccess.jsx'))
 const TiendasPublicas = lazy(() => import('./pages/TiendasPublicas.jsx'))
 const AccountRecovery = lazy(() => import('./pages/auth/AccountRecovery.jsx'))
 const Cuenta = lazy(() => import('./pages/Cuenta.jsx'))
+const Legal = lazy(() => import('./pages/Legal.jsx'))
+const VerificarHuella = lazy(() => import('./pages/VerificarHuella.jsx'))
+import CookieNotice from './components/CookieNotice.jsx'
 
 function RouteIdentity() {
   const { pathname, hash } = useLocation()
@@ -74,7 +79,10 @@ function App() {
     <BrowserRouter>
       <AuthContext>
         <Toaster>
+        <ConfirmProvider>
+        <ReverifyProvider>
         <NativeShell />
+        <CookieNotice />
         <SystemAvailability>
           <Suspense fallback={<p className="route-loading" role="status">Cargando página…</p>}>
           <Routes>
@@ -86,6 +94,8 @@ function App() {
             <Route path="/resend-confirmation" element={<AccountRecovery confirmation />} />
             <Route path="/reset-password" element={<AccountRecovery reset />} />
             <Route path="/register" element={<RegisterRoute />} />
+            <Route path="/legal/:slug" element={<Legal />} />
+            <Route path="/verificar-huella" element={<VerificarHuella />} />
             <Route element={<ProtectedRoute allowedRoles={ADMIN_ROLES} />}>
               <Route path="/admin" element={<AdminAccess />} />
             </Route>
@@ -132,6 +142,8 @@ function App() {
           </Routes>
           </Suspense>
         </SystemAvailability>
+        </ReverifyProvider>
+        </ConfirmProvider>
         </Toaster>
       </AuthContext>
     </BrowserRouter>

@@ -6,6 +6,8 @@ import { useAuth } from '../context/authState.js'
 import { marcarNotificacionLeida, marcarTodasLeidas, obtenerNotificaciones, suscribirNotificaciones } from '../services/notificacionService.js'
 import { useToast } from '../context/toastState.js'
 import { isNativeApp } from '../lib/platform.js'
+import { notificationPath } from '../lib/panel.js'
+import { useLayer } from '../lib/layers.js'
 
 const typeLabels = {
 	nueva_propuesta: 'Nueva propuesta',
@@ -13,6 +15,7 @@ const typeLabels = {
 	propuesta_seleccionada: 'Propuesta seleccionada',
 	cambio_estado_propuesta: 'Estado de propuesta',
 	cambio_estado_solicitud: 'Estado de solicitud',
+	cambio_estado_tienda: 'Estado de tienda',
 	promocion: 'Promoción',
 }
 
@@ -20,15 +23,6 @@ function formatDate(value) {
 	return new Intl.DateTimeFormat('es-BO', { timeZone: 'America/La_Paz', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
-function notificationPath(notification, role) {
-	if (!notification.solicitud_id) return ''
-	if (role === 'tienda') return `/tienda/solicitudes/${notification.solicitud_id}`
-	if (role === 'cliente' && ['nueva_propuesta', 'propuesta_seleccionada', 'cambio_estado_propuesta'].includes(notification.tipo)) {
-		return `/cliente/solicitudes/${notification.solicitud_id}/propuestas`
-	}
-	if (role === 'cliente') return '/cliente/solicitudes'
-	return ''
-}
 
 function NotificationBell({ variant }) {
 	const { user, role } = useAuth()
@@ -86,16 +80,11 @@ function NotificationBell({ variant }) {
 		function closeOnOutsideClick(event) {
 			if (!containerRef.current?.contains(event.target)) setOpen(false)
 		}
-		function closeOnEscape(event) {
-			if (event.key === 'Escape') { setOpen(false); containerRef.current?.querySelector('button')?.focus() }
-		}
 		document.addEventListener('pointerdown', closeOnOutsideClick)
-		document.addEventListener('keydown', closeOnEscape)
-		return () => {
-			document.removeEventListener('pointerdown', closeOnOutsideClick)
-			document.removeEventListener('keydown', closeOnEscape)
-		}
+		return () => document.removeEventListener('pointerdown', closeOnOutsideClick)
 	}, [open])
+	// E31: Escape y el botón atrás de Android cierran el panel y devuelven el foco a la campana.
+	useLayer(open, () => { setOpen(false); containerRef.current?.querySelector('button')?.focus() })
 
 	useEffect(() => {
 		if (!user?.id) return undefined

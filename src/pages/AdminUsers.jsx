@@ -5,6 +5,8 @@ import { ROLE_LABELS } from '../lib/roles.js'
 import Icon from '../components/Icon.jsx'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/authState.js'
+import { useConfirm } from '../context/confirmState.js'
+import { useReverify } from '../context/reverifyState.js'
 import { cambiarEstadoUsuario, obtenerUsuariosAdministracion } from '../services/adminService.js'
 
 function formatDate(value) {
@@ -13,6 +15,8 @@ function formatDate(value) {
 
 function AdminUsers() {
 	const { user, role } = useAuth()
+	const confirm = useConfirm()
+	const reverify = useReverify()
 	const [users, setUsers] = useState([])
 	const [filter, setFilter] = useState('')
 	const search = useDebouncedValue(filter)
@@ -50,12 +54,21 @@ function AdminUsers() {
 
 	async function toggleActive(account) {
 		const nextActive = !account.activo
+		const name = `${account.nombre || ''} ${account.apellido || ''}`.trim() || account.correo || 'esta cuenta'
+		// Sesión 8: desactivar pide un motivo escrito (lo verá la persona al intentar entrar) y confirmar la identidad.
+		const answer = await confirm(nextActive
+			? { title: `¿Activar la cuenta de ${name}?`, message: 'Podrá volver a iniciar sesión y usar la plataforma.', confirmLabel: 'Activar cuenta' }
+			: { title: `¿Desactivar la cuenta de ${name}?`, message: 'No podrá iniciar sesión y sus solicitudes o su tienda dejarán de mostrarse hasta que la actives de nuevo.', confirmLabel: 'Desactivar cuenta', tone: 'danger',
+				input: { label: 'Motivo del bloqueo', placeholder: 'Ej.: publicó solicitudes falsas de forma repetida.', minLength: 10 } })
+		if (!answer) return
+		if (!nextActive && !(await reverify(`Vas a desactivar la cuenta de ${name}.`))) return
+		const motivo = nextActive ? null : answer
 		setBusyId(account.id)
 		setError('')
 		setNotice('')
 		try {
-			await cambiarEstadoUsuario(account.id, nextActive)
-			setUsers((current) => current.map((item) => item.id === account.id ? { ...item, activo: nextActive } : item))
+			await cambiarEstadoUsuario(account.id, nextActive, motivo)
+			setUsers((current) => current.map((item) => item.id === account.id ? { ...item, activo: nextActive, motivo_estado: motivo } : item))
 			setNotice(`La cuenta de ${account.nombre} ${account.apellido} fue ${nextActive ? 'activada' : 'desactivada'}.`)
 		} catch (cause) {
 			setError(`No se pudo cambiar el estado de la cuenta: ${publicError(cause)}`)
@@ -83,9 +96,10 @@ function AdminUsers() {
 				return <article className="compact-row admin-user-row" key={account.id}>
 					<span className="admin-user-avatar" aria-hidden="true">{fullName.charAt(0).toUpperCase()}</span>
 					<span className="compact-row-text">
-						<strong>{fullName} <span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span></strong>
+						<strong><span className="admin-user-name">{fullName}</span> <span className={`admin-user-state${account.activo ? ' is-active' : ''}`}>{account.activo ? 'Activa' : 'Inactiva'}</span></strong>
 						<span>{account.correo || 'Correo no disponible'}</span>
 						<span>{ROLE_LABELS[account.rol] || account.rol}{account.telefono ? ` · ${account.telefono}` : ''} · {formatDate(account.fecha_creacion)}</span>
+						{!account.activo && account.motivo_estado && <span className="admin-user-reason">Motivo: {account.motivo_estado}</span>}
 					</span>
 					<button className={`icon-action${account.activo ? ' is-danger' : ''}`} type="button" onClick={() => { void toggleActive(account) }} disabled={Boolean(busyId) || cannotChange}
 						aria-label={lockReason || `${account.activo ? 'Desactivar' : 'Activar'} la cuenta de ${fullName}`} title={lockReason || (account.activo ? 'Desactivar cuenta' : 'Activar cuenta')}>

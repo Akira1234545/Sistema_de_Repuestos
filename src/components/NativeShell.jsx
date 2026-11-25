@@ -7,7 +7,9 @@ import { Network } from '@capacitor/network'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { useAuth } from '../context/authState.js'
 import { isNativeApp } from '../lib/platform.js'
+import { closeTopLayer } from '../lib/layers.js'
 import { panelPath } from '../lib/roles.js'
+import { PASSKEY_RETURN_EVENT } from '../lib/passkeyProof.js'
 import { supabase } from '../services/supabase.js'
 import PullToRefresh from './PullToRefresh.jsx'
 
@@ -48,16 +50,16 @@ function NativeBridge() {
 		const keep = (promise) => promise.then((handle) => handles.push(handle)).catch(() => {})
 
 		keep(CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-			if (document.querySelector('.notification-popover')) {
-				document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
-				return
-			}
+			// E31: primero se cierra la capa abierta (visor, menú, buscador, selector, diálogo…).
+			if (closeTopLayer()) return
 			if (ROOT_PATHS.has(pathRef.current) || !canGoBack) void CapacitorApp.minimizeApp()
 			else window.history.back()
 		}))
 
 		keep(CapacitorApp.addListener('appUrlOpen', ({ url }) => {
 			if (!url?.startsWith('com.drivefix.app://') || !supabase) return
+			// Vuelta desde /verificar-huella en Chrome: no es un enlace de Auth.
+			if (url.startsWith('com.drivefix.app://auth/huella-lista')) { window.dispatchEvent(new Event(PASSKEY_RETURN_EVENT)); return }
 			void completeAuthLink(url).then(({ path, error }) => navigate(path, { replace: true, state: error ? { authLinkError: error } : undefined }))
 		}))
 

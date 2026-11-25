@@ -4,7 +4,7 @@ import { clearFormDrafts } from '../lib/formDrafts.js'
 import { createOnce } from './createOnce.js'
 import { compressImage, imageExtension } from '../lib/images.js'
 
-const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fotos, fecha_creacion'
+const vehicleColumns = 'id, tipo_vehiculo_id, marca_id, modelo_id, anio, descripcion, fotos, fotos_version, fecha_creacion'
 
 async function getNamesByIds(table, ids) { return catalogNames(table, ids) }
 
@@ -35,6 +35,19 @@ export async function obtenerMarcas() {
 		.order('nombre')
 	if (error) throw error
 	return data
+}
+
+// Sesión 8 (Q02): marcas que tienen al menos un modelo activo del tipo elegido.
+// Así una moto no ofrece Toyota ni un auto ofrece Yamaha.
+export async function obtenerMarcasDeTipo(tipoVehiculoId) {
+	const { data, error } = await supabase
+		.from('modelos')
+		.select('marca_id')
+		.eq('activo', true)
+		.eq('tipo_vehiculo_id', tipoVehiculoId)
+		.limit(5000)
+	if (error) throw error
+	return [...new Set(data.map((row) => row.marca_id))]
 }
 
 export async function obtenerModelos(marcaId, tipoVehiculoId) {
@@ -155,7 +168,7 @@ export async function agregarFotoVehiculo(vehicle, userId, file) {
 	if (uploadError) throw uploadError
 	const url = supabase.storage.from('vehiculos').getPublicUrl(path).data.publicUrl
 	try {
-		return await guardarFotosVehiculo(vehicle.id, userId, [...(vehicle.fotos || []), url])
+		return await guardarFotosVehiculo(vehicle, [...(vehicle.fotos || []), url])
 	} catch (saveError) {
 		await borrarFotosStorage([url])
 		throw saveError
@@ -163,14 +176,17 @@ export async function agregarFotoVehiculo(vehicle, userId, file) {
 }
 
 export async function quitarFotoVehiculo(vehicle, userId, url) {
-	const updated = await guardarFotosVehiculo(vehicle.id, userId, (vehicle.fotos || []).filter((item) => item !== url))
+	const updated = await guardarFotosVehiculo(vehicle, (vehicle.fotos || []).filter((item) => item !== url))
 	await borrarFotosStorage([url])
 	return updated
 }
 
-async function guardarFotosVehiculo(id, userId, fotos) {
-	const { data, error } = await supabase.from('vehiculos').update({ fotos }).eq('id', id).eq('usuario_id', userId).select(vehicleColumns).maybeSingle()
+// The database checks ownership, the project URL and the photo version (another tab may have changed them).
+async function guardarFotosVehiculo(vehicle, fotos) {
+	const { data, error } = await supabase.rpc('guardar_fotos_vehiculo', {
+		p_vehiculo_id: vehicle.id, p_urls: fotos, p_expected_version: vehicle.fotos_version ?? 0,
+	})
 	if (error) throw error
 	if (!data) throw new Error('El vehículo no existe o no pertenece al usuario autenticado.')
-	return data
+	return { fotos: data.fotos || [], fotos_version: data.fotos_version }
 }

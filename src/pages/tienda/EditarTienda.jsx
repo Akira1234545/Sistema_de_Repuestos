@@ -1,4 +1,5 @@
 import { publicError } from '../../lib/errors.js'
+import StoreMap from '../../components/StoreMap.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
@@ -86,7 +87,6 @@ function EditarTienda() {
 	}
 
 	const coordinatesReady = form.latitud !== '' && form.longitud !== '' && Number.isFinite(Number(form.latitud)) && Number.isFinite(Number(form.longitud)) && Number(form.latitud) >= -90 && Number(form.latitud) <= 90 && Number(form.longitud) >= -180 && Number(form.longitud) <= 180
-	const mapUrl = coordinatesReady ? `https://www.openstreetmap.org/export/embed.html?bbox=${Number(form.longitud) - 0.015}%2C${Number(form.latitud) - 0.015}%2C${Number(form.longitud) + 0.015}%2C${Number(form.latitud) + 0.015}&layer=mapnik&marker=${form.latitud}%2C${form.longitud}` : ''
 
 	function handleFileChange(event) {
 		setError('')
@@ -158,7 +158,14 @@ function EditarTienda() {
 			setExistingPhotos(photos)
 			setSelectedFiles([])
 			setPreviews([])
-			setSuccess('Fotografías y datos guardados correctamente.')
+			// Q09 (sesión 8): el trigger resubmit_rejected_store solo la devuelve a revisión si algo cambió.
+			// Guardar sin cambios no debe decir «guardado» ni salir de la página: la tienda sigue rechazada.
+			if (store?.estado === 'rechazada' && savedStore.estado === 'rechazada' && !photosCommitted) {
+				setError('No cambiaste ningún dato, así que tu tienda sigue rechazada. Corrige lo que pidió el administrador y vuelve a guardar para enviarla a revisión.')
+				return
+			}
+			// E04: si estaba rechazada, el cambio la devuelve a revisión (trigger resubmit_rejected_store).
+			setSuccess(store?.estado === 'rechazada' ? 'Datos guardados. Tu tienda se envió de nuevo a revisión.' : 'Fotografías y datos guardados correctamente.')
 			redirectTimer.current = window.setTimeout(() => navigate('/tienda/perfil'), 700)
 		} catch (saveError) {
 			try { if (!photosCommitted) await limpiarSubidasFallidas(uploadedPhotos) }
@@ -185,13 +192,13 @@ function EditarTienda() {
 						<label className="store-field-full">Descripción<textarea name="descripcion" value={form.descripcion} onChange={updateField} /></label>
 						<label className="store-field-full">Dirección<input name="direccion" value={form.direccion} onChange={updateField} /></label>
 						<div className="store-field-full store-location">
-							<div className="store-location-actions"><button type="button" className="store-button" onClick={useCurrentLocation}>Usar mi ubicación actual</button>{(form.latitud !== '' || form.longitud !== '') && <button type="button" className="store-cancel" onClick={clearLocation}>Quitar ubicación</button>}</div>
+							<div className="store-location-actions"><button type="button" className="button button-secondary" onClick={useCurrentLocation}>Usar mi ubicación actual</button>{(form.latitud !== '' || form.longitud !== '') && <button type="button" className="store-cancel" onClick={clearLocation}>Quitar ubicación</button>}</div>
 							<p role="status">{locationMessage || 'La ubicación es opcional. Usa el botón o escribe las coordenadas.'}</p>
 							<div className="store-location-fields">
 								<label>Latitud<input name="latitud" type="number" inputMode="decimal" step="any" min="-90" max="90" value={form.latitud} onChange={updateField} placeholder="-16.5000000" /></label>
 								<label>Longitud<input name="longitud" type="number" inputMode="decimal" step="any" min="-180" max="180" value={form.longitud} onChange={updateField} placeholder="-68.1500000" /></label>
 							</div>
-							{coordinatesReady ? <div className="store-location-map"><iframe title="Vista previa de la ubicación de la tienda en OpenStreetMap" src={mapUrl} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><small>© OpenStreetMap contributors · <a href={`https://www.openstreetmap.org/?mlat=${form.latitud}&mlon=${form.longitud}#map=16/${form.latitud}/${form.longitud}`} target="_blank" rel="noreferrer">Abrir mapa</a></small></div> : <p role="status">Registra la ubicación para previsualizarla en el mapa.</p>}
+							<StoreMap key={coordinatesReady ? `${form.latitud},${form.longitud}` : 'sin-ubicacion'} name={form.nombre || 'Tu tienda'} address={form.direccion} lat={coordinatesReady ? form.latitud : null} lng={coordinatesReady ? form.longitud : null} compact />
 						</div>
 						<label>Hora de apertura<input name="horaApertura" type="time" value={form.horaApertura} onChange={updateField} /><small>Ejemplo: 08:30</small></label>
 						<label>Hora de cierre<input name="horaCierre" type="time" value={form.horaCierre} onChange={updateField} /><small>Ejemplo: 12:30</small></label>

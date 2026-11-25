@@ -2,6 +2,9 @@ import { publicError } from '../lib/errors.js'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerReportesActividadAdministracion } from '../services/adminService.js'
+import { isNativeApp } from '../lib/platform.js'
+import { buildCsv, buildWorkbook, downloadBlob } from '../lib/xlsx.js'
+import { buildPrintHtml, printReport } from '../lib/reportPrint.js'
 
 const timeZone = 'America/La_Paz'
 const dateFormatter = new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeZone })
@@ -76,107 +79,89 @@ function formatCount(value) {
 	return BigInt(value || '0').toLocaleString('es-BO')
 }
 
-function csvCell(value) {
-	let text = String(value ?? '')
-	let firstMeaningfulCharacter = 0
+const count = (value) => Number(value ?? 0) || 0
+const dayFormatter = new Intl.DateTimeFormat('es-BO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+const monthFormatter = new Intl.DateTimeFormat('es-BO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
-	while (firstMeaningfulCharacter < text.length) {
-		const code = text.charCodeAt(firstMeaningfulCharacter)
-		if (code > 0x20 && code !== 0x7f) break
-		firstMeaningfulCharacter += 1
-	}
-
-	const firstCharacter = text[firstMeaningfulCharacter]
-	if (firstCharacter && '=+-@'.includes(firstCharacter)) text = `'${text}`
-
-	return `"${text.replaceAll('"', '""')}"`
+// «2026-11-24» → «24 nov 2026» (la fecha ya viene en hora de Bolivia; UTC solo evita correrla un día).
+function dayLabel(isoDate) {
+	const date = new Date(`${String(isoDate).slice(0, 10)}T00:00:00Z`)
+	return Number.isNaN(date.getTime()) ? String(isoDate ?? '') : dayFormatter.format(date)
 }
 
-function downloadCsv(report, period) {
+function intervalLabel(isoDate, grouping) {
+	if (grouping === 'mes') {
+		const date = new Date(`${String(isoDate).slice(0, 10)}T00:00:00Z`)
+		if (!Number.isNaN(date.getTime())) {
+			const label = monthFormatter.format(date)
+			return label[0].toLocaleUpperCase('es') + label.slice(1)
+		}
+	}
+	return grouping === 'semana' ? `Semana del ${dayLabel(isoDate)}` : dayLabel(isoDate)
+}
+
+// Sesión 8: un solo modelo del reporte para el .xlsx (con formato) y el .csv (solo datos).
+function reportDocument(report) {
 	const generatedAt = new Date(report.generado_en)
-	const generatedLabel = Number.isNaN(generatedAt.getTime())
-		? report.generado_en
-		: dateTimeFormatter.format(generatedAt)
-
+	const generatedLabel = Number.isNaN(generatedAt.getTime()) ? report.generado_en : dateTimeFormatter.format(generatedAt)
 	const categories = report.categorias ?? {}
-	const categoryRequests = categories.solicitudes_por_categoria ?? []
+	const grouping = report.periodo.agrupacion
+	const num = (label) => ({ label, numeric: true })
+	const text = (label) => ({ label })
 
-	const rows = [
-		['Reporte de actividad', 'DriveFix'],
-		['Periodo', `${period.fechaDesde} a ${period.fechaHasta}`],
-		['Zona horaria', timeZone],
-		['Agrupación temporal', report.periodo.agrupacion],
-		['Generado', generatedLabel],
-		[],
-		['Indicadores', 'Total acumulado actual', 'Creados en el periodo'],
-		['Usuarios', report.totales.usuarios, report.creados_periodo.usuarios],
-		['Tiendas', report.totales.tiendas, report.creados_periodo.tiendas],
-		['Tiendas activas y aprobadas', report.totales.tiendas_activas, ''],
-		['Solicitudes', report.totales.solicitudes, report.creados_periodo.solicitudes],
-		['Propuestas', report.totales.propuestas, report.creados_periodo.propuestas],
-		['Promociones', report.totales.promociones, report.creados_periodo.promociones],
-		['Categorías de repuestos', categories.total ?? 0, categories.creadas_periodo ?? 0],
-		[],
-		['Indicadores de categorías'],
-		['Métrica', 'Cantidad'],
-		['Categorías activas', categories.activas ?? 0],
-		['Categorías inactivas', categories.inactivas ?? 0],
-		['Categorías principales', categories.principales ?? 0],
-		['Subcategorías', categories.subcategorias ?? 0],
-		[],
-		['Solicitudes por categoría creadas en el periodo'],
-		['Categoría', 'Estado', 'Cantidad de solicitudes'],
-		...categoryRequests.map((item) => [
-			item.nombre,
-			item.activa ? 'Activa' : 'Inactiva',
-			item.solicitudes ?? 0,
-		]),
-		[],
-		['Distribución actual por estado o rol'],
-		['Grupo', 'Estado o rol', 'Cantidad'],
-		...statusGroups.flatMap(({ key, labels }) =>
-			Object.entries(labels).map(([status, label]) => [
-				key === 'roles'
-					? 'Usuarios'
-					: key === 'tiendas'
-						? 'Tiendas'
-						: key[0].toUpperCase() + key.slice(1),
-				label,
-				report.distribucion[key][status],
-			]),
-		),
-		[],
-		[
-			'Registros creados por intervalo',
-			'Usuarios',
-			'Tiendas',
-			'Solicitudes',
-			'Propuestas',
-			'Promociones',
+	return {
+		sheetName: 'Reporte de actividad',
+		title: 'DriveFix · Reporte de actividad',
+		meta: [
+			`Periodo: ${dayLabel(report.periodo.desde)} – ${dayLabel(report.periodo.hasta)} · Agrupado por ${grouping}`,
+			`Generado: ${generatedLabel} (hora de Bolivia)`,
 		],
-		...report.serie_temporal.map((item) => [
-			item.periodo,
-			item.usuarios,
-			item.tiendas,
-			item.solicitudes,
-			item.propuestas,
-			item.promociones,
-		]),
-	]
-
-	const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(';')).join('\r\n')}`
-	const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-	const url = URL.createObjectURL(blob)
-	const anchor = document.createElement('a')
-
-	anchor.href = url
-	anchor.download = `reporte_actividad_${period.fechaDesde}_${period.fechaHasta}.csv`
-
-	document.body.append(anchor)
-	anchor.click()
-	anchor.remove()
-
-	window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+		sections: [
+			{
+				title: 'Resumen de la plataforma',
+				columns: [text('Indicador'), num('Total actual'), num('Creados en el periodo')],
+				rows: [
+					['Usuarios', count(report.totales.usuarios), count(report.creados_periodo.usuarios)],
+					['Tiendas', count(report.totales.tiendas), count(report.creados_periodo.tiendas)],
+					['Tiendas activas y aprobadas', count(report.totales.tiendas_activas), ''],
+					['Solicitudes', count(report.totales.solicitudes), count(report.creados_periodo.solicitudes)],
+					['Propuestas', count(report.totales.propuestas), count(report.creados_periodo.propuestas)],
+					['Promociones', count(report.totales.promociones), count(report.creados_periodo.promociones)],
+					['Categorías de repuestos', count(categories.total), count(categories.creadas_periodo)],
+				],
+			},
+			{
+				title: 'Categorías',
+				columns: [text('Métrica'), num('Cantidad')],
+				rows: [
+					['Activas', count(categories.activas)],
+					['Inactivas', count(categories.inactivas)],
+					['Principales', count(categories.principales)],
+					['Subcategorías', count(categories.subcategorias)],
+				],
+			},
+			{
+				title: 'Solicitudes por categoría (creadas en el periodo)',
+				columns: [text('Categoría'), text('Estado'), num('Solicitudes')],
+				rows: (categories.solicitudes_por_categoria ?? []).map((item) => [item.nombre, item.activa ? 'Activa' : 'Inactiva', count(item.solicitudes)]),
+				empty: 'Ninguna solicitud nueva en este periodo.',
+			},
+			{
+				title: 'Distribución actual por estado o rol',
+				columns: [text('Grupo'), text('Estado o rol'), num('Cantidad')],
+				rows: statusGroups.flatMap(({ key, title, labels }) =>
+					Object.entries(labels).map(([status, label]) => [title, label, count(report.distribucion[key]?.[status])])),
+			},
+			{
+				title: `Registros creados por ${grouping}`,
+				columns: [text(grouping === 'mes' ? 'Mes' : grouping === 'semana' ? 'Semana' : 'Día'), num('Usuarios'), num('Tiendas'), num('Solicitudes'), num('Propuestas'), num('Promociones')],
+				rows: report.serie_temporal.map((item) => [
+					intervalLabel(item.periodo, grouping),
+					count(item.usuarios), count(item.tiendas), count(item.solicitudes), count(item.propuestas), count(item.promociones),
+				]),
+			},
+		],
+	}
 }
 
 function AdminReportes() {
@@ -235,7 +220,7 @@ function AdminReportes() {
 		setPeriod((current) => ({ ...current, [name]: value }))
 	}
 
-	function exportReport() {
+	function exportReport(format) {
 		setNotice('')
 
 		if (!report) return
@@ -252,7 +237,11 @@ function AdminReportes() {
 			return
 		}
 
-		downloadCsv(report, { fechaDesde: report.periodo.desde, fechaHasta: report.periodo.hasta })
+		const doc = reportDocument(report)
+		const name = `drivefix_reporte_${report.periodo.desde}_${report.periodo.hasta}`
+		if (format === 'xlsx') downloadBlob(buildWorkbook(doc), `${name}.xlsx`)
+		else if (format === 'pdf') printReport(buildPrintHtml(doc, name))
+		else downloadBlob(buildCsv(doc), `${name}.csv`)
 	}
 
 	const totalCards = report
@@ -350,15 +339,24 @@ function AdminReportes() {
 				<button type="submit" className="button button-primary" disabled={loading}>
 					Aplicar periodo
 				</button>
-				{report && (
-					<button
-						type="button"
-						className="button button-secondary admin-report-export"
-						onClick={exportReport}
-						disabled={loading}
-					>
-						Exportar CSV
-					</button>
+				{/* E39: el WebView de Android no descarga blob: con <a download> y la app no trae
+				    @capacitor/filesystem; en la app se pide exportar desde la web. */}
+				{report && isNativeApp && <p className="admin-report-native-note" role="note">Exporta el reporte desde la web: la app todavía no guarda archivos.</p>}
+				{/* Sesión 8: Excel con formato, versión imprimible (Guardar como PDF) y CSV solo con datos. */}
+				{report && !isNativeApp && (
+					<div className="admin-report-export" role="group" aria-label="Exportar reporte">
+						<button type="button" className="button button-secondary" onClick={() => exportReport('xlsx')} disabled={loading}>
+							Exportar Excel
+						</button>
+						<button type="button" className="button button-secondary" onClick={() => exportReport('pdf')} disabled={loading}
+							title="Abre la impresión del navegador; elige «Guardar como PDF»">
+							Imprimir / PDF
+						</button>
+						<button type="button" className="button button-secondary" onClick={() => exportReport('csv')} disabled={loading}
+							title="Solo datos, separados por punto y coma">
+							CSV
+						</button>
+					</div>
 				)}
 			</form>
 

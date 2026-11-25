@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/authState.js'
 import FavoriteToggle from '../../components/FavoriteToggle.jsx'
-import Icon from '../../components/Icon.jsx'
+import PhotoViewer from '../../components/ui/PhotoViewer.jsx'
+import { useConfirm } from '../../context/confirmState.js'
+import { PANEL_BADGES_EVENT } from '../../lib/events.js'
 import { obtenerMiPropuesta, retirarPropuesta } from '../../services/propuestaService.js'
 import { obtenerSolicitudDisponiblePorId } from '../../services/solicitudService.js'
 import PropuestaForm from './PropuestaForm.jsx'
@@ -22,10 +24,11 @@ function DetalleSolicitud() {
 	const [viewer, setViewer] = useState('')
 	const [refresh, setRefresh] = useState(0)
 	const [withdrawing, setWithdrawing] = useState(false)
+	const confirm = useConfirm()
 	async function withdraw() {
-		if (!window.confirm('¿Retirar esta propuesta? No podrás reenviarla para la misma solicitud.')) return
+		if (!(await confirm({ title: '¿Retirar esta propuesta?', message: 'No podrás reenviarla para la misma solicitud.', confirmLabel: 'Retirar propuesta', tone: 'danger' }))) return
 		setWithdrawing(true); setActionError('')
-		try { await retirarPropuesta(myProposal.id); setMyProposal(current => ({ ...current, estado: 'retirada' })); setRefresh(value => value + 1) }
+		try { await retirarPropuesta(myProposal.id); setMyProposal(current => ({ ...current, estado: 'retirada' })); setRefresh(value => value + 1); window.dispatchEvent(new Event(PANEL_BADGES_EVENT)) }
 		catch (cause) { setActionError(`No se pudo retirar la propuesta: ${publicError(cause)}`) }
 		finally { setWithdrawing(false) }
 	}
@@ -61,10 +64,7 @@ function DetalleSolicitud() {
 					: ['publicada', 'recibiendo_propuestas'].includes(request.estado) ? <PropuestaForm solicitudId={request.id} onCreated={() => setRefresh((value) => value + 1)} /> : <p>La solicitud ya no acepta propuestas.</p>}
 			</div>
 		</div>
-		{viewer && <div className="photo-viewer" role="dialog" aria-modal="true" aria-label="Foto ampliada" onClick={() => setViewer('')}>
-			<img src={viewer} alt={`Foto de ${vehicleLabel}`} />
-			<button type="button" className="icon-action" aria-label="Cerrar" onClick={() => setViewer('')}><Icon name="x" size={18} /></button>
-		</div>}
+		<PhotoViewer src={viewer} alt={`Foto de ${vehicleLabel}`} onClose={() => setViewer('')} />
 	</section>
 }
 export default DetalleSolicitud

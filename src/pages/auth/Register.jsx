@@ -5,6 +5,9 @@ import { useState } from 'react'
 import { supabase } from '../../services/supabase.js'
 import { registrarCuenta } from '../../services/authService.js'
 import BrandLogo from '../../components/BrandLogo.jsx'
+import PasswordInput from '../../components/ui/PasswordInput.jsx'
+import AuthScene from '../../components/AuthScene.jsx'
+import { LEGAL_VERSION, legalPath } from '../../lib/legal.js'
 
 function Register() {
 	const [searchParams] = useSearchParams()
@@ -32,6 +35,11 @@ function Register() {
 			setLoading(false)
 			return
 		}
+		if (formData.get('acepta') !== 'si') {
+			setError(role === 'tienda' ? 'Para crear la cuenta debes aceptar los términos, la política de privacidad y las condiciones para tiendas.' : 'Para crear la cuenta debes aceptar los términos y la política de privacidad.')
+			setLoading(false)
+			return
+		}
 		if (password !== confirmPassword) {
 			setError('Las contraseñas no coinciden.')
 			setLoading(false)
@@ -41,6 +49,7 @@ function Register() {
 			email: formData.get('email'), password,
 			nombre: formData.get('name'), apellido: formData.get('apellido'),
 			telefono: formData.get('telefono'), role,
+			legal: { version: LEGAL_VERSION, documentos: role === 'tienda' ? ['terminos', 'privacidad', 'contrato-tiendas'] : ['terminos', 'privacidad'] },
 		})
 
 		if (signUpError) {
@@ -62,7 +71,7 @@ function Register() {
 
 	return (
 		<main className="auth-page">
-			<div className="auth-intro"><Link className="brand" to="/"><BrandLogo /></Link><p>Un buen viaje empieza con la pieza correcta.</p></div>
+			<div className="auth-intro"><Link className="brand" to="/"><BrandLogo /></Link><AuthScene /><p>Un buen viaje empieza con la pieza correcta.</p></div>
 			<form className="auth-card" onSubmit={handleSubmit}>
 				<p className="eyebrow">Crear cuenta / {role || 'tipo de cuenta'}</p>
 				<h1>Únete a DriveFix</h1>
@@ -72,9 +81,12 @@ function Register() {
 				<label>Apellido<input name="apellido" type="text" maxLength="100" autoComplete="family-name" required placeholder="Tu apellido" /></label></div>
 				<label>Teléfono <small>Opcional</small><input name="telefono" type="tel" autoComplete="tel" maxLength="20" placeholder="+591 70000000" /></label>
 				<label>Correo electrónico<input name="email" type="email" autoComplete="email" required placeholder="tu@correo.com" /></label>
-				<label>Contraseña<input name="password" type="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 12 caracteres" aria-describedby="register-password-hint" /></label>
+				<label>Contraseña<PasswordInput name="password" required minLength="12" autoComplete="new-password" placeholder="Mínimo 12 caracteres" aria-describedby="register-password-hint" /></label>
 				<p id="register-password-hint" className="auth-hint">{PASSWORD_HINT}</p>
-				<label>Confirmar contraseña<input name="confirmPassword" type="password" required minLength="12" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
+				<label>Confirmar contraseña<PasswordInput name="confirmPassword" required minLength="12" autoComplete="new-password" placeholder="Repite tu contraseña" /></label>
+				<label className="auth-consent"><input type="checkbox" name="acepta" value="si" required />
+					<span>Leí y acepto los <Link to={legalPath('terminos')} target="_blank" rel="noopener">términos y condiciones</Link> y la <Link to={legalPath('privacidad')} target="_blank" rel="noopener">política de privacidad</Link>{role === 'tienda' && <>, y las <Link to={legalPath('contrato-tiendas')} target="_blank" rel="noopener">condiciones para tiendas</Link></>}.</span>
+				</label>
 				{error && <p className="auth-error" role="alert">{error}</p>}
 				{message && <p className="auth-message" role="status">{message}</p>}
 				<button className="button button-primary" type="submit" disabled={loading || !role}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</button>

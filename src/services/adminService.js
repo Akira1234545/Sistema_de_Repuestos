@@ -19,7 +19,7 @@ function throwRpcError(error) {
 
 export async function obtenerUsuariosAdministracion(page = 0, search = '') {
 	requireSupabase()
-	const { data, error } = await supabase.rpc('admin_user_page', { p_search: search || null, p_offset: page * 25, p_limit: 26 })
+	const { data, error } = await supabase.rpc('drivefix_admin_user_page', { p_search: search || null, p_offset: page * 25, p_limit: 26 })
 	throwRpcError(error)
 	return { items: (data || []).slice(0, 25), hasMore: data?.length > 25 }
 }
@@ -31,11 +31,12 @@ export async function obtenerResumenAdministracion() {
 	return data?.[0] || null
 }
 
-export async function cambiarEstadoUsuario(userId, active) {
+export async function cambiarEstadoUsuario(userId, active, motivo = null) {
 	requireSupabase()
-	const { error } = await supabase.rpc('sprint3_admin_set_user_active', {
+	const { error } = await supabase.rpc('drivefix_admin_set_user_active', {
 		p_user_id: userId,
 		p_active: active,
+		p_motivo: motivo,
 	})
 	throwRpcError(error)
 }

@@ -3,6 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { obtenerCategoriasAdministracion, obtenerPromocionesAdministracion, obtenerTiendasConPromocionesAdministracion } from '../services/adminService.js'
 import { statusLabel } from '../lib/format.js'
 import Select from '../components/ui/Select.jsx'
+import { isProjectPhotoUrl } from '../lib/storageUrls.js'
+
+// E17: solo se enlazan fotos https del Storage de este proyecto (bucket «tiendas»).
+const projectPhotos = (promotion) => (promotion.fotografias || []).filter((url) => isProjectPhotoUrl(url, import.meta.env?.VITE_SUPABASE_URL, 'tiendas'))
 import Icon from '../components/Icon.jsx'
 
 const pageSize = 25
@@ -146,7 +150,7 @@ function AdminPromociones() {
 							<div className="admin-promotion-description"><dt>Descripción</dt><dd>{promotion.descripcion || 'Sin descripción.'}</dd></div>
 							{promotion.caracteristicas && <div className="admin-promotion-description"><dt>Características</dt><dd>{promotion.caracteristicas}</dd></div>}
 						</dl>
-						{promotion.fotografias?.length > 0 && <div className="admin-promotion-photos"><strong>Fotografías</strong><div>{promotion.fotografias.map((url) => <a key={url} href={url} target="_blank" rel="noreferrer">Abrir imagen ↗</a>)}</div></div>}
+						{projectPhotos(promotion).length > 0 && <div className="admin-promotion-photos"><strong>Fotografías</strong><div>{projectPhotos(promotion).map((url) => <a key={url} href={url} target="_blank" rel="noreferrer">Abrir imagen ↗</a>)}</div></div>}
 					</div>
 				</details>)}</div>
 				<nav className="admin-pagination" aria-label="Paginación de promociones">

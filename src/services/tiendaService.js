@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js'
 import { compressImage, imageExtension } from '../lib/images.js'
+import { escapeLike } from '../lib/search.js'
 
 const storeColumns = `
 	id,
@@ -34,7 +35,7 @@ export async function obtenerTiendasPublicas(page = 0, search = '', focusId = ''
 	let query = supabase.from('sprint2_tiendas_publicas')
 		.select('id, nombre, descripcion, horario, fotografias').order('nombre').order('id')
 	if (focusId) query = query.eq('id', focusId)
-	if (search.trim()) query = query.ilike('nombre', `%${search.trim()}%`)
+	if (search.trim()) query = query.ilike('nombre', `%${escapeLike(search.trim())}%`)
 	const offset = focusId ? 0 : page * 25
 	const { data, error } = await query.range(offset, offset + 25)
 	if (error) throw error

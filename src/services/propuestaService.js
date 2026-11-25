@@ -63,6 +63,12 @@ export async function seleccionarPropuesta(solicitudId, propuestaId) {
 	return data
 }
 
+// E12: the selected store did not attend; its proposal is rejected and the others compete again.
+export async function cancelarSeleccion(solicitudId) {
+	const { error } = await supabase.rpc('cancelar_seleccion', { p_solicitud_id: solicitudId })
+	if (error) throw error
+}
+
 export async function retirarPropuesta(id) {
 	const { error } = await supabase.rpc('retirar_propuesta', { p_propuesta_id: id })
 	if (error) throw error

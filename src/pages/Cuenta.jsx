@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from '../components/Icon.jsx'
 import { useAuth } from '../context/authState.js'
+import { SIGN_OUT_CONFIRM, useConfirm } from '../context/confirmState.js'
 import { publicError } from '../lib/errors.js'
 import { PASSWORD_HINT, passwordIssue } from '../lib/password.js'
 import { ROLE_LABELS } from '../lib/roles.js'
 import { actualizarMiPerfil } from '../services/authService.js'
 import { supabase } from '../services/supabase.js'
+import PasswordInput from '../components/ui/PasswordInput.jsx'
 
 
 function ProfileForm() {
@@ -93,9 +95,9 @@ function PasswordForm() {
 		{error && <p className="store-error" role="alert">{error}</p>}
 		{notice && <p className="store-success" role="status">{notice}</p>}
 		<div className="store-form-grid">
-			<label className="account-field-wide">Contraseña actual<input name="current" type="password" autoComplete="current-password" required /></label>
-			<label>Nueva contraseña<input name="password" type="password" minLength={12} autoComplete="new-password" required /></label>
-			<label>Repite la contraseña<input name="confirmation" type="password" minLength={12} autoComplete="new-password" required /></label>
+			<label className="account-field-wide">Contraseña actual<PasswordInput name="current" autoComplete="current-password" required /></label>
+			<label>Nueva contraseña<PasswordInput name="password" minLength={12} autoComplete="new-password" required /></label>
+			<label>Repite la contraseña<PasswordInput name="confirmation" minLength={12} autoComplete="new-password" required /></label>
 			<p className="account-field-wide store-request-date">{PASSWORD_HINT}</p>
 			{needsCode && <label className="account-field-wide">Código de verificación<input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={10} required /></label>}
 		</div>
@@ -105,9 +107,11 @@ function PasswordForm() {
 
 function SignOutCard() {
 	const { signOut } = useAuth()
+	const confirm = useConfirm()
 	const navigate = useNavigate()
 	const [leaving, setLeaving] = useState(false)
 	async function leave() {
+		if (!(await confirm(SIGN_OUT_CONFIRM))) return
 		setLeaving(true)
 		if (await signOut()) navigate('/login', { replace: true })
 		else setLeaving(false)

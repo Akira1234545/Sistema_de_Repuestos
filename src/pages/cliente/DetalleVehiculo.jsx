@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Icon from '../../components/Icon.jsx'
+import PhotoViewer from '../../components/ui/PhotoViewer.jsx'
+import { useConfirm } from '../../context/confirmState.js'
 import { useAuth } from '../../context/authState.js'
 import { useToast } from '../../context/toastState.js'
 import { publicError } from '../../lib/errors.js'
@@ -15,6 +17,7 @@ export default function DetalleVehiculo() {
 	const { user } = useAuth()
 	const navigate = useNavigate()
 	const toast = useToast()
+	const confirm = useConfirm()
 	const fileRef = useRef(null)
 	const cameraRef = useRef(null)
 	const [vehicle, setVehicle] = useState(null)
@@ -52,6 +55,7 @@ export default function DetalleVehiculo() {
 		finally { setBusy('') }
 	}
 	async function removePhoto(url) {
+		if (!(await confirm({ title: '¿Quitar esta foto?', message: 'La foto se borrará del vehículo y las tiendas ya no la verán.', confirmLabel: 'Quitar foto', tone: 'danger' }))) return
 		setBusy(url); setError('')
 		try { merge(await quitarFotoVehiculo(vehicle, user.id, url)); setViewer('') }
 		catch (photoError) { setError(`No se pudo quitar la foto: ${publicError(photoError)}`) }
@@ -127,9 +131,6 @@ export default function DetalleVehiculo() {
 				: <button type="button" className="icon-action is-danger" onClick={() => setConfirmDelete(true)} aria-label="Eliminar vehículo" title="Eliminar"><Icon name="trash" size={18} /></button>)}
 		</div>
 
-		{viewer && <div className="photo-viewer" role="dialog" aria-modal="true" aria-label="Foto ampliada" onClick={() => setViewer('')}>
-			<img src={viewer} alt={`Foto de ${vehicleName(vehicle)}`} />
-			<button type="button" className="icon-action" aria-label="Cerrar" onClick={() => setViewer('')}><Icon name="x" size={18} /></button>
-		</div>}
+		<PhotoViewer src={viewer} alt={`Foto de ${vehicleName(vehicle)}`} onClose={() => setViewer('')} />
 	</section>
 }
