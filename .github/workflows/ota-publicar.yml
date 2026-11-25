@@ -39,8 +39,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      # Las pruebas completas corren en checks.yml; aquí basta con lint y compilar.
       - run: npm run lint
-      - run: npm test
       - name: Compilar la web
         run: VITE_APP_VERSION=${GITHUB_SHA::7} npm run build
       - name: Preparar el paquete y el manifiesto
