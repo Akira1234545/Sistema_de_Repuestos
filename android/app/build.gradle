@@ -7,8 +7,8 @@ android {
         applicationId "com.drivefix.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,7 +16,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Clave de PRUEBAS para los APK que compila GitHub Actions (es pública en el repo, igual que el código).
+    // Sirve para instalar y probar; para Play Store usa una clave privada propia fuera del repositorio.
+    signingConfigs {
+        pruebas {
+            storeFile file('drivefix-pruebas.keystore')
+            storePassword 'drivefix-pruebas'
+            keyAlias 'drivefix-pruebas'
+            keyPassword 'drivefix-pruebas'
+        }
+    }
     buildTypes {
+        debug {
+            if (System.getenv('DRIVEFIX_FIRMA_PRUEBAS') == '1') signingConfig signingConfigs.pruebas
+        }
         release {
             minifyEnabled = true
             shrinkResources = true

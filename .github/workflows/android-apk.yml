@@ -1,0 +1,64 @@
+name: APK Android (pruebas)
+
+# Compila un APK instalable cuando cambia la parte nativa de la app (plugins, Android, versión).
+# Lo publica como Release de GitHub para descargarlo desde el teléfono.
+on:
+  push:
+    branches: [app/actualizaciones-ota]
+    paths:
+      - 'android/**'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+env:
+  # Valores públicos (ya van dentro de la web publicada); no son secretos.
+  VITE_SUPABASE_URL: https://cqwywvpvyoptqtdggpdz.supabase.co
+  VITE_SUPABASE_ANON_KEY: sb_publishable_ijDYgDytf_m4fMyK3esZ4A_U1jCEWgd
+  VITE_PUBLIC_SITE_URL: https://drivefix-ecru.vercel.app
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Compilar la web con la versión del commit
+        run: |
+          echo "VITE_APP_VERSION=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          VITE_APP_VERSION=${GITHUB_SHA::7} npm run build
+      - run: npx cap sync android
+      - name: Compilar el APK firmado con la clave de pruebas
+        working-directory: android
+        env:
+          DRIVEFIX_FIRMA_PRUEBAS: '1'
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - name: Publicar el APK como Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NAME=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle)
+          TAG="apk-v${NAME}-${GITHUB_SHA::7}"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "DriveFix-v${NAME}.apk"
+          gh release create "$TAG" "DriveFix-v${NAME}.apk" --target "$GITHUB_SHA" --prerelease \
+            --title "DriveFix ${NAME} (APK de pruebas, ${GITHUB_SHA::7})" \
+            --notes "APK de pruebas con actualizaciones a distancia. Firmado con la clave de pruebas del repositorio: si tienes otra versión de DriveFix instalada, desinstálala antes."

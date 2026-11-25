@@ -1,0 +1,79 @@
+name: Publicar actualización (OTA)
+
+# Cada cambio en la web de la app se compila y se publica en la rama «ota».
+# La app Android lo descarga sola al abrirse (src/lib/liveUpdate.js) y lo aplica al reabrirla.
+on:
+  push:
+    branches: [app/actualizaciones-ota]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'vite.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'android/app/build.gradle'
+      - '.github/workflows/ota-publicar.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ota-publicar
+  cancel-in-progress: false
+
+env:
+  VITE_SUPABASE_URL: https://cqwywvpvyoptqtdggpdz.supabase.co
+  VITE_SUPABASE_ANON_KEY: sb_publishable_ijDYgDytf_m4fMyK3esZ4A_U1jCEWgd
+  VITE_PUBLIC_SITE_URL: https://drivefix-ecru.vercel.app
+  OTA_RAW: https://raw.githubusercontent.com/${{ github.repository }}/ota/android
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - name: Compilar la web
+        run: VITE_APP_VERSION=${GITHUB_SHA::7} npm run build
+      - name: Preparar el paquete y el manifiesto
+        run: |
+          VERSION=${GITHUB_SHA::7}
+          MIN_BUILD=$(grep -oP 'versionCode \K[0-9]+' android/app/build.gradle)
+          mkdir -p ota-out
+          (cd dist && zip -qr "../ota-out/bundle-${VERSION}.zip" .)
+          SUM=$(sha256sum "ota-out/bundle-${VERSION}.zip" | cut -d' ' -f1)
+          node -e '
+            const [version, url, checksum, minBuild, commit] = process.argv.slice(1)
+            const manifest = { version, url, checksum, minBuild: Number(minBuild), commit, publicado: new Date().toISOString() }
+            require("fs").writeFileSync("ota-out/latest.json", JSON.stringify(manifest, null, 2) + "\n")
+          ' "$VERSION" "$OTA_RAW/bundle-${VERSION}.zip" "$SUM" "$MIN_BUILD" "$GITHUB_SHA"
+          cat ota-out/latest.json
+      - name: Publicar en la rama ota
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -rf ota-repo
+          if git ls-remote --exit-code origin ota >/dev/null 2>&1; then
+            git clone --depth 1 --branch ota "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ota-repo
+          else
+            mkdir ota-repo && git -C ota-repo init -q -b ota && git -C ota-repo remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          fi
+          mkdir -p ota-repo/android
+          # Se conserva el paquete anterior por si un teléfono lo está descargando; el resto se borra.
+          PREV=$(node -e 'try{console.log(require("./ota-repo/android/latest.json").version)}catch{}')
+          find ota-repo/android -name 'bundle-*.zip' ! -name "bundle-${PREV:-ninguno}.zip" -delete 2>/dev/null || true
+          cp ota-out/* ota-repo/android/
+          printf '# Actualizaciones de DriveFix\n\nRama generada por GitHub Actions (ota-publicar.yml). No editar a mano.\n' > ota-repo/README.md
+          cd ota-repo
+          git add -A
+          # Un solo commit, para que la rama no crezca con cada paquete.
+          git checkout -q --orphan nueva && git commit -qm "OTA ${GITHUB_SHA::7}" && git branch -M nueva ota
+          git push -f origin ota

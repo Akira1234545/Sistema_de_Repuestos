@@ -1,10 +1,16 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.drivefix.app",
-      "sha256_cert_fingerprints": ["63:2B:4B:13:23:EF:DD:10:D7:34:FF:66:80:AE:05:8A:F3:D3:AE:57:59:2A:6A:9A:65:69:E1:F5:12:4D:85:66"]
+      "sha256_cert_fingerprints": [
+        "63:2B:4B:13:23:EF:DD:10:D7:34:FF:66:80:AE:05:8A:F3:D3:AE:57:59:2A:6A:9A:65:69:E1:F5:12:4D:85:66",
+        "30:5A:E6:D4:EC:B0:29:F3:A8:04:8E:24:FD:FC:28:EB:22:08:14:9C:A2:75:7A:7D:E1:2E:93:50:CD:10:79:6D"
+      ]
     }
   }
 ]

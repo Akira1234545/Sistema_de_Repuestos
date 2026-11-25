@@ -78,3 +78,13 @@ Desde la versión con `NativePasskeyPlugin.java` (Credential Manager, `androidx.
 - `public/.well-known/assetlinks.json` publicado con `com.drivefix.app` y el SHA-256 del certificado que firma el APK. Ahora es la clave de depuración; una versión firmada con otra clave necesita agregar su huella.
 - En Supabase → Authentication → Passkeys → Relying Party Origins, agregar también `android:apk-key-hash:YytLEyPv3RDXNP9mgK4FivPTrldZKmqaZWnh9RJNhWY` (clave de depuración), además de `https://drivefix-ecru.vercel.app`.
 - Si la app no trae el plugin (APK antiguo), se usa el respaldo con Chrome (`/verificar-huella`).
+
+## Actualizaciones a distancia (OTA)
+
+La app usa `@capgo/capacitor-updater` en modo manual, sin la nube de Capgo (estadísticas desactivadas).
+
+- **Publicar:** basta con subir cambios a la rama `app/actualizaciones-ota`. El flujo `.github/workflows/ota-publicar.yml` compila la web, la empaqueta y la deja en la rama `ota` (`android/latest.json` + `android/bundle-<commit>.zip`).
+- **En el teléfono:** al abrir la app o volver a ella, `src/lib/liveUpdate.js` lee el manifiesto, descarga el paquete (verificando su SHA-256) y lo aplica la siguiente vez que se abre la app. Si una versión no arranca, el plugin vuelve sola a la anterior.
+- **Qué se puede actualizar así:** todo lo de `src/` y `public/` (pantallas, estilos, textos, imágenes, lógica).
+- **Qué no:** plugins de Capacitor, código Java, permisos o el `AndroidManifest`. Para eso sube `versionCode` en `android/app/build.gradle`: el flujo `.github/workflows/android-apk.yml` genera un APK nuevo como Release de GitHub, y los paquetes OTA que piden ese `versionCode` no se instalan en APK más antiguos.
+- **Firma:** los APK de GitHub Actions usan la clave de pruebas `android/app/drivefix-pruebas.keystore` (pública en el repo). Su huella está en `public/.well-known/assetlinks.json`; la huella en la app solo funciona con esa clave cuando ese archivo está desplegado en Vercel. Para Play Store, usa una clave privada fuera del repositorio.

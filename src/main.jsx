@@ -9,6 +9,10 @@ import './styles/admin.css'
 import './styles/home.css'
 import App from './App.jsx'
 import AppErrorBoundary from './components/AppErrorBoundary.jsx'
+import { startLiveUpdates } from './lib/liveUpdate.js'
+
+// App Android: confirma que esta versión arrancó bien y busca actualizaciones a distancia.
+startLiveUpdates()
 
 createRoot(document.getElementById('root')).render(
 	<StrictMode>
